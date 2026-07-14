@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Referto RM Retto — ESGAR (Stadiazione / Ristadiazione)</title>
+<style>
+  :root{
+    --accent:#7a2d2d;
+    --accent2:#a8483f;
+    --bg:#f4f6f8;
+    --panel:#ffffff;
+    --border:#d7dee5;
+    --text:#1c2530;
+    --muted:#6b7684;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size:14px; line-height:1.45;
+  }
+  header{
+    background:var(--accent); color:#fff; padding:16px 28px;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  }
+  header h1{margin:0; font-size:18px; font-weight:700;}
+  header p{margin:2px 0 0; font-size:12.5px; color:#f0dede;}
+  .mode-switch{ display:flex; gap:6px; }
+  .mode-switch button{
+    border:1px solid rgba(255,255,255,.5); background:transparent; color:#fff;
+    padding:8px 14px; border-radius:20px; font-size:12.5px; font-weight:600; cursor:pointer;
+  }
+  .mode-switch button.active{ background:#fff; color:var(--accent); }
+
+  .layout{
+    display:grid; grid-template-columns: 1fr 1fr; gap:0;
+    max-width:1500px; margin:0 auto;
+  }
+  @media (max-width:980px){ .layout{grid-template-columns:1fr;} }
+  .form-pane{ padding:20px 24px 80px; }
+  .output-pane{
+    padding:20px 24px; background:#eef1f4; border-left:1px solid var(--border);
+    position:sticky; top:0; align-self:start; height:100vh; overflow:auto;
+  }
+  @media (max-width:980px){ .output-pane{position:static; height:auto;} }
+
+  fieldset{
+    border:1px solid var(--border); border-radius:8px; margin:0 0 16px; padding:14px 16px 16px;
+    background:var(--panel);
+  }
+  legend{
+    font-weight:700; color:var(--accent); padding:0 8px; font-size:13.5px;
+    letter-spacing:.02em; text-transform:uppercase;
+  }
+  .sub{font-weight:600; color:var(--accent2); font-size:12.5px; margin:10px 0 4px;}
+  .hint{color:var(--muted); font-size:12px; font-style:italic; margin:2px 0 8px;}
+  label.field{ display:block; margin:6px 0; font-size:13px; }
+  label.field span.lab{ display:inline-block; min-width:250px; font-weight:600; }
+  input[type=text]{
+    border:1px solid var(--border); border-radius:5px; padding:5px 8px; font-size:13px;
+    width:200px; font-family:inherit;
+  }
+  input[type=text].wide{ width:100%; max-width:520px; }
+  input[type=text].narrow{ width:70px; }
+  .opts{ display:flex; flex-wrap:wrap; gap:4px 16px; margin:4px 0 10px; }
+  .opt{ display:flex; align-items:center; gap:5px; font-size:13px; }
+  .opt input{ accent-color:var(--accent); width:15px; height:15px; }
+  button{
+    font-family:inherit; cursor:pointer; border:none; border-radius:6px;
+    padding:8px 14px; font-size:13px; font-weight:600;
+  }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-secondary{ background:#f1e4e2; color:var(--accent); }
+  .action-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  #output{
+    white-space:pre-wrap; background:#fff; border:1px solid var(--border); border-radius:8px;
+    padding:16px; font-family:var(--mono); font-size:12px; min-height:400px; color:#111;
+  }
+  .status{ font-size:12px; color:var(--accent2); min-height:16px; margin-top:6px; }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+  @media print{
+    header, .form-pane, .action-row{ display:none !important; }
+    .layout{ display:block; }
+    .output-pane{ position:static; height:auto; background:#fff; border:none; padding:0; }
+    #output{ border:none; padding:0; font-size:11px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Referto RM Retto — ESGAR</h1>
+    <p>Tool di prova: form a sinistra, referto in testo puro generato in tempo reale a destra.</p>
+  </div>
+  <div class="mode-switch">
+    <button id="btnModePrimaria" class="active">Stadiazione primaria</button>
+    <button id="btnModeRistad">Ristadiazione</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="form-pane" id="form-pane">
+
+    <!-- ================= STADIAZIONE PRIMARIA ================= -->
+    <div class="panel active" id="panel-primaria">
+
+      <fieldset>
+        <legend>Morfologia</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_forma" value="semicircolare" checked> Semicircolare</label>
+          <label class="opt"><input type="radio" name="p_forma" value="circonferenziale"> Circonferenziale</label>
+          <label class="opt"><input type="radio" name="p_forma" value="polipoide"> Polipoide</label>
+          <label class="opt"><input type="radio" name="p_forma" value="ulcerata"> Ulcerata</label>
+        </div>
+        <label class="field"><span class="lab">Sede lungo l'asse del retto</span>
+          <select id="p_sede">
+            <option value="basso">Retto basso</option>
+            <option value="basso e medio" selected>Retto medio e basso</option>
+            <option value="medio">Retto medio</option>
+            <option value="medio e alto">Retto medio e alto</option>
+            <option value="alto">Retto alto</option>
+          </select>
+        </label>
+        <label class="field"><span class="lab">Parete coinvolta</span><input type="text" id="p_parete" class="wide" placeholder="es. antero-laterale sinistra"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Localizzazione</legend>
+        <label class="field"><span class="lab">Circonferenza — da ore</span><input type="text" id="p_oreDa" class="narrow"> <span style="margin:0 6px">a ore</span><input type="text" id="p_oreA" class="narrow"></label>
+        <label class="field"><span class="lab">Estensione longitudinale (cm)</span><input type="text" id="p_estensione" class="narrow"></label>
+        <label class="field"><span class="lab">Margine inf. dalla giunzione anorettale (cm)</span><input type="text" id="p_giunzione" class="narrow"></label>
+        <label class="field"><span class="lab">Margine inf. dal margine anale (cm)</span><input type="text" id="p_marginale" class="narrow"></label>
+        <div class="sub">Coinvolgimento sfinteri</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_sfinteri" value="no" checked> Non presente</label>
+          <label class="opt"><input type="radio" name="p_sfinteri" value="si"> Presente</label>
+        </div>
+        <label class="field"><span class="lab">Dettaglio coinvolgimento sfinteri</span><input type="text" id="p_sfinteriDett" class="wide"></label>
+
+        <div class="sub">Relazione con la riflessione peritoneale anteriore</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_peritoneo" value="sopra"> Sopra il piano di riflessione</label>
+          <label class="opt"><input type="radio" name="p_peritoneo" value="sotto"> Sotto il piano di riflessione</label>
+          <label class="opt"><input type="radio" name="p_peritoneo" value="oltrepassa" checked> Oltrepassa il piano (invasione)</label>
+        </div>
+        <label class="field"><span class="lab">Estensione oltre il piano (cm)</span><input type="text" id="p_peritoneoCm" class="narrow"></label>
+
+        <div class="sub">Relazione con linea pube–promontorio sacrale</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_pube" value="sopra"> Sopra</label>
+          <label class="opt"><input type="radio" name="p_pube" value="sotto" checked> Sotto</label>
+        </div>
+        <div class="sub">Relazione con il sigmoid take-off</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_sigmoid" value="sopra"> Sopra</label>
+          <label class="opt"><input type="radio" name="p_sigmoid" value="sotto" checked> Sotto</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>MRF (fascia mesorettale)</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_mrf" value="no" checked> Non coinvolta</label>
+          <label class="opt"><input type="radio" name="p_mrf" value="si"> Coinvolta</label>
+        </div>
+        <label class="field"><span class="lab">Distanza minima tumore-MRF (mm)</span><input type="text" id="p_mrfDist" class="narrow"></label>
+        <label class="field"><span class="lab">Sede coinvolgimento MRF (se presente)</span><input type="text" id="p_mrfSede" class="wide" placeholder="ore ____"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>cT stage</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_ct" value="cT1"> cT1 — invasione sottomucosa</label>
+          <label class="opt"><input type="radio" name="p_ct" value="cT2"> cT2 — invasione muscolare propria, senza estensione extramurale</label>
+          <label class="opt"><input type="radio" name="p_ct" value="cT3a"> cT3a — estensione extramurale &lt;1 mm</label>
+          <label class="opt"><input type="radio" name="p_ct" value="cT3b"> cT3b — estensione extramurale 1–5 mm</label>
+          <label class="opt"><input type="radio" name="p_ct" value="cT3c"> cT3c — estensione extramurale 5–15 mm</label>
+          <label class="opt"><input type="radio" name="p_ct" value="cT3d"> cT3d — estensione extramurale &gt;15 mm</label>
+          <label class="opt"><input type="radio" name="p_ct" value="cT4a"> cT4a — infiltrazione peritoneo viscerale</label>
+          <label class="opt"><input type="radio" name="p_ct" value="cT4b"> cT4b — infiltrazione organi/strutture adiacenti</label>
+        </div>
+        <label class="field"><span class="lab">Motivazione / struttura infiltrata (cT4b)</span><input type="text" id="p_ctNote" class="wide"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>EMVI</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_emvi" value="no" checked> Non presente</label>
+          <label class="opt"><input type="radio" name="p_emvi" value="si"> Presente</label>
+        </div>
+        <label class="field"><span class="lab">Dettaglio EMVI (sede, vaso)</span><input type="text" id="p_emviDett" class="wide"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Linfonodi sospetti</legend>
+        <label class="field"><span class="lab">Regionali (mesoretto/presacrali) — numero</span><input type="text" id="p_lnNum" class="narrow"></label>
+        <label class="field"><span class="lab">Asse corto massimo (mm)</span><input type="text" id="p_lnAsse" class="narrow"></label>
+        <label class="field"><span class="lab">Morfologia (tondeggianti/margini irregolari/eterogenei)</span><input type="text" id="p_lnMorfo" class="wide"></label>
+        <div class="sub">Categoria cN</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_cn" value="cN0"> cN0</label>
+          <label class="opt"><input type="radio" name="p_cn" value="cN1"> cN1 (1–2 linfonodi sospetti)</label>
+          <label class="opt"><input type="radio" name="p_cn" value="cN2" checked> cN2 (≥3 linfonodi sospetti)</label>
+        </div>
+        <div class="sub">Linfonodi laterali (otturatori/iliaci interni)</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_lnLat" value="no" checked> Non sospetti</label>
+          <label class="opt"><input type="radio" name="p_lnLat" value="si"> Sospetti</label>
+        </div>
+        <label class="field"><span class="lab">Dettaglio linfonodi laterali</span><input type="text" id="p_lnLatDett" class="wide"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tumor deposit</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_td" value="no" checked> Non presente</label>
+          <label class="opt"><input type="radio" name="p_td" value="si"> Presente</label>
+        </div>
+        <label class="field"><span class="lab">Numero / dimensioni</span><input type="text" id="p_tdDett" class="wide"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Metastasi pelviche</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_metaLn" value="no" checked> Nessun linfonodo iliaco esterno/inguinale/altro a distanza sospetto</label>
+          <label class="opt"><input type="radio" name="p_metaLn" value="si"> Presenti — vedi dettaglio</label>
+        </div>
+        <label class="field"><span class="lab">Dettaglio linfonodi a distanza</span><input type="text" id="p_metaLnDett" class="wide"></label>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="p_perit" value="no" checked> Nessuna evidenza di noduli peritoneali</label>
+          <label class="opt"><input type="radio" name="p_perit" value="si"> Noduli peritoneali presenti</label>
+        </div>
+        <label class="field"><span class="lab">Dettaglio noduli peritoneali</span><input type="text" id="p_peritDett" class="wide"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tecnica e confronto</legend>
+        <label class="field"><span class="lab">Sequenze</span><input type="text" id="p_tecnica" class="wide" value="TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist)"></label>
+        <label class="field"><span class="lab">Confronto con imaging precedente</span><input type="text" id="p_confronto" class="wide" placeholder="es. TC del ____"></label>
+      </fieldset>
+
+    </div>
+
+    <!-- ================= RISTADIAZIONE ================= -->
+    <div class="panel" id="panel-ristad">
+
+      <fieldset>
+        <legend>Stato locale della neoplasia</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_risposta" value="cCR"> Risposta clinica completa (cCR)</label>
+          <label class="opt"><input type="radio" name="r_risposta" value="near-cCR"> Risposta clinica quasi completa (near-cCR)</label>
+          <label class="opt"><input type="radio" name="r_risposta" value="minore" checked> Malattia residua minore</label>
+          <label class="opt"><input type="radio" name="r_risposta" value="maggiore"> Malattia residua maggiore</label>
+        </div>
+        <div class="sub">Categoria ycT stimata (se sospetta malattia residua)</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_yct" value="ycT1-2"> ycT1-2</label>
+          <label class="opt"><input type="radio" name="r_yct" value="ycT3ab" checked> ycT3ab (crescita extramurale ≤5 mm)</label>
+          <label class="opt"><input type="radio" name="r_yct" value="ycT3cd"> ycT3cd (crescita extramurale &gt;5 mm)</label>
+          <label class="opt"><input type="radio" name="r_yct" value="ycT4a"> ycT4a (infiltrazione peritoneo/riflessione)</label>
+          <label class="opt"><input type="radio" name="r_yct" value="ycT4b"> ycT4b</label>
+        </div>
+        <label class="field"><span class="lab">Infiltrazione (se ycT4b)</span><input type="text" id="r_yctDett" class="wide"></label>
+
+        <div class="sub">Componente mucinosa</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_muc" value="no" checked> No</label>
+          <label class="opt"><input type="radio" name="r_muc" value="residuo"> Sì, residuo mucinoso</label>
+          <label class="opt"><input type="radio" name="r_muc" value="trasformazione"> Sì, trasformazione mucinosa</label>
+        </div>
+
+        <label class="field"><span class="lab">Distanza dalla giunzione anorettale (cm)</span><input type="text" id="r_giunzione" class="narrow"></label>
+        <label class="field"><span class="lab">Dimensioni lesione residua/fibrosi (cm)</span><input type="text" id="r_dimFibrosi" class="narrow"></label>
+        <label class="field"><span class="lab">Dimensioni stimate malattia residua entro la fibrosi (cm)</span><input type="text" id="r_dimResidua" class="narrow"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>ycEMVI e invasione sfinterica</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_emvi" value="no" checked> ycEMVI non presente</label>
+          <label class="opt"><input type="radio" name="r_emvi" value="si"> ycEMVI presente</label>
+        </div>
+        <div class="sub">Invasione sfinterica</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_sfint" value="no" checked> Non presente</label>
+          <label class="opt"><input type="radio" name="r_sfint" value="intersfinterico"> Spazio intersfinterico</label>
+        </div>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" id="r_sfintInterno"> Sfintere interno</label>
+          <label class="opt"><input type="checkbox" id="r_sfintEsterno"> Sfintere esterno (= ycT4b)</label>
+        </div>
+        <label class="field"><span class="lab">Dettaglio invasione sfinterica</span><input type="text" id="r_sfintDett" class="wide"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>ycMRF</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_mrf" value="no" checked> Non coinvolta (margine &gt;1 mm)</label>
+          <label class="opt"><input type="radio" name="r_mrf" value="si"> Coinvolta (margine ≤1 mm)</label>
+        </div>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" id="r_mrfMalattia"> da malattia residua</label>
+          <label class="opt"><input type="checkbox" id="r_mrfFibrosi"> da fibrosi con possibile malattia residua</label>
+          <label class="opt"><input type="checkbox" id="r_mrfEmvi"> da EMVI persistente</label>
+          <label class="opt"><input type="checkbox" id="r_mrfLn"> da linfonodo/deposito irregolare persistente</label>
+        </div>
+        <label class="field"><span class="lab">Sede coinvolgimento MRF</span><input type="text" id="r_mrfSede" class="wide" placeholder="ore ____"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Linfonodi e depositi tumorali</legend>
+        <div class="sub">Linfonodi mesorettali</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_lnMeso" value="ycN0"> ycN0</label>
+          <label class="opt"><input type="radio" name="r_lnMeso" value="possibile" checked> Possibile ycN+</label>
+        </div>
+        <div class="sub">Linfonodi laterali (otturatori/iliaci interni)</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_lnLat" value="na" checked> N/A (nessuno sospetto al basale)</label>
+          <label class="opt"><input type="radio" name="r_lnLat" value="presenti"> Precedentemente aumentati di dimensioni</label>
+        </div>
+        <label class="field"><span class="lab">Dimensioni attuali (cm)</span><input type="text" id="r_lnLatAttuale" class="narrow"> <span style="margin:0 6px">erano</span><input type="text" id="r_lnLatBasale" class="narrow"> cm</label>
+
+        <div class="sub">Depositi tumorali persistenti</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_td" value="no" checked> Non presenti</label>
+          <label class="opt"><input type="radio" name="r_td" value="si"> Presenti</label>
+        </div>
+        <label class="field"><span class="lab">Numero / dimensioni</span><input type="text" id="r_tdDett" class="wide"></label>
+
+        <div class="sub">Linfonodi non regionali (categoria cM)</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_lnNonReg" value="na" checked> N/A</label>
+          <label class="opt"><input type="radio" name="r_lnNonReg" value="presenti"> Precedentemente aumentati di dimensioni</label>
+        </div>
+        <label class="field"><span class="lab">Dimensioni attuali (cm)</span><input type="text" id="r_lnNonRegAttuale" class="narrow"> <span style="margin:0 6px">erano</span><input type="text" id="r_lnNonRegBasale" class="narrow"> cm</label>
+
+        <div class="sub">Categoria ycN stimata</div>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="r_ycn" value="ycN0"> ycN0</label>
+          <label class="opt"><input type="radio" name="r_ycn" value="possibile" checked> Possibile ycN+</label>
+          <label class="opt"><input type="radio" name="r_ycn" value="ycN+"> ycN+</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tecnica e confronto</legend>
+        <label class="field"><span class="lab">Sequenze</span><input type="text" id="r_tecnica" class="wide" value="TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist)"></label>
+        <label class="field"><span class="lab">RM basale di confronto (data)</span><input type="text" id="r_confronto"></label>
+      </fieldset>
+
+    </div>
+
+  </div>
+
+  <div class="output-pane">
+    <div class="action-row">
+      <button class="btn-primary" id="btnCopy">📋 Copia negli appunti</button>
+      <button class="btn-secondary" id="btnDownload">⬇ Scarica .txt</button>
+      <button class="btn-secondary" id="btnPrint">🖨 Stampa</button>
+    </div>
+    <div class="status" id="status"></div>
+    <pre id="output"></pre>
+  </div>
+</div>
+
+<script>
+function val(id, fallback){ const el = document.getElementById(id); const v = el ? el.value.trim() : ''; return v || (fallback || '____'); }
+function radioVal(name){ const el = document.querySelector('input[name="'+name+'"]:checked'); return el ? el.value : ''; }
+function checked(id){ return document.getElementById(id)?.checked; }
+
+let mode = 'primaria';
+
+function generatePrimaria(){
+  const forma = radioVal('p_forma');
+  const sede = document.getElementById('p_sede').value;
+  const parete = val('p_parete');
+  const oreDa = val('p_oreDa');
+  const oreA = val('p_oreA');
+  const estensione = val('p_estensione');
+  const giunzione = val('p_giunzione');
+  const marginale = val('p_marginale');
+  const sfinteri = radioVal('p_sfinteri');
+  const peritoneo = radioVal('p_peritoneo');
+  const peritoneoCm = val('p_peritoneoCm');
+  const pube = radioVal('p_pube');
+  const sigmoid = radioVal('p_sigmoid');
+  const mrf = radioVal('p_mrf');
+  const ct = radioVal('p_ct');
+  const emvi = radioVal('p_emvi');
+  const lnNum = val('p_lnNum');
+  const lnAsse = val('p_lnAsse');
+  const cn = radioVal('p_cn');
+  const lnLat = radioVal('p_lnLat');
+  const td = radioVal('p_td');
+  const metaLn = radioVal('p_metaLn');
+  const perit = radioVal('p_perit');
+
+  const peritoneoTxt = peritoneo === 'oltrepassa'
+    ? `oltrepassa il piano passante per la riflessione peritoneale, per un tratto esteso per circa ${peritoneoCm} cm`
+    : (peritoneo === 'sopra' ? 'sopra il piano di riflessione peritoneale' : 'sotto il piano di riflessione peritoneale');
+
+  let txt = '';
+  txt += 'REFERTO RM RETTO — STADIAZIONE PRIMARIA (ESGAR)\n';
+  txt += '='.repeat(60) + '\n\n';
+  txt += `Esame eseguito con sequenze ${val('p_tecnica')}.\n`;
+  if(document.getElementById('p_confronto').value.trim()){
+    txt += `Si prende visione di precedente imaging: ${val('p_confronto')}\n`;
+  }
+  txt += '\n';
+
+  txt += 'MORFOLOGIA:\n';
+  txt += `Lesione ${forma} del ${sede === 'basso' ? 'retto distale' : 'retto ' + sede}, a livello della parete ${parete}, da ore ${oreDa} a ore ${oreA}.\n\n`;
+
+  txt += 'LOCALIZZAZIONE:\n';
+  txt += `- margine inferiore della lesione dalla giunzione anorettale: ${giunzione} cm;\n`;
+  txt += `- margine inferiore della lesione dal margine anale: ${marginale} cm;\n`;
+  txt += `- coinvolgimento sfinteri: ${sfinteri === 'si' ? 'presente — ' + val('p_sfinteriDett') : 'non presente'};\n`;
+  txt += `- estensione longitudinale: ${estensione} cm;\n`;
+  txt += `- sede: ${sede};\n`;
+  txt += `- circonferenza da ore ${oreDa} a ore ${oreA};\n`;
+  txt += `- relazione con la riflessione peritoneale anteriore: ${peritoneoTxt};\n`;
+  txt += `- relazione con linea pube-promontorio del sacro: ${pube};\n`;
+  txt += `- relazione con il sigmoid take-off: ${sigmoid}.\n\n`;
+
+  txt += 'MRF:\n';
+  txt += mrf === 'si'
+    ? `- coinvolta (distanza minima tumore-MRF: ${val('p_mrfDist')} mm; sede: ${val('p_mrfSede')})\n\n`
+    : `- non coinvolta (distanza minima tumore-MRF: ${val('p_mrfDist')} mm)\n\n`;
+
+  txt += 'cT STAGE:\n';
+  txt += `${ct || '____'}`;
+  if(ct === 'cT4b' && document.getElementById('p_ctNote').value.trim()) txt += ` — infiltrazione di: ${val('p_ctNote')}`;
+  txt += '\n\n';
+
+  txt += 'EMVI:\n';
+  txt += emvi === 'si' ? `presente — ${val('p_emviDett')}\n\n` : 'non presente\n\n';
+
+  txt += 'LINFONODI SOSPETTI (asse corto massimo):\n';
+  txt += `- regionali (mesoretto e presacrali): ${lnNum !== '____' ? lnNum : '____'} linfonodi sospetti`;
+  if(document.getElementById('p_lnMorfo').value.trim()) txt += ` (${val('p_lnMorfo')})`;
+  txt += `, asse corto massimo circa ${lnAsse} mm;\n`;
+  txt += `- ${cn || '____'};\n`;
+  txt += `- linfonodi laterali (otturatori/iliaci interni): ${lnLat === 'si' ? 'sospetti — ' + val('p_lnLatDett') : 'non sospetti'}.\n\n`;
+
+  txt += 'TUMOR DEPOSIT:\n';
+  txt += td === 'si' ? `presente — ${val('p_tdDett')}\n\n` : 'non presente\n\n';
+
+  txt += 'METASTASI PELVICHE:\n';
+  txt += metaLn === 'si'
+    ? `- linfonodi iliaci esterni/inguinali/altri a distanza sospetti: ${val('p_metaLnDett')};\n`
+    : `- non evidenza di linfonodi iliaci esterni/inguinali/altri linfonodi a distanza sospetti;\n`;
+  txt += perit === 'si'
+    ? `- noduli peritoneali presenti: ${val('p_peritDett')}.\n\n`
+    : `- non evidenza di noduli peritoneali.\n\n`;
+
+  txt += 'STAGE FINALE:\n';
+  const formaLabel = forma === 'semicircolare' ? 'semicirconferenziale' : forma;
+  txt += `Lesione ${formaLabel} del ${sede} ${ct || '____'} ${cn || '____'} MRF${mrf === 'si' ? '+' : '-'} TD${td === 'si' ? '+' : '-'} EMVI${emvi === 'si' ? '+' : '-'}.\n`;
+
+  return txt;
+}
+
+function generateRistad(){
+  const risposta = radioVal('r_risposta');
+  const yct = radioVal('r_yct');
+  const muc = radioVal('r_muc');
+  const emvi = radioVal('r_emvi');
+  const sfint = radioVal('r_sfint');
+  const mrf = radioVal('r_mrf');
+  const lnMeso = radioVal('r_lnMeso');
+  const lnLat = radioVal('r_lnLat');
+  const td = radioVal('r_td');
+  const lnNonReg = radioVal('r_lnNonReg');
+  const ycn = radioVal('r_ycn');
+
+  const rispostaLabel = {
+    'cCR':'Risposta clinica completa (cCR) — fibrosi omogenea, assenza di restrizione focale della diffusione',
+    'near-cCR':'Risposta clinica quasi completa (near-cCR) — fibrosi prevalentemente omogenea, con o senza piccoli foci di restrizione della diffusione',
+    'minore':'Malattia residua minore — fibrosi eterogenea con segnale tumorale intermedio +/- restrizione focale della diffusione',
+    'maggiore':'Malattia residua maggiore — massa solida persistente con restrizione della diffusione'
+  }[risposta] || '____';
+
+  const mucLabel = {
+    'no':'No',
+    'residuo':'Sì, residuo mucinoso di neoplasia primitivamente mucinosa',
+    'trasformazione':'Sì, trasformazione mucinosa di neoplasia primitivamente solida'
+  }[muc] || '____';
+
+  let mrfCause = [];
+  if(checked('r_mrfMalattia')) mrfCause.push('malattia residua');
+  if(checked('r_mrfFibrosi')) mrfCause.push('fibrosi con possibile malattia residua');
+  if(checked('r_mrfEmvi')) mrfCause.push('EMVI persistente');
+  if(checked('r_mrfLn')) mrfCause.push('linfonodo/deposito tumorale irregolare persistente');
+
+  let sfintDett = [];
+  if(checked('r_sfintInterno')) sfintDett.push('sfintere interno');
+  if(checked('r_sfintEsterno')) sfintDett.push('sfintere esterno (= ycT4b)');
+
+  let txt = '';
+  txt += 'REFERTO RM RETTO — RISTADIAZIONE DOPO TRATTAMENTO NEOADIUVANTE (ESGAR)\n';
+  txt += '='.repeat(60) + '\n\n';
+  txt += `Esame eseguito con sequenze ${val('r_tecnica')}.\n`;
+  if(document.getElementById('r_confronto').value.trim()){
+    txt += `Confronto con RM basale del: ${val('r_confronto')}\n`;
+  }
+  txt += '\n';
+
+  txt += 'STATO LOCALE DELLA NEOPLASIA\n\n';
+  txt += `Probabilità di malattia residua: ${rispostaLabel}\n`;
+  if(risposta === 'minore' || risposta === 'maggiore'){
+    txt += `Categoria ycT stimata (massima): ${yct || '____'}`;
+    if(yct === 'ycT4b') txt += ` — infiltrazione di: ${val('r_yctDett')}`;
+    txt += '\n';
+  }
+  txt += `Componente mucinosa: ${mucLabel}\n`;
+  txt += `Distanza dalla giunzione anorettale al margine inferiore della lesione residua (fibrosi inclusa): ${val('r_giunzione')} cm\n`;
+  txt += `Dimensioni della lesione residua (fibrosi inclusa): ${val('r_dimFibrosi')} cm\n`;
+  txt += `-> dimensioni stimate della malattia residua entro la fibrosi: ${val('r_dimResidua')} cm\n\n`;
+
+  txt += `ycEMVI: ${emvi === 'si' ? 'presente (persistenza di segnale sospetto in sede di EMVI primitiva)' : 'non presente'}\n`;
+  txt += `Invasione sfinterica: ${sfint === 'intersfinterico' ? 'spazio intersfinterico' + (sfintDett.length ? ' — ' + sfintDett.join(', ') : '') : 'non presente'}`;
+  if(document.getElementById('r_sfintDett').value.trim()) txt += ` (${val('r_sfintDett')})`;
+  txt += '\n\n';
+
+  txt += 'COINVOLGIMENTO DELLA FASCIA MESORETTALE (ycMRF)\n\n';
+  txt += `Coinvolgimento della MRF (margine <=1 mm): ${mrf === 'si' ? 'Sì' : 'No'}\n`;
+  if(mrf === 'si'){
+    txt += `Causa: ${mrfCause.length ? mrfCause.join(', ') : '____'}\n`;
+    txt += `Sede: ore ${val('r_mrfSede')}\n`;
+  }
+  txt += '\n';
+
+  txt += 'LINFONODI E DEPOSITI TUMORALI\n\n';
+  txt += `Linfonodi mesorettali: ${lnMeso === 'ycN0' ? 'ycN0' : 'possibile ycN+ (linfonodo residuo con asse corto >=5 mm o segnale mucinoso)'}\n`;
+  txt += lnLat === 'presenti'
+    ? `Linfonodi laterali: precedentemente aumentati di dimensioni — attuali ${val('r_lnLatAttuale')} cm, erano ${val('r_lnLatBasale')} cm al basale\n`
+    : `Linfonodi laterali: N/A (nessun linfonodo laterale sospetto al basale)\n`;
+  txt += td === 'si'
+    ? `Depositi tumorali persistenti: Sì — ${val('r_tdDett')}\n`
+    : `Depositi tumorali persistenti: No\n`;
+  txt += lnNonReg === 'presenti'
+    ? `Linfonodi non regionali (categoria cM): precedentemente aumentati di dimensioni — attuali ${val('r_lnNonRegAttuale')} cm, erano ${val('r_lnNonRegBasale')} cm al basale\n`
+    : `Linfonodi non regionali (categoria cM): N/A\n`;
+  txt += `\nCATEGORIA ycN STIMATA: ${ycn}\n\n`;
+
+  txt += 'STAGE FINALE (sintesi):\n';
+  txt += `${rispostaLabel.split(' — ')[0]}${(risposta==='minore'||risposta==='maggiore') ? ' ' + (yct||'____') : ''} ${ycn} ycMRF${mrf==='si'?'+':'-'} ycEMVI${emvi==='si'?'+':'-'}.\n`;
+
+  return txt;
+}
+
+function generate(){
+  const txt = mode === 'primaria' ? generatePrimaria() : generateRistad();
+  document.getElementById('output').textContent = txt;
+}
+
+document.getElementById('form-pane').addEventListener('input', generate);
+document.getElementById('form-pane').addEventListener('change', generate);
+
+document.getElementById('btnModePrimaria').addEventListener('click', ()=>{
+  mode = 'primaria';
+  document.getElementById('btnModePrimaria').classList.add('active');
+  document.getElementById('btnModeRistad').classList.remove('active');
+  document.getElementById('panel-primaria').classList.add('active');
+  document.getElementById('panel-ristad').classList.remove('active');
+  generate();
+});
+document.getElementById('btnModeRistad').addEventListener('click', ()=>{
+  mode = 'ristad';
+  document.getElementById('btnModeRistad').classList.add('active');
+  document.getElementById('btnModePrimaria').classList.remove('active');
+  document.getElementById('panel-ristad').classList.add('active');
+  document.getElementById('panel-primaria').classList.remove('active');
+  generate();
+});
+
+document.getElementById('btnCopy').addEventListener('click', async ()=>{
+  const text = document.getElementById('output').textContent;
+  try{
+    await navigator.clipboard.writeText(text);
+    setStatus('Referto copiato negli appunti.');
+  }catch(e){
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      setStatus('Referto copiato negli appunti.');
+    }catch(e2){
+      setStatus('Copia non riuscita: seleziona e copia manualmente.');
+    }
+  }
+});
+
+document.getElementById('btnDownload').addEventListener('click', ()=>{
+  const text = document.getElementById('output').textContent;
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = mode === 'primaria' ? 'referto_retto_stadiazione_primaria.txt' : 'referto_retto_ristadiazione.txt';
+  a.click();
+  setStatus('File .txt scaricato.');
+});
+
+document.getElementById('btnPrint').addEventListener('click', ()=>{ window.print(); });
+
+function setStatus(msg){
+  const s = document.getElementById('status');
+  s.textContent = msg;
+  setTimeout(()=>{ if(s.textContent===msg) s.textContent=''; }, 3500);
+}
+
+generate();
+</script>
+</body>
+</html>
