@@ -164,12 +164,30 @@
         <label class="field"><span class="lab">Estensione longitudinale (cm)</span><input type="text" id="p_estensione" class="narrow"></label>
         <label class="field"><span class="lab">Margine inf. dalla giunzione anorettale (cm)</span><input type="text" id="p_giunzione" class="narrow"></label>
         <label class="field"><span class="lab">Margine inf. dal margine anale (cm)</span><input type="text" id="p_marginale" class="narrow"></label>
-        <div class="sub">Coinvolgimento sfinteri</div>
+        <div class="sub">Coinvolgimento sfintere/pavimento pelvico</div>
         <div class="opts">
-          <label class="opt"><input type="radio" name="p_sfinteri" value="no" checked> Non presente</label>
-          <label class="opt"><input type="radio" name="p_sfinteri" value="si"> Presente</label>
+          <label class="opt"><input type="checkbox" id="p_sfintInterno"> Sfintere interno</label>
+          <label class="opt"><input type="checkbox" id="p_sfintEsterno" class="p-sfint-upstage"> Sfintere esterno</label>
+          <label class="opt"><input type="checkbox" id="p_puborettale" class="p-sfint-upstage"> Puborettale</label>
+          <label class="opt"><input type="checkbox" id="p_elevatore" class="p-sfint-upstage"> Elevatore dell'ano</label>
         </div>
-        <label class="field"><span class="lab">Dettaglio coinvolgimento sfinteri</span><input type="text" id="p_sfinteriDett" class="wide"></label>
+        <div class="hint">L'invasione dello sfintere interno non modifica il cT. L'invasione di sfintere esterno, puborettale o elevatore configura cT4b (assegnato automaticamente qui sotto).</div>
+        <label class="field"><span class="lab">Lato</span>
+          <select id="p_sfintLato">
+            <option value="">—</option>
+            <option value="destro">Destro</option>
+            <option value="sinistro">Sinistro</option>
+            <option value="bilaterale">Bilaterale</option>
+          </select>
+        </label>
+        <label class="field"><span class="lab">Terzo del canale anale coinvolto</span>
+          <select id="p_sfintTerzo">
+            <option value="">—</option>
+            <option value="superiore">Superiore</option>
+            <option value="medio">Medio</option>
+            <option value="inferiore">Inferiore</option>
+          </select>
+        </label>
 
         <div class="sub">Relazione con la riflessione peritoneale anteriore</div>
         <div class="opts">
@@ -206,6 +224,7 @@
           <label class="opt"><input type="checkbox" id="p_mrfLesione"> Lesione primitiva</label>
           <label class="opt"><input type="checkbox" id="p_mrfTd"> Tumor deposit</label>
           <label class="opt"><input type="checkbox" id="p_mrfLn"> Linfonodo sospetto</label>
+          <label class="opt"><input type="checkbox" id="p_mrfEmvi"> EMVI</label>
         </div>
         <label class="field"><span class="lab">Sede coinvolgimento MRF</span><input type="text" id="p_mrfSede" class="wide" placeholder="ore ____"></label>
       </fieldset>
@@ -227,10 +246,18 @@
 
       <fieldset>
         <legend>EMVI</legend>
-        <div class="opts">
-          <label class="opt"><input type="radio" name="p_emvi" value="no" checked> Non presente</label>
-          <label class="opt"><input type="radio" name="p_emvi" value="si"> Presente</label>
-        </div>
+        <label class="field"><span class="lab">Grado EMVI (0-4)</span>
+          <select id="p_emviGrade">
+            <option value="">— non valutato —</option>
+            <option value="0">0 — nessuna estensione nodulare, nessun vaso adiacente</option>
+            <option value="1">1 — minima estensione/stranding, non in prossimità di vasi</option>
+            <option value="2">2 — stranding in prossimità di vasi, calibro normale, nessun segnale nel vaso</option>
+            <option value="3">3 — segnale tumorale nel vaso, contorno normale/lievemente espanso</option>
+            <option value="4">4 — segnale tumorale nel vaso con interruzione del contorno e/o espansione nodulare</option>
+          </select>
+        </label>
+        <div class="hint" id="emviComputata">EMVI: —</div>
+        <div class="hint">Gradi 3-4 = EMVI+. Gradi 0-2 = EMVI-.</div>
         <label class="field"><span class="lab">Dettaglio EMVI (sede, vaso)</span><input type="text" id="p_emviDett" class="wide"></label>
         <label class="field"><span class="lab">Serie/immagine di riferimento</span><input type="text" id="p_emviSerie" class="wide"></label>
       </fieldset>
@@ -241,14 +268,16 @@
           <label class="opt"><input type="radio" name="p_lnPresente" value="no" checked> Non presenti</label>
           <label class="opt"><input type="radio" name="p_lnPresente" value="si"> Presenti</label>
         </div>
+        <div class="hint">Criteri di sospetto: mesorettale ≥9 mm o segnale mucinoso; linfonodo laterale (otturatorio/iliaco interno) ≥7 mm.</div>
         <div id="p_ln_container"></div>
         <button type="button" class="btn-add" id="p_lnAdd">+ Aggiungi gruppo linfonodale</button>
         <div class="sub" style="margin-top:10px">Categoria cN</div>
         <div class="opts">
-          <label class="opt"><input type="radio" name="p_cn" value="cN0"> cN0</label>
-          <label class="opt"><input type="radio" name="p_cn" value="cN1"> cN1 (1–2 linfonodi sospetti)</label>
-          <label class="opt"><input type="radio" name="p_cn" value="cN2"> cN2 (≥3 linfonodi sospetti)</label>
+          <label class="opt"><input type="radio" name="p_cn" value="cN0"> cN0 — nessun linfonodo sospetto</label>
+          <label class="opt"><input type="radio" name="p_cn" value="possibile"> Possibile cN+ (borderline/ambiguo)</label>
+          <label class="opt"><input type="radio" name="p_cn" value="cN+"> cN+ (francamente patologico o con fattori di rischio aggiuntivi)</label>
         </div>
+        <label class="field"><span class="lab">Livello linfonodo sospetto più prossimale</span><input type="text" id="p_lnLivello" class="wide" placeholder="es. lungo i vasi presacrali, livello S2"></label>
       </fieldset>
 
       <fieldset>
@@ -273,6 +302,12 @@
           <label class="opt"><input type="radio" name="p_perit" value="si"> Noduli peritoneali presenti</label>
         </div>
         <label class="field"><span class="lab">Dettaglio noduli peritoneali</span><input type="text" id="p_peritDett" class="wide"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Gruppo di rischio RM (calcolato)</legend>
+        <div class="hint">Calcolato da cT, MRF, EMVI, linfonodi laterali e tumor deposit, secondo i criteri di malattia localmente avanzata (ESGAR 2026 / linee guida olandesi). cT4a isolato e N+ mesorettale isolato non definiscono da soli l'alto rischio.</div>
+        <div id="rischioComputato" style="font-weight:700; font-size:13.5px; padding:8px 10px; border-radius:6px; background:#f1e4e2; color:var(--accent);">Gruppo di rischio: —</div>
       </fieldset>
 
     </div>
@@ -318,11 +353,18 @@
 
       <fieldset>
         <legend>ycEMVI e invasione sfinterica</legend>
-        <div class="opts">
-          <label class="opt"><input type="radio" name="r_emvi" value="no" checked> ycEMVI non presente</label>
-          <label class="opt"><input type="radio" name="r_emvi" value="si"> ycEMVI presente</label>
-        </div>
-        <label class="field"><span class="lab">Se presente, dove</span><input type="text" id="r_emviDove" class="wide"></label>
+        <label class="field"><span class="lab">Grado yEMVI (0-4)</span>
+          <select id="r_emviGrade">
+            <option value="">— non valutato —</option>
+            <option value="0">0 — nessuna estensione nodulare, nessun vaso adiacente</option>
+            <option value="1">1 — minima estensione/stranding, non in prossimità di vasi</option>
+            <option value="2">2 — stranding in prossimità di vasi, calibro normale, nessun segnale nel vaso</option>
+            <option value="3">3 — segnale tumorale nel vaso, contorno normale/lievemente espanso</option>
+            <option value="4">4 — segnale tumorale nel vaso con interruzione del contorno e/o espansione nodulare</option>
+          </select>
+        </label>
+        <div class="hint">Gradi 3-4 = yEMVI+. Gradi 0-2 = yEMVI-.</div>
+        <label class="field"><span class="lab">Se presente (grado ≥3), dove</span><input type="text" id="r_emviDove" class="wide"></label>
         <div class="sub">Invasione sfinterica</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="r_sfint" value="no" checked> Non presente</label>
@@ -542,6 +584,95 @@ document.getElementById('p_sede').addEventListener('change', generatePrimariaAut
 document.getElementById('p_oreDa').addEventListener('input', generatePrimariaAuto);
 document.getElementById('p_oreA').addEventListener('input', generatePrimariaAuto);
 
+// ---------- EMVI grading (ESGAR 2026: grado 0-2 = EMVI-, 3-4 = EMVI+) ----------
+function deriveEmviSign(grade){
+  if(grade === '' || grade === undefined || grade === null) return '';
+  const g = parseInt(grade, 10);
+  if(isNaN(g)) return '';
+  return g >= 3 ? '+' : '-';
+}
+function updateEmviDisplay(){
+  const grade = v('p_emviGrade');
+  const sign = deriveEmviSign(grade);
+  document.getElementById('emviComputata').textContent =
+    grade ? `EMVI: grado ${grade} → EMVI${sign}` : 'EMVI: —';
+}
+document.getElementById('p_emviGrade').addEventListener('change', ()=>{ updateEmviDisplay(); updateRiskDisplay(); });
+
+// ---------- sfintere/pavimento pelvico: auto cT4b se strato striato coinvolto ----------
+function buildSfintere(){
+  const interno = checked('p_sfintInterno');
+  const esterno = checked('p_sfintEsterno');
+  const puborettale = checked('p_puborettale');
+  const elevatore = checked('p_elevatore');
+  const lato = v('p_sfintLato');
+  const terzo = v('p_sfintTerzo');
+  const layers = [];
+  if(interno) layers.push('sfintere interno');
+  if(esterno) layers.push('sfintere esterno');
+  if(puborettale) layers.push('puborettale');
+  if(elevatore) layers.push("elevatore dell'ano");
+  const upstages = esterno || puborettale || elevatore;
+  if(layers.length === 0) return { text: '', upstages: false };
+  let txt = '- coinvolgimento sfintere/pavimento pelvico: ' + layers.join(', ');
+  if(lato) txt += `, lato ${lato}`;
+  if(terzo) txt += `, terzo ${terzo} del canale anale`;
+  txt += upstages ? ' (configura cT4b)' : ' (non modifica il cT)';
+  txt += '\n';
+  return { text: txt, upstages };
+}
+document.querySelectorAll('.p-sfint-upstage').forEach(el=>{
+  el.addEventListener('change', ()=>{
+    const info = buildSfintere();
+    if(info.upstages){
+      const ct4b = document.querySelector('input[name="p_ct"][value="cT4b"]');
+      if(ct4b) ct4b.checked = true;
+    }
+    updateRiskDisplay();
+    generatePrimariaAuto();
+  });
+});
+document.getElementById('p_sfintInterno').addEventListener('change', ()=>{ updateRiskDisplay(); generatePrimariaAuto(); });
+document.getElementById('p_sfintLato').addEventListener('change', generatePrimariaAuto);
+document.getElementById('p_sfintTerzo').addEventListener('change', generatePrimariaAuto);
+
+// ---------- gruppo di rischio RM (localmente avanzato vs basso rischio) ----------
+function computeRiskGroup(){
+  const ct = radioVal('p_ct');
+  const mrf = radioVal('p_mrf');
+  const emviGrade = v('p_emviGrade');
+  const emviSign = deriveEmviSign(emviGrade);
+  const tdPresente = radioVal('p_tdPresente');
+  const lnEntries = lnList.getEntries(['sede','numero','asse']);
+  const lateralSites = ['otturatorio','iliaco interno'];
+  const hasLateralPositive = lnEntries.some(e => lateralSites.includes(e.sede) && (e.numero || e.asse));
+
+  const reasons = [];
+  if(ct === 'cT4b') reasons.push('cT4b');
+  if(mrf === 'si') reasons.push('MRF+');
+  if(hasLateralPositive) reasons.push('linfonodo laterale sospetto');
+  if(emviSign === '+') reasons.push(`EMVI+ (grado ${emviGrade})`);
+  if(tdPresente === 'si') reasons.push('tumor deposit presente');
+
+  if(!ct && !mrf && !emviGrade && !tdPresente && lnEntries.length === 0){
+    return { label: '—', reasons: [] };
+  }
+  if(reasons.length > 0) return { label: 'Localmente avanzato (alto rischio)', reasons };
+  return { label: 'Basso rischio (non localmente avanzato)', reasons: [] };
+}
+function updateRiskDisplay(){
+  const { label, reasons } = computeRiskGroup();
+  const el = document.getElementById('rischioComputato');
+  if(!el) return;
+  el.textContent = 'Gruppo di rischio: ' + label + (reasons.length ? ' — criteri: ' + reasons.join(', ') : '');
+}
+document.querySelectorAll('input[name="p_ct"]').forEach(el=>el.addEventListener('change', updateRiskDisplay));
+document.querySelectorAll('input[name="p_mrf"]').forEach(el=>el.addEventListener('change', updateRiskDisplay));
+document.querySelectorAll('input[name="p_tdPresente"]').forEach(el=>el.addEventListener('change', updateRiskDisplay));
+document.getElementById('p_ln_container').addEventListener('input', updateRiskDisplay);
+new MutationObserver(updateRiskDisplay).observe(document.getElementById('p_ln_container'), { childList: true });
+new MutationObserver(updateRiskDisplay).observe(document.getElementById('p_td_container'), { childList: true });
+
 // full regeneration only for morphology-linked fields (auto), everything else needs manual "Rigenera"
 let mode = 'primaria';
 let hasGeneratedOnce = false;
@@ -578,7 +709,6 @@ function buildLocalizzazione(){
   const estensione = v('p_estensione');
   const giunzione = v('p_giunzione');
   const marginale = v('p_marginale');
-  const sfinteri = radioVal('p_sfinteri');
   const peritoneo = radioVal('p_peritoneo');
   const peritoneoCm = v('p_peritoneoCm');
   const pube = radioVal('p_pube');
@@ -595,8 +725,7 @@ function buildLocalizzazione(){
   lines += line('- estensione longitudinale', estensione ? estensione + ' cm' : '');
   lines += line('- margine inferiore dalla giunzione anorettale', giunzione ? giunzione + ' cm' : '');
   lines += line('- margine inferiore dal margine anale', marginale ? marginale + ' cm' : '');
-  if(sfinteri === 'si') lines += line('- coinvolgimento sfinteri', 'presente' + (v('p_sfinteriDett') ? ' — ' + v('p_sfinteriDett') : ''));
-  else if(sfinteri === 'no') lines += '- coinvolgimento sfinteri: non presente\n';
+  lines += buildSfintere().text;
 
   const peritoneoTxt = relLabel(peritoneo, peritoneoCm);
   if(peritoneoTxt) lines += line('- relazione con la riflessione peritoneale anteriore', peritoneoTxt);
@@ -616,6 +745,7 @@ function buildMRF(){
     if(checked('p_mrfLesione')) cause.push('lesione primitiva');
     if(checked('p_mrfTd')) cause.push('tumor deposit');
     if(checked('p_mrfLn')) cause.push('linfonodo sospetto');
+    if(checked('p_mrfEmvi')) cause.push('EMVI');
     let txt = 'MRF:\n- coinvolta';
     if(dist) txt += ` (distanza minima tumore-MRF: ${dist} mm)`;
     if(cause.length) txt += `, da parte di: ${cause.join(', ')}`;
@@ -639,38 +769,50 @@ function buildCT(){
 }
 
 function buildEMVI_primaria(){
-  const emvi = radioVal('p_emvi');
-  if(emvi === 'si'){
-    let txt = 'EMVI:\npresente';
-    if(v('p_emviDett')) txt += ` — ${v('p_emviDett')}`;
-    if(v('p_emviSerie')) txt += ` (serie/immagine: ${v('p_emviSerie')})`;
-    return txt + '\n\n';
-  }
-  if(emvi === 'no') return 'EMVI:\nnon presente\n\n';
-  return '';
+  const grade = v('p_emviGrade');
+  if(!grade) return '';
+  const sign = deriveEmviSign(grade);
+  let txt = 'EMVI:\n';
+  txt += `grado ${grade} (EMVI${sign})`;
+  if(v('p_emviDett')) txt += ` — ${v('p_emviDett')}`;
+  if(v('p_emviSerie')) txt += ` (serie/immagine: ${v('p_emviSerie')})`;
+  return txt + '\n\n';
 }
 
 function buildLinfonodiPrimaria(){
   const presente = radioVal('p_lnPresente');
   const cn = radioVal('p_cn');
-  let txt = 'LINFONODI REGIONALI SOSPETTI:\n';
+  const cnLabel = { 'cN0':'cN0', 'possibile':'possibile cN+', 'cN+':'cN+' }[cn] || '';
+  const lateralSites = ['otturatorio','iliaco interno'];
+  let txt = 'LINFONODI SOSPETTI:\n';
   let any = false;
+  let lateralEntries = [];
+
   if(presente === 'si'){
     const entries = lnList.getEntries(['sede','numero','asse']);
     if(entries.length){
       any = true;
+      txt += '- regionali (mesoretto, presacrali e laterali):\n';
       entries.forEach(e=>{
-        txt += `- ${e.sede || '____'}: ${e.numero ? e.numero + ' linfonodo/i' : '____'}, asse corto ${e.asse || '____'} mm\n`;
+        txt += `  · ${e.sede || '____'}: ${e.numero ? e.numero + ' linfonodo/i' : '____'}, asse corto ${e.asse || '____'} mm\n`;
+        if(lateralSites.includes(e.sede)) lateralEntries.push(e);
       });
     }
   } else if(presente === 'no'){
     txt += '- non presenti\n';
     any = true;
   }
-  if(cn){
-    txt += `- categoria: ${cn}\n`;
+
+  if(lateralEntries.length){
     any = true;
+    txt += '- linfonodi laterali (evidenziati per pianificazione RT/chirurgica):\n';
+    lateralEntries.forEach(e=>{
+      txt += `  · ${e.sede}: ${e.numero ? e.numero + ' linfonodo/i' : '____'}, asse corto ${e.asse || '____'} mm\n`;
+    });
   }
+
+  if(v('p_lnLivello')){ txt += `- livello del linfonodo sospetto più prossimale: ${v('p_lnLivello')}\n`; any = true; }
+  if(cnLabel){ txt += `- categoria cN: ${cnLabel}\n`; any = true; }
   return any ? txt + '\n' : '';
 }
 
@@ -707,6 +849,15 @@ function buildMetastasiPrimaria(){
   return any ? txt + '\n' : '';
 }
 
+function buildGruppoRischioText(){
+  const risk = computeRiskGroup();
+  if(risk.label === '—') return '';
+  let txt = 'GRUPPO DI RISCHIO RM:\n';
+  txt += risk.label;
+  if(risk.reasons.length) txt += ` — criteri: ${risk.reasons.join(', ')}`;
+  return txt + '\n\n';
+}
+
 function buildStageFinalePrimaria(){
   const { forma } = computeForma();
   const override = v('p_formaOverride');
@@ -714,20 +865,22 @@ function buildStageFinalePrimaria(){
   const sede = document.getElementById('p_sede').value;
   const ct = radioVal('p_ct');
   const cn = radioVal('p_cn');
+  const cnLabel = { 'cN0':'cN0', 'possibile':'cN+ (possibile)', 'cN+':'cN+' }[cn] || '';
   const mrf = radioVal('p_mrf');
   const tdPresente = radioVal('p_tdPresente');
-  const emvi = radioVal('p_emvi');
+  const emviGrade = v('p_emviGrade');
+  const emviSign = deriveEmviSign(emviGrade);
 
-  if(!ct && !cn && !mrf) return '';
+  if(!ct && !cnLabel && !mrf) return '';
 
   let sentence = 'Lesione';
   if(finalForma) sentence += ' ' + finalForma;
   sentence += ` del ${sede}`;
   if(ct) sentence += ` ${ct}`;
-  if(cn) sentence += ` ${cn}`;
+  if(cnLabel) sentence += ` ${cnLabel}`;
   if(mrf) sentence += ` MRF${mrf === 'si' ? '+' : '-'}`;
   if(tdPresente) sentence += ` TD${tdPresente === 'si' ? '+' : '-'}`;
-  if(emvi) sentence += ` EMVI${emvi === 'si' ? '+' : '-'}`;
+  if(emviSign) sentence += ` EMVI${emviSign}`;
   sentence += '.\n';
 
   return 'STAGE FINALE:\n' + sentence;
@@ -749,6 +902,7 @@ function generatePrimaria(){
   txt += buildLinfonodiPrimaria();
   txt += buildTumorDepositPrimaria();
   txt += buildMetastasiPrimaria();
+  txt += buildGruppoRischioText();
   txt += buildStageFinalePrimaria();
 
   return txt.trim() + '\n';
@@ -759,7 +913,8 @@ function generateRistad(){
   const risposta = radioVal('r_risposta');
   const yct = radioVal('r_yct');
   const muc = radioVal('r_muc');
-  const emvi = radioVal('r_emvi');
+  const emviGrade = v('r_emviGrade');
+  const emviSign = deriveEmviSign(emviGrade);
   const sfint = radioVal('r_sfint');
   const mrf = radioVal('r_mrf');
   const lnMeso = radioVal('r_lnMeso');
@@ -802,8 +957,10 @@ function generateRistad(){
   if(statoLocale) txt += 'STATO LOCALE DELLA NEOPLASIA:\n' + statoLocale + '\n';
 
   let emviTxt = '';
-  if(emvi === 'si') emviTxt = 'presente' + (v('r_emviDove') ? ` — ${v('r_emviDove')}` : '');
-  else if(emvi === 'no') emviTxt = 'non presente';
+  if(emviGrade){
+    emviTxt = `grado ${emviGrade} (yEMVI${emviSign})`;
+    if(emviSign === '+' && v('r_emviDove')) emviTxt += ` — ${v('r_emviDove')}`;
+  }
   let sfintTxt = '';
   if(sfint === 'intersfinterico'){
     let d = [];
@@ -887,13 +1044,13 @@ function generateRistad(){
   if(v('r_metaConfronto')) metaBlock += line('Confronto rispetto al basale', v('r_metaConfronto'));
   if(metaBlock) txt += 'METASTASI PELVICHE:\n' + metaBlock + '\n';
 
-  if(risposta || ycn || mrf || emvi){
+  if(risposta || ycn || mrf || emviGrade){
     let sentence = '';
     if(rispostaLabel) sentence += rispostaLabel.split(' — ')[0];
     if((risposta === 'minore' || risposta === 'maggiore') && yct) sentence += ' ' + yct;
     if(ycn) sentence += ' ' + ycn;
     if(mrf) sentence += ` ycMRF${mrf === 'si' ? '+' : '-'}`;
-    if(emvi) sentence += ` ycEMVI${emvi === 'si' ? '+' : '-'}`;
+    if(emviSign) sentence += ` ycEMVI${emviSign}`;
     if(sentence.trim()) txt += 'STAGE FINALE (sintesi):\n' + sentence.trim() + '.\n';
   }
 
@@ -963,7 +1120,16 @@ document.getElementById('btnPrint').addEventListener('click', ()=>{
   window.print();
 });
 
+document.getElementById('r_sfintEsterno').addEventListener('change', ()=>{
+  if(checked('r_sfintEsterno')){
+    const ycT4b = document.querySelector('input[name="r_yct"][value="ycT4b"]');
+    if(ycT4b) ycT4b.checked = true;
+  }
+});
+
 updateFormaDisplay();
+updateEmviDisplay();
+updateRiskDisplay();
 generate();
 </script>
 </body>
