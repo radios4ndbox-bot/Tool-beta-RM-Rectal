@@ -760,11 +760,22 @@ function buildMRF(){
   return '';
 }
 
+const CT_LABELS = {
+  'cT1':'invasione sottomucosa',
+  'cT2':'invasione muscolare propria, senza estensione extramurale',
+  'cT3a':'estensione extramurale <1 mm',
+  'cT3b':'estensione extramurale 1–5 mm',
+  'cT3c':'estensione extramurale 5–15 mm',
+  'cT3d':'estensione extramurale >15 mm',
+  'cT4a':'infiltrazione peritoneo viscerale',
+  'cT4b':'infiltrazione organi/strutture adiacenti'
+};
 function buildCT(){
   const ct = radioVal('p_ct');
   if(!ct) return '';
   let txt = 'cT STAGE:\n' + ct;
-  if(ct === 'cT4b' && v('p_ctNote')) txt += ` — infiltrazione di: ${v('p_ctNote')}`;
+  if(CT_LABELS[ct]) txt += ` — ${CT_LABELS[ct]}`;
+  if(ct === 'cT4b' && v('p_ctNote')) txt += ` (${v('p_ctNote')})`;
   return txt + '\n\n';
 }
 
@@ -946,8 +957,16 @@ function generateRistad(){
   let statoLocale = '';
   if(rispostaLabel) statoLocale += line('Probabilità di malattia residua', rispostaLabel);
   if((risposta === 'minore' || risposta === 'maggiore') && yct){
+    const YCT_LABELS = {
+      'ycT1-2':'invasione confinata alla parete',
+      'ycT3ab':'crescita extramurale ≤5 mm',
+      'ycT3cd':'crescita extramurale >5 mm',
+      'ycT4a':'infiltrazione peritoneo/riflessione peritoneale',
+      'ycT4b':'infiltrazione organi/strutture adiacenti'
+    };
     let yctTxt = yct;
-    if(yct === 'ycT4b' && v('r_yctDett')) yctTxt += ` — infiltrazione di: ${v('r_yctDett')}`;
+    if(YCT_LABELS[yct]) yctTxt += ` — ${YCT_LABELS[yct]}`;
+    if(yct === 'ycT4b' && v('r_yctDett')) yctTxt += ` (infiltrazione di: ${v('r_yctDett')})`;
     statoLocale += line('Categoria ycT stimata (massima)', yctTxt);
   }
   if(mucLabel) statoLocale += line('Componente mucinosa', mucLabel);
