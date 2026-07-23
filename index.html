@@ -175,9 +175,15 @@
 
       <fieldset>
         <legend>Localizzazione</legend>
-        <label class="field"><span class="lab">Estensione longitudinale (cm)</span><input type="text" id="p_estensione" class="narrow"></label>
-        <label class="field"><span class="lab">Margine inf. dalla giunzione anorettale (cm)</span><input type="text" id="p_giunzione" class="narrow"></label>
-        <label class="field"><span class="lab">Margine inf. dal margine anale (cm)</span><input type="text" id="p_marginale" class="narrow"></label>
+        <label class="field"><span class="lab">Unità di misura (estensione/margini)</span>
+          <select id="p_locUnit" class="unit">
+            <option value="cm" selected>cm</option>
+            <option value="mm">mm</option>
+          </select>
+        </label>
+        <label class="field"><span class="lab">Estensione longitudinale</span><input type="text" id="p_estensione" class="narrow"></label>
+        <label class="field"><span class="lab">Margine inf. dalla giunzione anorettale</span><input type="text" id="p_giunzione" class="narrow"></label>
+        <label class="field"><span class="lab">Margine inf. dal margine anale</span><input type="text" id="p_marginale" class="narrow"></label>
         <div class="sub">Coinvolgimento sfintere/pavimento pelvico</div>
         <div class="opts">
           <label class="opt"><input type="checkbox" id="p_sfintInterno"> Sfintere interno</label>
@@ -209,7 +215,7 @@
           <label class="opt"><input type="radio" name="p_peritoneo" value="sotto"> Sotto il piano di riflessione</label>
           <label class="opt"><input type="radio" name="p_peritoneo" value="cavallo"> A cavallo del piano</label>
         </div>
-        <label class="field"><span class="lab">Estensione oltre il piano, se a cavallo (cm)</span><input type="text" id="p_peritoneoCm" class="narrow"></label>
+        <label class="field"><span class="lab">Estensione oltre il piano, se a cavallo</span><input type="text" id="p_peritoneoCm" class="narrow"></label>
 
         <div class="sub">Relazione con linea pube–promontorio sacrale</div>
         <div class="opts">
@@ -232,7 +238,13 @@
           <label class="opt"><input type="radio" name="p_mrf" value="no" checked> Non coinvolta</label>
           <label class="opt"><input type="radio" name="p_mrf" value="si"> Coinvolta</label>
         </div>
-        <label class="field"><span class="lab">Distanza minima tumore-MRF (mm)</span><input type="text" id="p_mrfDist" class="narrow"></label>
+        <label class="field"><span class="lab">Unità di misura distanza</span>
+          <select id="p_mrfDistUnit" class="unit">
+            <option value="mm" selected>mm</option>
+            <option value="cm">cm</option>
+          </select>
+        </label>
+        <label class="field"><span class="lab">Distanza minima tumore-MRF</span><input type="text" id="p_mrfDist" class="narrow"></label>
         <div class="sub">Se coinvolta, causa (una o più)</div>
         <div class="opts">
           <label class="opt"><input type="checkbox" id="p_mrfLesione"> Lesione primitiva</label>
@@ -295,6 +307,12 @@
           <label class="opt"><input type="radio" name="p_lnPresente" value="si"> Presenti</label>
         </div>
         <div class="hint">Solo stazioni regionali: mesorettale, presacrale, otturatorio, iliaco interno. Criteri di sospetto: mesorettale ≥9 mm o segnale mucinoso; laterale (otturatorio/iliaco interno) ≥7 mm. Le stazioni non regionali (iliaco esterno/comune, inguinale) vanno in Metastasi pelviche.</div>
+        <label class="field"><span class="lab">Unità di misura asse corto</span>
+          <select id="p_lnUnit" class="unit">
+            <option value="mm" selected>mm</option>
+            <option value="cm">cm</option>
+          </select>
+        </label>
         <div id="p_ln_container"></div>
         <button type="button" class="btn-add" id="p_lnAdd">+ Aggiungi gruppo linfonodale</button>
         <div class="sub" style="margin-top:10px">Categoria cN</div>
@@ -389,9 +407,15 @@
           <label class="opt"><input type="radio" name="r_muc" value="trasformazione"> Sì, trasformazione mucinosa</label>
         </div>
 
-        <label class="field"><span class="lab">Distanza dalla giunzione anorettale (cm)</span><input type="text" id="r_giunzione" class="narrow"></label>
-        <label class="field"><span class="lab">Dimensioni lesione residua/fibrosi (cm)</span><input type="text" id="r_dimFibrosi" class="narrow"></label>
-        <label class="field"><span class="lab">Dimensioni stimate malattia residua entro la fibrosi (cm)</span><input type="text" id="r_dimResidua" class="narrow"></label>
+        <label class="field"><span class="lab">Unità di misura</span>
+          <select id="r_statoUnit" class="unit">
+            <option value="cm" selected>cm</option>
+            <option value="mm">mm</option>
+          </select>
+        </label>
+        <label class="field"><span class="lab">Distanza dalla giunzione anorettale</span><input type="text" id="r_giunzione" class="narrow"></label>
+        <label class="field"><span class="lab">Dimensioni lesione residua/fibrosi</span><input type="text" id="r_dimFibrosi" class="narrow"></label>
+        <label class="field"><span class="lab">Dimensioni stimate malattia residua entro la fibrosi</span><input type="text" id="r_dimResidua" class="narrow"></label>
       </fieldset>
 
       <fieldset>
@@ -438,6 +462,12 @@
 
       <fieldset>
         <legend>Linfonodi</legend>
+        <label class="field"><span class="lab">Unità di misura dimensioni</span>
+          <select id="r_lnUnit" class="unit">
+            <option value="cm" selected>cm</option>
+            <option value="mm">mm</option>
+          </select>
+        </label>
         <div class="sub">Linfonodi mesorettali</div>
         <div class="opts">
           <label class="opt"><input type="radio" name="r_lnMeso" value="ycN0" checked> ycN0</label>
@@ -445,7 +475,7 @@
           <label class="opt"><input type="radio" name="r_lnMeso" value="ycN+"> ycN+ (definito)</label>
         </div>
         <label class="field"><span class="lab">Sede</span><input type="text" id="r_lnMesoSede" class="wide"></label>
-        <label class="field"><span class="lab">Numero</span><input type="text" id="r_lnMesoNum" class="narrow"> <span style="margin:0 6px">Dimensioni (cm)</span><input type="text" id="r_lnMesoDim" class="narrow"></label>
+        <label class="field"><span class="lab">Numero</span><input type="text" id="r_lnMesoNum" class="narrow"> <span style="margin:0 6px">Dimensioni</span><input type="text" id="r_lnMesoDim" class="narrow"></label>
 
         <div class="sub">Linfonodi laterali (otturatori/iliaci interni)</div>
         <div class="opts">
@@ -453,7 +483,7 @@
           <label class="opt"><input type="radio" name="r_lnLat" value="presenti"> Precedentemente aumentati di dimensioni</label>
         </div>
         <label class="field"><span class="lab">Sede</span><input type="text" id="r_lnLatSede" class="wide"></label>
-        <label class="field"><span class="lab">Numero</span><input type="text" id="r_lnLatNum" class="narrow"> <span style="margin:0 6px">Attuali (cm)</span><input type="text" id="r_lnLatAttuale" class="narrow"> <span style="margin:0 6px">erano (cm)</span><input type="text" id="r_lnLatBasale" class="narrow"></label>
+        <label class="field"><span class="lab">Numero</span><input type="text" id="r_lnLatNum" class="narrow"> <span style="margin:0 6px">Attuali</span><input type="text" id="r_lnLatAttuale" class="narrow"> <span style="margin:0 6px">erano</span><input type="text" id="r_lnLatBasale" class="narrow"></label>
 
         <div class="sub">Linfonodi non regionali (categoria cM)</div>
         <div class="opts">
@@ -461,7 +491,7 @@
           <label class="opt"><input type="radio" name="r_lnNonReg" value="presenti"> Precedentemente aumentati di dimensioni</label>
         </div>
         <label class="field"><span class="lab">Sede</span><input type="text" id="r_lnNonRegSede" class="wide"></label>
-        <label class="field"><span class="lab">Numero</span><input type="text" id="r_lnNonRegNum" class="narrow"> <span style="margin:0 6px">Attuali (cm)</span><input type="text" id="r_lnNonRegAttuale" class="narrow"> <span style="margin:0 6px">erano (cm)</span><input type="text" id="r_lnNonRegBasale" class="narrow"></label>
+        <label class="field"><span class="lab">Numero</span><input type="text" id="r_lnNonRegNum" class="narrow"> <span style="margin:0 6px">Attuali</span><input type="text" id="r_lnNonRegAttuale" class="narrow"> <span style="margin:0 6px">erano</span><input type="text" id="r_lnNonRegBasale" class="narrow"></label>
 
         <div class="sub">Categoria ycN stimata</div>
         <div class="opts">
@@ -530,7 +560,7 @@
       </select>
     </div>
     <div class="f"><span>Numero</span><input type="text" data-f="numero"></div>
-    <div class="f"><span>Asse corto (mm)</span><input type="text" data-f="asse"></div>
+    <div class="f"><span>Asse corto</span><input type="text" data-f="asse"></div>
   </div>
 </template>
 
@@ -782,6 +812,7 @@ function buildMorfologia(){
 }
 
 function buildLocalizzazione(){
+  const unit = v('p_locUnit') || 'cm';
   const estensione = v('p_estensione');
   const giunzione = v('p_giunzione');
   const marginale = v('p_marginale');
@@ -793,14 +824,14 @@ function buildLocalizzazione(){
   const relLabel = (val, cm) => {
     if(val === 'sopra') return 'sopra il piano';
     if(val === 'sotto') return 'sotto il piano';
-    if(val === 'cavallo') return 'a cavallo del piano' + (cm ? ` (estensione oltre il piano di circa ${cm} cm)` : '');
+    if(val === 'cavallo') return 'a cavallo del piano' + (cm ? ` (estensione oltre il piano di circa ${cm} ${unit})` : '');
     return '';
   };
 
   let lines = '';
-  lines += line('- estensione longitudinale', estensione ? estensione + ' cm' : '');
-  lines += line('- margine inferiore dalla giunzione anorettale', giunzione ? giunzione + ' cm' : '');
-  lines += line('- margine inferiore dal margine anale', marginale ? marginale + ' cm' : '');
+  lines += line('- estensione longitudinale', estensione ? estensione + ' ' + unit : '');
+  lines += line('- margine inferiore dalla giunzione anorettale', giunzione ? giunzione + ' ' + unit : '');
+  lines += line('- margine inferiore dal margine anale', marginale ? marginale + ' ' + unit : '');
   lines += buildSfintere().text;
 
   const peritoneoTxt = relLabel(peritoneo, peritoneoCm);
@@ -816,6 +847,7 @@ function buildLocalizzazione(){
 function buildMRF(){
   const mrf = radioVal('p_mrf');
   const dist = v('p_mrfDist');
+  const unit = v('p_mrfDistUnit') || 'mm';
   if(mrf === 'si'){
     let cause = [];
     if(checked('p_mrfLesione')) cause.push('lesione primitiva');
@@ -823,14 +855,14 @@ function buildMRF(){
     if(checked('p_mrfLn')) cause.push('linfonodo sospetto');
     if(checked('p_mrfEmvi')) cause.push('EMVI');
     let txt = 'MRF:\n- coinvolta';
-    if(dist) txt += ` (distanza minima tumore-MRF: ${dist} mm)`;
+    if(dist) txt += ` (distanza minima tumore-MRF: ${dist} ${unit})`;
     if(cause.length) txt += `, da parte di: ${cause.join(', ')}`;
     if(v('p_mrfSede')) txt += `, sede: ${v('p_mrfSede')}`;
     return txt;
   }
   if(mrf === 'no'){
     let txt = 'MRF:\n- non coinvolta';
-    if(dist) txt += ` (distanza minima tumore-MRF: ${dist} mm)`;
+    if(dist) txt += ` (distanza minima tumore-MRF: ${dist} ${unit})`;
     return txt;
   }
   return '';
@@ -859,6 +891,7 @@ function buildEMVI_primaria(){
 function buildLinfonodiPrimaria(){
   const presente = radioVal('p_lnPresente');
   const cn = radioVal('p_cn');
+  const unit = v('p_lnUnit') || 'mm';
   const cnLabel = { 'cN0':'cN0', 'possibile':'possibile cN+', 'cN+':'cN+' }[cn] || '';
   const lateralSites = ['otturatorio destro','otturatorio sinistro','iliaco interno destro','iliaco interno sinistro'];
   let txt = 'LINFONODI SOSPETTI:\n';
@@ -871,7 +904,7 @@ function buildLinfonodiPrimaria(){
       any = true;
       txt += '- regionali (mesoretto, presacrali e laterali):\n';
       entries.forEach(e=>{
-        txt += `  · ${e.sede || '____'}: ${e.numero ? e.numero + ' linfonodo/i' : '____'}, asse corto ${e.asse || '____'} mm\n`;
+        txt += `  · ${e.sede || '____'}: ${e.numero ? e.numero + ' linfonodo/i' : '____'}, asse corto ${e.asse || '____'} ${unit}\n`;
         if(lateralSites.includes(e.sede)) lateralEntries.push(e);
       });
     }
@@ -884,7 +917,7 @@ function buildLinfonodiPrimaria(){
     any = true;
     txt += '- linfonodi laterali (evidenziati per pianificazione RT/chirurgica):\n';
     lateralEntries.forEach(e=>{
-      txt += `  · ${e.sede}: ${e.numero ? e.numero + ' linfonodo/i' : '____'}, asse corto ${e.asse || '____'} mm\n`;
+      txt += `  · ${e.sede}: ${e.numero ? e.numero + ' linfonodo/i' : '____'}, asse corto ${e.asse || '____'} ${unit}\n`;
     });
   }
 
@@ -1066,6 +1099,7 @@ function buildStatoLocaleRistad(){
   }[muc] || '';
 
   let txt = '';
+  const unit = v('r_statoUnit') || 'cm';
   if(rispostaLabel) txt += line('Probabilità di malattia residua', rispostaLabel);
   if((risposta === 'minore' || risposta === 'maggiore') && yct){
     let yctTxt = yct;
@@ -1074,9 +1108,9 @@ function buildStatoLocaleRistad(){
     txt += line('Categoria ycT stimata (massima)', yctTxt);
   }
   if(mucLabel) txt += line('Componente mucinosa', mucLabel);
-  if(v('r_giunzione')) txt += line('Distanza dalla giunzione anorettale al margine inferiore della lesione residua', v('r_giunzione') + ' cm');
-  if(v('r_dimFibrosi')) txt += line('Dimensioni della lesione residua (fibrosi inclusa)', v('r_dimFibrosi') + ' cm');
-  if(v('r_dimResidua')) txt += line('-> dimensioni stimate della malattia residua entro la fibrosi', v('r_dimResidua') + ' cm');
+  if(v('r_giunzione')) txt += line('Distanza dalla giunzione anorettale al margine inferiore della lesione residua', v('r_giunzione') + ' ' + unit);
+  if(v('r_dimFibrosi')) txt += line('Dimensioni della lesione residua (fibrosi inclusa)', v('r_dimFibrosi') + ' ' + unit);
+  if(v('r_dimResidua')) txt += line('-> dimensioni stimate della malattia residua entro la fibrosi', v('r_dimResidua') + ' ' + unit);
 
   return txt ? trimTrail('STATO LOCALE DELLA NEOPLASIA:\n' + txt) : '';
 }
@@ -1130,6 +1164,7 @@ function buildLinfonodiRistad(){
   const lnLat = radioVal('r_lnLat');
   const lnNonReg = radioVal('r_lnNonReg');
   const ycn = radioVal('r_ycn');
+  const unit = v('r_lnUnit') || 'cm';
   let txt = '';
 
   if(lnMeso){
@@ -1138,7 +1173,7 @@ function buildLinfonodiRistad(){
       let dett = [];
       if(v('r_lnMesoSede')) dett.push('sede ' + v('r_lnMesoSede'));
       if(v('r_lnMesoNum')) dett.push('numero ' + v('r_lnMesoNum'));
-      if(v('r_lnMesoDim')) dett.push('dimensioni ' + v('r_lnMesoDim') + ' cm');
+      if(v('r_lnMesoDim')) dett.push('dimensioni ' + v('r_lnMesoDim') + ' ' + unit);
       if(dett.length) t += ' — ' + dett.join(', ');
     }
     txt += line('Linfonodi mesorettali', t);
@@ -1147,8 +1182,8 @@ function buildLinfonodiRistad(){
     let dett = [];
     if(v('r_lnLatSede')) dett.push('sede ' + v('r_lnLatSede'));
     if(v('r_lnLatNum')) dett.push('numero ' + v('r_lnLatNum'));
-    if(v('r_lnLatAttuale')) dett.push(`attuali ${v('r_lnLatAttuale')} cm`);
-    if(v('r_lnLatBasale')) dett.push(`erano ${v('r_lnLatBasale')} cm al basale`);
+    if(v('r_lnLatAttuale')) dett.push(`attuali ${v('r_lnLatAttuale')} ${unit}`);
+    if(v('r_lnLatBasale')) dett.push(`erano ${v('r_lnLatBasale')} ${unit} al basale`);
     txt += line('Linfonodi laterali', dett.length ? dett.join(', ') : 'precedentemente aumentati di dimensioni');
   } else if(lnLat === 'na'){
     txt += 'Linfonodi laterali: N/A\n';
@@ -1157,8 +1192,8 @@ function buildLinfonodiRistad(){
     let dett = [];
     if(v('r_lnNonRegSede')) dett.push('sede ' + v('r_lnNonRegSede'));
     if(v('r_lnNonRegNum')) dett.push('numero ' + v('r_lnNonRegNum'));
-    if(v('r_lnNonRegAttuale')) dett.push(`attuali ${v('r_lnNonRegAttuale')} cm`);
-    if(v('r_lnNonRegBasale')) dett.push(`erano ${v('r_lnNonRegBasale')} cm al basale`);
+    if(v('r_lnNonRegAttuale')) dett.push(`attuali ${v('r_lnNonRegAttuale')} ${unit}`);
+    if(v('r_lnNonRegBasale')) dett.push(`erano ${v('r_lnNonRegBasale')} ${unit} al basale`);
     txt += line('Linfonodi non regionali (cM)', dett.length ? dett.join(', ') : 'precedentemente aumentati di dimensioni');
   } else if(lnNonReg === 'na'){
     txt += 'Linfonodi non regionali (cM): N/A\n';
