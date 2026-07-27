@@ -140,7 +140,6 @@
         <div class="opts">
           <label class="opt"><input type="checkbox" id="p_compSolida"> Solida</label>
           <label class="opt"><input type="checkbox" id="p_compMucinosa"> Mucinosa</label>
-          <label class="opt"><input type="checkbox" id="p_compCistica"> Cistica</label>
         </div>
         <div class="sub">Parete coinvolta (seleziona una o più pareti)</div>
         <div class="opts">
@@ -261,6 +260,10 @@
           <label class="opt"><input type="checkbox" id="p_organoProstata" class="p-organo-upstage"> Prostata</label>
           <label class="opt"><input type="checkbox" id="p_organoVsDx" class="p-organo-upstage"> Vescicola seminale destra</label>
           <label class="opt"><input type="checkbox" id="p_organoVsSx" class="p-organo-upstage"> Vescicola seminale sinistra</label>
+          <label class="opt"><input type="checkbox" id="p_organoUtero" class="p-organo-upstage"> Utero</label>
+          <label class="opt"><input type="checkbox" id="p_organoVagina" class="p-organo-upstage"> Vagina</label>
+          <label class="opt"><input type="checkbox" id="p_organoOvaioDx" class="p-organo-upstage"> Ovaio destro</label>
+          <label class="opt"><input type="checkbox" id="p_organoOvaioSx" class="p-organo-upstage"> Ovaio sinistro</label>
           <label class="opt"><input type="checkbox" id="p_organoVescica" class="p-organo-upstage"> Vescica</label>
         </div>
         <div class="hint">Qualsiasi invasione di organo pelvico adiacente configura cT4b (assegnato automaticamente).</div>
@@ -672,12 +675,11 @@ function computeForma(){
   else forma = 'circonferenziale';
   return { forma, walls: checkedWalls };
 }
-const COMP_PLURAL = { 'solida':'solide', 'mucinosa':'mucinose', 'cistica':'cistiche' };
+const COMP_PLURAL = { 'solida':'solide', 'mucinosa':'mucinose' };
 function buildComposizioneText(){
   const comps = [];
   if(checked('p_compSolida')) comps.push('solida');
   if(checked('p_compMucinosa')) comps.push('mucinosa');
-  if(checked('p_compCistica')) comps.push('cistica');
   if(comps.length === 0) return '';
   if(comps.length === 1) return comps[0];
   const rest = comps.slice(1).map(c => COMP_PLURAL[c] || c);
@@ -737,6 +739,10 @@ function buildOrganiPelvici(){
   if(checked('p_organoProstata')) items.push('prostata');
   if(checked('p_organoVsDx')) items.push('vescicola seminale destra');
   if(checked('p_organoVsSx')) items.push('vescicola seminale sinistra');
+  if(checked('p_organoUtero')) items.push('utero');
+  if(checked('p_organoVagina')) items.push('vagina');
+  if(checked('p_organoOvaioDx')) items.push('ovaio destro');
+  if(checked('p_organoOvaioSx')) items.push('ovaio sinistro');
   if(checked('p_organoVescica')) items.push('vescica');
   if(items.length === 0) return '';
   let txt = 'ORGANI PELVICI:\n';
