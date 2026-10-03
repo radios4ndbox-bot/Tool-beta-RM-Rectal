@@ -62,7 +62,8 @@ nav{
 }
 .nav-brand{display:flex; flex-direction:column; gap:1px; min-width:0;}
 .nav-title{
-  font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+  /* niente maiuscolo forzato: StructuRad si scrive come nel logo */
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
   display:flex; align-items:center; gap:9px; white-space:nowrap;
 }
 .nav-title b{font-weight:500; color:var(--red-light);}
@@ -2102,7 +2103,7 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const fase = (t, da, a, curva) => (curva || ((x) => x))(clamp01((t - da) / (a - da)));
 
 /** Misure di ESGAR (ingombro reale delle lettere, non della riga) e
- *  impaginazione della riga finale logo · StructuRad × · ESGAR. */
+ *  impaginazione della riga finale: logo · ESGAR con la firma sotto. */
 function misuraIntro(){
   const W = window.innerWidth, H = window.innerHeight;
   const ctx = document.createElement('canvas').getContext('2d');
