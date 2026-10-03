@@ -363,13 +363,12 @@ nav.intro-in-corso .nav-right,
 
 /* ══════════════════════════════════════════════════════════════════
    SPLASH
-   Atto I   — ESGAR gigante, solo contorno, la camera scorre
-   Atto II  — il gradiente burgundy entra dietro, le lettere si
-              svuotano in nero, la camera si allontana
-   Atto III — il fondo si spegne, ESGAR diventa piccolo e si accende
-              del gradiente
-   Atto IV  — a sinistra si disegna il logo StructuRad, si compone
-              sotto ESGAR la firma "A StructuRad product", poi il sottotitolo
+   Tre inquadrature con stacchi netti, come nel video di riferimento:
+   A — ESGAR gigante a contorno che scorre, dietro entra il gradiente
+   B — stacco: ESGAR media sul gradiente entra scorrendo da destra
+   C — stacco: ESGAR piccola e accesa entra scorrendo da destra e si
+       ferma; a sinistra si disegna il logo, sotto compare la firma
+       "A StructuRad product", poi il sottotitolo
    Uscita   — il logo vola sulla barra e si porta su la pagina
    ══════════════════════════════════════════════════════════════════ */
 #splashScreen{
@@ -526,15 +525,24 @@ nav.intro-in-corso .nav-right,
           <stop offset=".8" stop-color="#B01E36"/>
           <stop offset="1" stop-color="#E23A4C"/>
         </linearGradient>
-        <linearGradient id="esgLuceGrad" x1="0" y1="1" x2="1" y2="0">
+        <linearGradient id="esgMaskGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0">
+          <stop id="esgMaskA" offset="1" stop-color="#fff"/>
+          <stop id="esgMaskB" offset="1" stop-color="#fff" stop-opacity=".12"/>
+        </linearGradient>
+        <mask id="esgMask" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000">
+          <rect x="-100000" y="-100000" width="200000" height="200000" fill="url(#esgMaskGrad)"/>
+        </mask>
+        <linearGradient id="esgLuceGrad" x1="0" y1="1" x2="1" y2="0" spreadMethod="reflect">
           <stop offset="0" stop-color="#5E1222"/>
           <stop offset=".5" stop-color="#B0213A"/>
           <stop offset="1" stop-color="#F0505F"/>
         </linearGradient>
       </defs>
       <rect id="esgFondo" fill="url(#esgFondoGrad)" opacity="0"/>
+      <g mask="url(#esgMask)">
       <text id="esgInk" x="0" y="0" text-anchor="middle" fill="#12070A" fill-opacity="0" stroke="#B5435C" stroke-opacity="0">ESGAR</text>
       <text id="esgLuce" x="0" y="0" text-anchor="middle" fill="url(#esgLuceGrad)" opacity="0">ESGAR</text>
+      </g>
     </svg>
     <div class="splash-logo" id="splashLogo">
       <div class="splash-logo-wrap">
@@ -2055,20 +2063,24 @@ liveUpdate();
 // accesi da classi sulla scena al momento giusto.
 // Tutti i tempi stanno in INTRO: unica fonte.
 // ============================================================
+// Tre inquadrature con stacchi netti, come nel video di riferimento:
+//   A — ESGAR gigante a contorno che scorre; dietro entra il gradiente
+//   B — stacco: ESGAR media sul gradiente entra scorrendo da destra
+//   C — stacco: ESGAR piccola e accesa sul fondo scuro entra scorrendo
+//       da destra e si ferma al suo posto; a sinistra si disegna il logo
 const INTRO = {
-  contorno: 350,      // il contorno di ESGAR compare
-  pan: 1150,          // fine della carrellata sulle lettere giganti
-  fondoDa: 750,       // il gradiente entra dietro le lettere
-  fondoA: 1350,
-  zoomFine: 2350,     // ESGAR intera, a tutta larghezza
-  spegneDa: 2350,     // il fondo si spegne, le lettere si accendono
-  spegneA: 3000,
-  logo: 3000,         // il logo si disegna a sinistra
-  scivola: 3050,      // ESGAR scivola a destra per fare posto
-  scivolaA: 3750,
-  firma: 3550,        // sotto ESGAR: "A StructuRad product"
-  sotto: 3950,        // sottotitolo
-  attesa: 5300,       // quando parte l'uscita
+  contorno: 250,      // A: il contorno compare
+  fondoDa: 330,       // A: il gradiente entra, le lettere si fanno nere
+  fondoA: 820,
+  staccoB: 950,       // B: ESGAR media
+  rivelaB: 600,       //    durata dello svelamento da sinistra a destra
+  staccoC: 1800,      // C: ESGAR piccola
+  entraC: 700,        //    durata dello scorrimento in posizione
+  rivelaC: 520,
+  logo: 2350,         // il logo si disegna a sinistra
+  firma: 2600,        // sotto ESGAR: "A StructuRad product"
+  sotto: 2850,        // sottotitolo
+  attesa: 3700,       // quando parte l'uscita
   volo: 800,
   dissolvenzaVelo: 340
 };
@@ -2125,30 +2137,44 @@ function misuraIntro(){
   };
 }
 
-/** La camera nel tempo: [cx, cy, z] in unita' del testo. */
+/** La camera nel tempo: [cx, cy, z] in unita' del testo.
+ *  Fra un'inquadratura e l'altra non c'e' interpolazione: e' uno stacco. */
 function camera(t, g){
   const L = g.lettere, W = g.W, H = g.H;
-  // atto I: lettere alte una volta e mezza lo schermo, si scorre da E verso A
-  const zGig = 1.55 * H / L.h;
-  const aI = [L.x0 + L.w * .16, L.cy + L.h * .08, zGig];
-  const bI = [L.x0 + L.w * .52, L.cy - L.h * .04, zGig * .9];
-  // fine atto II: parola intera a tutta larghezza
-  const zTutta = Math.min(.9 * W / L.w, .62 * H / L.h);
-  const cII = [L.cx, L.cy, zTutta];
-  // fine atto III: piccola, al centro
-  const dIII = [L.cx, L.cy, g.zFin];
-  // atto IV: scivola nella sua posizione nella riga
-  const eIV = [L.cx - (g.esgCentroX - W / 2) / g.zFin, L.cy - (g.esgCentroY - H / 2) / g.zFin, g.zFin];
+  if (t < INTRO.staccoB) {
+    // A: lettere alte una volta e mezza lo schermo, si scorre da E verso A
+    // avvicinandosi appena
+    const k = fase(t, 0, INTRO.staccoB);
+    const z = 1.55 * H / L.h * lerp(1, 1.1, k);
+    return [lerp(L.x0 + L.w * .14, L.x0 + L.w * .56, k), L.cy + lerp(.06, -.02, k) * L.h, z];
+  }
+  if (t < INTRO.staccoC) {
+    // B: parola intera, entra da destra veloce e continua a scivolare piano
+    const z = Math.min(.8 * W / L.w, .48 * H / L.h);
+    const k = fase(t, INTRO.staccoB, INTRO.staccoC);
+    const corsa = easeOut(clamp01(k / .7)) * .86 + k * .14;
+    return [L.cx + lerp(-.6, .07, corsa) * W / z, L.cy, z];
+  }
+  // C: piccola, entra da destra e si ferma nel suo posto nella riga finale
+  const z = g.zFin;
+  const fx = L.cx - (g.esgCentroX - W / 2) / z, fy = L.cy - (g.esgCentroY - H / 2) / z;
+  const k = fase(t, INTRO.staccoC, INTRO.staccoC + INTRO.entraC, easeOut);
+  return [fx - lerp(.2, 0, k) * W / z, fy, z];
+}
 
-  const mix = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k), Math.exp(lerp(Math.log(a[2]), Math.log(b[2]), k))];
-  if (t < INTRO.pan) return mix(aI, bI, fase(t, 0, INTRO.pan, (x) => x * (2 - x) * .5 + x * .5));
-  if (t < INTRO.zoomFine) return mix(bI, cII, fase(t, INTRO.pan, INTRO.zoomFine, easeInOut));
-  if (t < INTRO.spegneA) return mix(cII, dIII, fase(t, INTRO.zoomFine, INTRO.spegneA, easeInOut));
-  return mix(dIII, eIV, fase(t, INTRO.scivola, INTRO.scivolaA, easeInOut));
+/** Svelamento da sinistra a destra: le lettere in coda restano in
+ *  dissolvenza mentre la parola scorre, come nel video. p da 0 a 1. */
+function svela(p, L){
+  const grad = document.getElementById('esgMaskGrad');
+  grad.setAttribute('x1', L.x0); grad.setAttribute('x2', L.x1);
+  const a = lerp(-.35, 1, p), b = a + .35;
+  document.getElementById('esgMaskA').setAttribute('offset', clamp01(a).toFixed(3));
+  document.getElementById('esgMaskB').setAttribute('offset', clamp01(b).toFixed(3));
 }
 
 function disegnaESGAR(t){
   const g = introState.geo; if (!g) return;
+  const L = g.lettere;
   const [cx, cy, z] = camera(t, g);
   const vw = g.W / z, vh = g.H / z, vx = cx - vw / 2, vy = cy - vh / 2;
   const svg = document.getElementById('esgarSvg');
@@ -2157,24 +2183,36 @@ function disegnaESGAR(t){
   fondo.setAttribute('x', vx); fondo.setAttribute('y', vy);
   fondo.setAttribute('width', vw); fondo.setAttribute('height', vh);
 
-  const contorno = fase(t, 0, INTRO.contorno, easeOut) * (1 - fase(t, INTRO.fondoA, INTRO.zoomFine - 300));
-  const fondoOn = fase(t, INTRO.fondoDa, INTRO.fondoA, easeInOut) * (1 - fase(t, INTRO.spegneDa, INTRO.spegneA, easeInOut));
-  const inchiostro = fase(t, INTRO.fondoDa, INTRO.fondoA, easeInOut);
-  const acceso = fase(t, INTRO.spegneDa, INTRO.spegneA, easeInOut);
+  let contorno = 0, fondoOn = 0, inchiostro = 0, acceso = 0, rivela = 1;
+  if (t < INTRO.staccoB) {
+    contorno = fase(t, 0, INTRO.contorno, easeOut);
+    fondoOn = inchiostro = fase(t, INTRO.fondoDa, INTRO.fondoA, easeInOut);
+  } else if (t < INTRO.staccoC) {
+    fondoOn = inchiostro = 1;
+    rivela = fase(t, INTRO.staccoB, INTRO.staccoB + INTRO.rivelaB, easeOut);
+  } else {
+    acceso = 1;
+    rivela = fase(t, INTRO.staccoC, INTRO.staccoC + INTRO.rivelaC, easeOut);
+  }
+  svela(rivela, L);
 
   fondo.setAttribute('opacity', fondoOn.toFixed(3));
   const ink = document.getElementById('esgInk');
-  ink.setAttribute('fill-opacity', (inchiostro * (1 - acceso)).toFixed(3));
+  ink.setAttribute('fill-opacity', inchiostro.toFixed(3));
   ink.setAttribute('stroke-opacity', contorno.toFixed(3));
   ink.setAttribute('stroke-width', (1.3 / z).toFixed(4));
-  document.getElementById('esgLuce').setAttribute('opacity', acceso.toFixed(3));
+  const luce = document.getElementById('esgLuce');
+  luce.setAttribute('opacity', acceso);
+  // a parola ferma il gradiente continua a scorrere piano nelle lettere
+  const onda = Math.sin(Math.max(0, t - INTRO.staccoC) / 900) * .18;
+  document.getElementById('esgLuceGrad').setAttribute('gradientTransform', 'translate(' + onda.toFixed(3) + ',0)');
 }
 
 function introFrame(now){
   if (introState.closed) return;
   const t = now - introState.start;
   disegnaESGAR(Math.min(t, INTRO.attesa));
-  if (t < INTRO.scivolaA + 50) introState.raf = requestAnimationFrame(introFrame);
+  if (t < INTRO.attesa + 50) introState.raf = requestAnimationFrame(introFrame);
 }
 
 function posizionaRiga(){
