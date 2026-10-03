@@ -163,6 +163,12 @@ form né il referto.
   le voci della ristadiazione, come lavora il tool e la versione. Per i casi
   dubbi fa fede la pubblicazione ESGAR.
 
+Nella scheda **cT stage** ogni stadio ha a sinistra un pulsante «i»: apre una
+piccola finestra che spiega a cosa corrisponde lo stadio e come lo si riconosce
+in RM. Le definizioni sono quelle TNM adottate dalle raccomandazioni ESGAR
+(consenso 2016, riprese nell'aggiornamento 2026). I testi non sono ancora stati
+confrontati parola per parola con la pubblicazione 2026, e la finestra lo dice.
+
 Il codice dispositivo non compare nel tool: il pannello del profilo dice solo
 se l'accesso è firmato. Il codice si legge sul telefono, in «La tua chiave».
 

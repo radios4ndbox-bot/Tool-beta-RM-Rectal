@@ -829,6 +829,38 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
   .rail-eco{ display:none; }
 }
 @media print{ .side-rail{ display:none !important; } body, body.rail-aperto{ padding-right:0 !important; } }
+
+/* ══════════════════════════════════════════════════════════════════
+   cT STAGE — pulsante info a sinistra di ogni stadio
+   ══════════════════════════════════════════════════════════════════ */
+.ct-riga{display:inline-flex; align-items:center; gap:6px;}
+.ct-info-btn{
+  width:24px; height:24px; flex-shrink:0; border-radius:50%; cursor:pointer;
+  display:grid; place-items:center; padding:0;
+  border:1.5px solid var(--accent-line); background:var(--accent-bg); color:var(--accent);
+  transition:background-color .15s ease, color .15s ease, border-color .15s ease, transform .25s var(--molla);
+}
+.ct-info-btn svg{width:13px; height:13px;}
+.ct-info-btn:hover, .ct-info-btn[aria-expanded="true"]{background:var(--accent); border-color:var(--accent); color:#fff; transform:scale(1.08);}
+.ct-info-btn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(123,30,52,.18);}
+.ct-info{
+  position:fixed; z-index:1600; width:min(340px, calc(100vw - 24px));
+  padding:0 0 10px; border-radius:12px; overflow:hidden;
+  background:var(--surface); border:1px solid var(--border);
+  box-shadow:0 18px 38px -14px rgba(26,12,17,.45), 0 2px 6px rgba(26,12,17,.07);
+  opacity:0; transform:scale(.92); transform-origin:top left; pointer-events:none; visibility:hidden;
+}
+.ct-info.aperta{visibility:visible; pointer-events:auto; animation:popSection .3s var(--molla) forwards;}
+.ct-info-testa{display:flex; align-items:center; gap:9px; padding:10px 8px 10px 14px; background:var(--ink); color:#fff; margin-bottom:8px;}
+.ct-info-sigla{font-family:var(--mono); font-size:12px; font-weight:500; padding:2px 8px; border-radius:6px;
+  background:linear-gradient(135deg, var(--rose), var(--accent)); color:#fff; flex-shrink:0;}
+.ct-info-tit{flex:1; font-size:12.5px; font-weight:500; line-height:1.35;}
+.ct-info-x{width:26px; height:26px; border:none; border-radius:7px; background:transparent; color:#C9B5BB; font-size:18px; line-height:1; cursor:pointer;}
+.ct-info-x:hover{background:rgba(255,255,255,.1); color:#fff;}
+.ct-info p{margin:0 14px 7px; font-size:12px; line-height:1.55; color:var(--text);}
+.ct-info p b{color:var(--accent-hover); font-weight:600;}
+.ct-info-fonte{margin:8px 14px 0; padding-top:7px; border-top:1px solid var(--border); font-size:10px; line-height:1.45; color:var(--faint);}
+@media print{ .ct-info-btn, .ct-info{display:none !important;} }
 </style>
 </head>
 <body>
@@ -5686,7 +5718,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-03 · impostazioni';
+const VERSIONE = '2026-10-03 · info cT';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -6586,6 +6618,158 @@ window.EsgarTest = {
 
   applicaPrefs();
   window.EsgarImpostazioni = { prefs: () => Object.assign({}, prefs), apri: toggleRail };
+})();
+</script>
+<script>
+// ============================================================
+// cT STAGE — pulsante info accanto a ogni stadio
+//
+// Una piccola finestra spiega a cosa corrisponde lo stadio e come lo si
+// riconosce in RM. Le definizioni sono quelle TNM adottate dalle
+// raccomandazioni ESGAR (consenso 2016, riprese nell'aggiornamento
+// 2026); i testi non sono stati confrontati parola per parola con la
+// pubblicazione 2026.
+// ============================================================
+(function(){
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const FONTE = 'Definizioni TNM adottate dalle raccomandazioni ESGAR (consenso 2016, aggiornamento 2026). Testo da verificare sulla pubblicazione ESGAR 2026.';
+  const CT = {
+    'cT1': {
+      tit: 'cT1 — invasione della sottomucosa',
+      testo: [
+        'Il tumore arriva alla <b>sottomucosa</b> ma non alla muscolare propria.',
+        'In T2 la muscolare propria, ipointensa, resta integra sotto la lesione, separata da uno strato di sottomucosa conservato.',
+        'La RM standard distingue male cT1 da cT2: nella pratica si parla di <b>tumore precoce (cT1–2)</b>. Per la stadiazione fine delle lesioni piccole serve l\'ecoendoscopia.'
+      ]
+    },
+    'cT2': {
+      tit: 'cT2 — invasione della muscolare propria',
+      testo: [
+        'Il tumore entra nella <b>muscolare propria</b> senza superarla.',
+        'La banda ipointensa della muscolare è coinvolta, ma il suo margine esterno resta netto e regolare e il grasso mesorettale è libero.',
+        'Le sottili spicule ipointense nel grasso sono in genere fibrosi o reazione desmoplastica, non tumore: da sole non fanno un cT3.'
+      ]
+    },
+    'cT3a': {
+      tit: 'cT3a — estensione extramurale < 1 mm',
+      testo: [
+        'Il tumore supera la muscolare propria ed entra nel grasso mesorettale per <b>meno di 1 mm</b>.',
+        COME_MISURARE(),
+        'cT3a e cT3b (fino a 5 mm) hanno una prognosi vicina al cT2.'
+      ]
+    },
+    'cT3b': {
+      tit: 'cT3b — estensione extramurale 1–5 mm',
+      testo: [
+        'Estensione nel grasso mesorettale <b>da 1 a 5 mm</b> oltre il margine esterno della muscolare propria.',
+        COME_MISURARE(),
+        'La soglia di 5 mm separa il cT3 a prognosi più favorevole (a–b) da quello a rischio più alto (c–d).'
+      ]
+    },
+    'cT3c': {
+      tit: 'cT3c — estensione extramurale 5–15 mm',
+      testo: [
+        'Estensione nel grasso mesorettale <b>oltre 5 e fino a 15 mm</b>.',
+        COME_MISURARE(),
+        'Oltre i 5 mm aumenta il rischio di recidiva locale: conviene valutare con particolare cura MRF ed EMVI.'
+      ]
+    },
+    'cT3d': {
+      tit: 'cT3d — estensione extramurale > 15 mm',
+      testo: [
+        'Estensione nel grasso mesorettale <b>oltre 15 mm</b>.',
+        COME_MISURARE(),
+        'Con un\'estensione così profonda va controllata con attenzione la distanza dalla fascia mesorettale (MRF).'
+      ]
+    },
+    'cT4a': {
+      tit: 'cT4a — infiltrazione del peritoneo viscerale',
+      testo: [
+        'Il tumore raggiunge e supera la superficie del <b>peritoneo viscerale</b>: di norma nel retto alto o all\'altezza della riflessione peritoneale anteriore, dove il retto è rivestito di peritoneo.',
+        'Per questo conta il rapporto della lesione con la riflessione peritoneale anteriore, che il tool chiede in Localizzazione.',
+        'Non va confuso con il coinvolgimento della fascia mesorettale (MRF), che non è un T4.'
+      ]
+    },
+    'cT4b': {
+      tit: 'cT4b — infiltrazione di organi o strutture adiacenti',
+      testo: [
+        'Il tumore invade un <b>organo o una struttura vicina</b>: prostata, vescicole seminali, vescica, utero, vagina, ovaie, ureteri, parete pelvica laterale, sacro o coccige.',
+        'Nel tool configurano cT4b, assegnato in automatico, anche l\'invasione di <b>sfintere esterno, puborettale o elevatore dell\'ano</b>. Lo sfintere interno da solo non cambia il cT.',
+        'Nel campo sotto si indica quale struttura è infiltrata.'
+      ]
+    }
+  };
+  function COME_MISURARE(){
+    return 'Si misura in mm, sul piano assiale perpendicolare alla parete, dal margine esterno della muscolare propria (ricostruito sotto la lesione) al punto più profondo di tumore nel grasso.';
+  }
+
+  /* la finestra: una sola, posizionata accanto al pulsante */
+  let aperto = null;
+  function finestra(){
+    let f = $('ctInfo');
+    if (f) return f;
+    f = document.createElement('div');
+    f.id = 'ctInfo'; f.className = 'ct-info'; f.setAttribute('role', 'dialog');
+    f.addEventListener('click', (ev) => { if (ev.target.closest('.ct-info-x')) chiudi(); });
+    document.body.appendChild(f);
+    return f;
+  }
+  function apri(btn){
+    const k = btn.dataset.ct, d = CT[k];
+    if (!d) return;
+    if (aperto === btn) { chiudi(); return; }
+    chiudi();
+    const f = finestra();
+    f.setAttribute('aria-label', d.tit);
+    f.innerHTML = `<div class="ct-info-testa"><span class="ct-info-sigla">${k}</span><span class="ct-info-tit">${d.tit.split(' — ')[1]}</span>`
+      + `<button type="button" class="ct-info-x" aria-label="Chiudi">×</button></div>`
+      + d.testo.map((t) => `<p>${t}</p>`).join('')
+      + `<div class="ct-info-fonte">${FONTE}</div>`;
+    f.classList.add('aperta');
+    aperto = btn;
+    btn.setAttribute('aria-expanded', 'true');
+    // accanto al pulsante, a destra; sopra se sotto non c'è spazio
+    const r = btn.getBoundingClientRect();
+    const w = f.offsetWidth, h = f.offsetHeight;
+    let x = r.left, y = r.bottom + 8;
+    if (x + w > window.innerWidth - 12) x = window.innerWidth - w - 12;
+    if (y + h > window.innerHeight - 12) y = Math.max(12, r.top - h - 8);
+    f.style.left = Math.max(12, x) + 'px'; f.style.top = y + 'px';
+  }
+  function chiudi(){
+    const f = $('ctInfo');
+    if (f) f.classList.remove('aperta');
+    if (aperto) aperto.setAttribute('aria-expanded', 'false');
+    aperto = null;
+  }
+
+  /* un pulsante a sinistra di ogni stadio */
+  document.querySelectorAll('input[name="p_ct"]').forEach((r) => {
+    const lab = r.closest('label.opt');
+    if (!lab || !CT[r.value] || lab.parentNode.classList.contains('ct-riga')) return;
+    const riga = document.createElement('span');
+    riga.className = 'ct-riga';
+    lab.parentNode.insertBefore(riga, lab);
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'ct-info-btn'; b.dataset.ct = r.value;
+    b.setAttribute('aria-label', 'Cosa significa ' + r.value);
+    b.setAttribute('aria-haspopup', 'dialog'); b.setAttribute('aria-expanded', 'false');
+    b.title = 'Cosa significa ' + r.value + ' secondo ESGAR';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 11v6"/><path d="M12 7.2h.01"/></svg>';
+    b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); apri(b); });
+    riga.appendChild(b);
+    riga.appendChild(lab);
+  });
+  document.addEventListener('mousedown', (ev) => {
+    if (!aperto || ev.target.closest('#ctInfo') || ev.target.closest('.ct-info-btn')) return;
+    chiudi();
+  });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && aperto) { const b = aperto; chiudi(); b.focus(); } });
+  window.addEventListener('resize', chiudi);
+  document.addEventListener('scroll', chiudi, true);
+
+  window.EsgarCT = { definizioni: CT };
 })();
 </script>
 </body>

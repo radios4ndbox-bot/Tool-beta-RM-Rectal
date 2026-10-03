@@ -106,6 +106,16 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   check(rimaste.length === 1, '× toglie la frase dalla memoria: ' + rimaste.join(', '));
   await p.reload(); await p.waitForTimeout(300);
   check(await p.evaluate(() => EsgarMemoria.stato().campi.p_ctNote.voci.length) === 2, 'la memoria resta alla ricarica');
+  // ── info dei cT ──
+  check(await p.locator('.ct-info-btn').count() === 8, 'un pulsante info per ognuno degli 8 stadi cT');
+  await p.evaluate(() => document.querySelector('.ct-info-btn[data-ct=cT4a]').scrollIntoView({ block: 'center' }));
+  const ctPrima = await p.evaluate(() => (document.querySelector('input[name=p_ct]:checked') || {}).value);
+  await p.click('.ct-info-btn[data-ct=cT4a]'); await p.waitForTimeout(400);
+  check(await p.isVisible('#ctInfo.aperta') && /peritoneo viscerale/.test(await p.textContent('#ctInfo')) && /ESGAR/.test(await p.textContent('#ctInfo .ct-info-fonte')), 'la finestra spiega cT4a e dice la fonte');
+  check(await p.evaluate(() => (document.querySelector('input[name=p_ct]:checked') || {}).value) === ctPrima, 'aprire l\'info non cambia lo stadio scelto');
+  await p.keyboard.press('Escape');
+  check(!(await p.isVisible('#ctInfo.aperta')), 'Esc chiude la finestra');
+
   // ── impostazioni ──
   await p.click('.rail-btn[data-pan=info]'); await p.waitForTimeout(700);
   check(await p.isVisible('#railPannello.aperto .pan[data-pan=info]') && await p.evaluate(() => document.body.classList.contains('rail-aperto')), 'Info apre il pannello e la pagina rientra');
