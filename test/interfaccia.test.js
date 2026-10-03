@@ -116,6 +116,46 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await p.keyboard.press('Escape');
   check(!(await p.isVisible('#ctInfo.aperta')), 'Esc chiude la finestra');
 
+  // ── memoria del tool: la pagina di gestione ──
+  await p.click('#railMemoria'); await p.waitForTimeout(500);
+  check(await p.isVisible('#mgOverlay.open') && /referti letti/.test(await p.textContent('#mgCorpo')), 'Memoria: la pagina si apre sulla panoramica');
+  await p.screenshot({ path: SHOTS + '/mem_panoramica.png' });
+  await p.click('#mgNav [data-campo=p_ctNote]'); await p.waitForTimeout(400);
+  check(await p.locator('#mgLista .mg-voce').count() === 2, 'il campo cT4b mostra le sue due frasi');
+  check(/usata \d+ volt[ae] · ultima \d{2}\/\d{2}\/\d{4}/.test(await p.textContent('#mgLista')), 'con usi e data dell\'ultimo uso');
+  await p.fill('#mgProva', 'elev');
+  check((await p.textContent('#mgProvaEsito .pg-prova-riga')).includes('elevatore'), 'Prova: scrivendo «elev» propone la frase sull\'elevatore');
+  await p.click('#mgCtx');
+  await p.fill('#mgProva', '');
+  // preferita: sale in cima anche nel form, contro il contesto
+  await p.click('.mg-voce:has-text("elevatore") [data-mg=stella]');
+  await p.evaluate(() => { ['p_organoProstata', 'p_elevatore'].forEach((id) => { const c = document.getElementById(id); if (c.checked) c.click(); }); document.getElementById('p_organoProstata').click(); const e = document.getElementById('p_ctNote'); e.value = ''; });
+  check((await p.evaluate(() => EsgarMemoria.suggerimenti(document.getElementById('p_ctNote'))))[0].testo === ELEVATORE, '★ preferita: in cima anche con la prostata spuntata');
+  await p.screenshot({ path: SHOTS + '/mem_campo.png' });
+  // correggere unisce due frasi uguali
+  const usiPrima = await p.evaluate(() => EsgarMemoria.gestione.voci('p_ctNote').reduce((a, v) => a + v.n, 0));
+  await p.click('.mg-voce:has-text("elevatore") [data-mg=modifica]');
+  await p.fill('.mg-edit', PROSTATA); await p.keyboard.press('Enter'); await p.waitForTimeout(200);
+  const unite = await p.evaluate(() => EsgarMemoria.gestione.voci('p_ctNote'));
+  check(unite.length === 1 && unite[0].n === usiPrima && unite[0].preferita, 'correggendo una frase uguale a un\'altra si uniscono (usi sommati, preferita)');
+  await p.fill('#mgNuova', 'infiltrazione della parete posteriore della vescica'); await p.keyboard.press('Enter'); await p.waitForTimeout(200);
+  check(await p.evaluate(() => EsgarMemoria.gestione.voci('p_ctNote').some((v) => v.manuale && v.preferita && /vescica/.test(v.testo))), 'Insegna: frase aggiunta a mano, già preferita');
+  p.once('dialog', (d) => d.accept());
+  await p.click('.mg-voce:has-text("vescica") [data-mg=elimina]'); await p.waitForTimeout(200);
+  check(await p.locator('#mgLista .mg-voce').count() === 1, 'Dimentica toglie la frase');
+  // esporta, azzera, importa
+  await p.click('#mgNav [data-campo=""]'); await p.waitForTimeout(300);
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('[data-mg=esporta]')]);
+  const file = await dl.path();
+  check(JSON.parse(require('fs').readFileSync(file, 'utf8')).memoria.campi.p_ctNote.voci.length === 1, 'Esporta: file JSON con la memoria');
+  p.once('dialog', (d) => d.accept());
+  await p.click('[data-mg=azzera]'); await p.waitForTimeout(200);
+  check(await p.evaluate(() => Object.keys(EsgarMemoria.stato().campi).length === 0), 'Azzera tutto');
+  await p.setInputFiles('#mgImporta', file); await p.waitForTimeout(300);
+  check(await p.evaluate(() => (EsgarMemoria.stato().campi.p_ctNote || { voci: [] }).voci.length === 1) && /importata/.test(await p.textContent('#mgStato')), 'Importa: la memoria torna dal file');
+  await p.keyboard.press('Escape');
+  check(!(await p.isVisible('#mgOverlay.open')), 'Esc chiude la pagina');
+
   // ── impostazioni ──
   await p.click('.rail-btn[data-pan=info]'); await p.waitForTimeout(700);
   check(await p.isVisible('#railPannello.aperto .pan[data-pan=info]') && await p.evaluate(() => document.body.classList.contains('rail-aperto')), 'Info apre il pannello e la pagina rientra');

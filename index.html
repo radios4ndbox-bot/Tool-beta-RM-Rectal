@@ -893,6 +893,108 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 .ct-info p b{color:var(--accent-hover); font-weight:600;}
 .ct-info-fonte{margin:8px 14px 0; padding-top:7px; border-top:1px solid var(--border); font-size:10px; line-height:1.45; color:var(--faint);}
 @media print{ .ct-info-btn, .ct-info{display:none !important;} }
+
+/* ══════════════════════════════════════════════════════════════════
+   MEMORIA DEL TOOL — pagina come «Personalizzazione» in Archivist
+   ══════════════════════════════════════════════════════════════════ */
+.mg-overlay{position:fixed; inset:0; z-index:700; display:none; align-items:center; justify-content:center; background:rgba(18,7,10,.55);}
+.mg-overlay.open{display:flex; animation:mgVelo .25s ease both;}
+@keyframes mgVelo{from{background-color:rgba(18,7,10,0);}}
+.mg-pagina{
+  width:min(1080px, calc(100vw - 140px)); height:min(760px, calc(100vh - 80px));
+  display:flex; flex-direction:column; overflow:hidden; border-radius:18px;
+  background:var(--surface); box-shadow:0 30px 80px -30px rgba(0,0,0,.6);
+  animation:popSection .34s var(--molla) both;
+}
+.pg-testa{display:flex; align-items:center; gap:14px; flex-shrink:0; padding:14px 18px 14px 20px; color:#fff; position:relative;
+  background:radial-gradient(700px 160px at 20% 0%, #3A0E19 0%, var(--ink) 70%);}
+.pg-testa::after{content:''; position:absolute; left:0; right:0; bottom:0; height:2px;
+  background:linear-gradient(90deg, var(--red-light), var(--rose) 40%, var(--accent) 72%, var(--wine));}
+.pg-icona{width:38px; height:38px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.08); color:var(--red-light);}
+.pg-icona svg{width:20px; height:20px;}
+.pg-titolo{font-size:16px; font-weight:600;}
+.pg-sub{margin-top:2px; font-size:11.5px; color:#D4C4C9;}
+.pg-x{margin-left:auto; width:32px; height:32px; border:none; border-radius:8px; background:transparent; color:#D4C4C9; font-size:22px; line-height:1; cursor:pointer;}
+.pg-x:hover{color:#fff; background:rgba(255,255,255,.1);}
+.pg-corpo{flex:1; min-height:0; display:grid; grid-template-columns:250px 1fr;}
+.pg-nav{display:flex; flex-direction:column; gap:4px; padding:14px 12px; border-right:1px solid var(--border); background:var(--surface2); overflow-y:auto;}
+.mg-gruppo{margin:10px 6px 2px; font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--accent);}
+.pg-tab{display:grid; grid-template-columns:1fr auto; gap:2px 8px; text-align:left; padding:8px 11px; border-radius:11px; cursor:pointer;
+  border:1px solid transparent; background:transparent; font-family:var(--sans); color:var(--text); transition:background-color .15s, border-color .15s, box-shadow .2s;}
+.pg-tab:hover{background:var(--accent-bg);}
+.pg-tab[aria-selected="true"]{background:var(--surface); border-color:var(--border); box-shadow:0 8px 18px -14px rgba(26,12,17,.55);}
+.pg-tab.vuoto .pg-tab-nome{color:var(--muted); font-weight:500;}
+.pg-tab-nome{font-size:12.5px; font-weight:600;}
+.pg-tab[aria-selected="true"] .pg-tab-nome{color:var(--accent);}
+.pg-tab-desc{grid-column:1 / -1; font-size:10.5px; line-height:1.35; color:var(--muted);}
+.pg-conta{align-self:center; padding:1px 8px; border-radius:999px; font-family:var(--mono); font-size:10.5px; font-weight:600; color:var(--accent); background:var(--accent-bg);}
+.pg-tab.vuoto .pg-conta{color:var(--faint); background:transparent;}
+.pg-nav-nota{margin-top:auto; padding:12px 4px 0; font-size:10.5px; line-height:1.5; color:var(--faint);}
+.pg-nav-nota kbd{font-family:var(--mono); font-size:10px; padding:0 5px; border-radius:4px; border:1px solid var(--border2); background:var(--surface);}
+.pg-sezione{min-height:0; overflow-y:auto; padding:18px 22px 22px; display:flex; flex-direction:column; gap:14px;}
+.pg-entra{animation:panVoce .4s cubic-bezier(.22,1,.36,1) both;}
+.pg-sez-testa h3{margin:0 0 3px; font-size:15px; font-weight:600;}
+.pg-sez-testa p{margin:0; max-width:680px; font-size:12px; line-height:1.55; color:var(--muted);}
+.pg-prova{display:flex; flex-direction:column; gap:8px; padding:12px 14px; border-radius:14px; border:1px dashed var(--border2); background:var(--surface2);}
+.pg-prova > label:first-child{font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
+.pg-prova input[type=text], .mg-insegna input{background:#fff;}
+.mg-ctx{display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--muted); cursor:pointer;}
+.mg-ctx input{accent-color:var(--accent);}
+.pg-prova-esito{display:flex; flex-direction:column; gap:5px;}
+.pg-prova-riga{display:flex; align-items:center; gap:8px; font-size:12px;}
+.mg-pos{width:20px; height:20px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; font-family:var(--mono); font-size:10px; color:#fff; background:var(--accent);}
+.mg-prova-testo{flex:1; min-width:0;}
+.mg-punti{font-family:var(--mono); font-size:10.5px; color:var(--faint);}
+.mg-insegna{display:flex; gap:8px;}
+.mg-insegna input{flex:1;}
+.mg-lista-testa{display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11.5px; color:var(--muted);}
+.sel-mg{width:180px;}
+.mg-lista{display:flex; flex-direction:column; gap:6px;}
+.mg-voce{display:flex; align-items:flex-start; gap:10px; padding:9px 10px; border:1px solid var(--border); border-radius:12px; background:var(--surface);
+  transition:border-color .15s, background-color .15s;}
+.mg-voce:hover{border-color:var(--accent-line);}
+.mg-voce.preferita{background:var(--accent-bg); border-color:var(--accent-line);}
+.mg-stella{width:28px; height:28px; flex-shrink:0; border:none; border-radius:8px; background:transparent; color:var(--faint); font-size:17px; line-height:1; cursor:pointer;
+  transition:color .15s, transform .25s var(--molla);}
+.mg-stella:hover{color:var(--accent); transform:scale(1.15);}
+.mg-stella[aria-pressed="true"]{color:var(--accent);}
+.mg-testo{flex:1; min-width:0;}
+.mg-frase{font-size:13px; line-height:1.4; color:var(--text);}
+.mg-edit{width:100%;}
+.mg-meta{margin-top:3px; font-size:10.5px; line-height:1.45; color:var(--muted);}
+.mg-meta b{font-weight:600; color:var(--accent-hover);}
+.mg-btns{display:flex; gap:4px; flex-shrink:0; align-items:center;}
+.mg-btns .btn-primary, .mg-btns .btn-ghost{padding:5px 11px; font-size:11.5px;}
+.mg-ico{width:28px; height:28px; display:grid; place-items:center; border:none; border-radius:8px; background:transparent; color:var(--muted); cursor:pointer; opacity:.6;
+  transition:opacity .15s, background-color .15s, color .15s;}
+.mg-voce:hover .mg-ico{opacity:1;}
+.mg-ico:hover{background:var(--accent-bg); color:var(--accent);}
+.mg-ico.mg-via:hover{background:#9A2A2A; color:#fff;}
+.mg-ico svg{width:15px; height:15px;}
+.mg-kpi{display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;}
+.mg-kpi div{padding:12px 14px; border:1px solid var(--border); border-radius:12px; background:var(--surface2);}
+.mg-kpi b{display:block; font-family:var(--mono); font-size:24px; font-weight:500; color:var(--accent); line-height:1.1;}
+.mg-kpi span{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
+.mg-blocco h4{margin:0 0 7px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);}
+.mg-nota{margin:0 0 8px; font-size:12px; line-height:1.55; color:var(--muted);}
+.mg-azioni{display:flex; gap:8px; flex-wrap:wrap;}
+.mg-file{cursor:pointer;}
+.mg-top{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:6px;}
+.mg-top-voce{display:flex; justify-content:space-between; align-items:center; gap:8px; text-align:left; padding:8px 11px; border-radius:10px; cursor:pointer;
+  border:1px solid var(--border); background:var(--surface); font-family:var(--sans); color:var(--text); transition:border-color .15s, background-color .15s;}
+.mg-top-voce:hover{border-color:var(--accent); background:var(--accent-bg);}
+.mg-top-voce span{font-size:12px; font-weight:500;}
+.mg-top-voce em{display:block; font-style:normal; font-size:10.5px; color:var(--muted); font-weight:400;}
+.mg-top-voce b{font-family:var(--mono); color:var(--accent);}
+.rail-btn[aria-expanded="true"]{color:#fff; transform:scale(1.06); border-color:rgba(238,90,104,.35); background:linear-gradient(135deg, var(--rose), var(--accent) 75%);}
+@media (max-width:860px){
+  .mg-pagina{width:calc(100vw - 20px); height:calc(100vh - 20px);}
+  .pg-corpo{grid-template-columns:1fr; grid-template-rows:auto 1fr;}
+  .pg-nav{flex-direction:row; overflow-x:auto; border-right:none; border-bottom:1px solid var(--border);}
+  .pg-tab{min-width:160px;} .mg-gruppo, .pg-nav-nota{display:none;}
+  .mg-kpi{grid-template-columns:repeat(2, 1fr);}
+}
+@media print{ .mg-overlay{display:none !important;} }
 </style>
 </head>
 <body>
@@ -2511,6 +2613,10 @@ liveUpdate();
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h5l2 2h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M3 10h18"/></svg>
       <span class="rail-eco">Archivio</span>
     </button>
+    <button type="button" class="rail-btn" id="railMemoria" aria-haspopup="dialog" aria-expanded="false" title="Memoria del tool: quello che ha imparato">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg>
+      <span class="rail-eco">Memoria</span>
+    </button>
     <button type="button" class="rail-btn" data-pan="aspetto" role="tab" aria-selected="false" title="Aspetto">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg>
       <span class="rail-eco">Aspetto</span>
@@ -2532,6 +2638,10 @@ liveUpdate();
       </button>
       <h3 class="pan-tit" style="margin-top:18px">Campi che imparano</h3>
       <p class="pan-desc" id="impMemoria"></p>
+      <button type="button" class="pan-voce" data-imp="gestisci">
+        <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg>
+        <span><strong>Gestisci la memoria</strong><em>Prova, insegna, correggi o dimentica le frasi, campo per campo; esporta e importa</em></span>
+      </button>
       <button type="button" class="pan-voce" data-imp="azzera">
         <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         <span><strong>Azzera la memoria</strong><em>Cancella le frasi imparate su questo PC; i referti salvati non si toccano</em></span>
@@ -2630,6 +2740,25 @@ liveUpdate();
 
   </div>
 </aside>
+
+
+<!-- Memoria del tool: gestire quello che impara -->
+<div class="mg-overlay" id="mgOverlay" role="dialog" aria-modal="true" aria-labelledby="mgTitolo">
+  <div class="mg-pagina">
+    <div class="pg-testa">
+      <div class="pg-icona" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg></div>
+      <div>
+        <div class="pg-titolo" id="mgTitolo">Memoria del tool</div>
+        <div class="pg-sub">Le frasi che i campi liberi hanno imparato dai referti &middot; su questo PC</div>
+      </div>
+      <button type="button" class="pg-x" data-mg-chiudi aria-label="Chiudi">&times;</button>
+    </div>
+    <div class="pg-corpo">
+      <div class="pg-nav" id="mgNav" role="tablist" aria-label="Campi"></div>
+      <section class="pg-sezione" id="mgCorpo"></section>
+    </div>
+  </div>
+</div>
 
 <div class="app-footer">&copy; 2026 StructuRad. All rights reserved. Powered by RadioPako.</div>
 
@@ -5759,7 +5888,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-03 · casi';
+const VERSIONE = '2026-10-03 · memoria';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -6568,20 +6697,22 @@ window.EsgarTest = {
     });
     if (forte) try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (_) {}
   }
-  const valore = (v, ora) => Math.log(1 + v.n) + gradimento(v) + 0.5 * Math.max(0, 1 - (ora - v.u) / SEI_MESI);
+  const valore = (v, ora) => (v.f ? 1000 : 0) + Math.log(1 + v.n) + gradimento(v) + 0.5 * Math.max(0, 1 - (ora - v.u) / SEI_MESI);
   /* scelte e scavalcamenti, con una stima prudente all'inizio */
   const gradimento = (v) => 0.9 * Math.log((v.s + 1) / (v.s + v.x + 2)) + 0.62;
 
   /* ── punteggio ── */
   function suggerimenti(el){
-    const k = chiave(el);
+    return classifica(chiave(el), el.value, contesto(el), MAX_MOSTRATE, false);
+  }
+  /* il punteggio di tutte le frasi di un campo, per un testo e un contesto */
+  function classifica(k, valoreCampo, feats, limite, tutte){
     const cm = mem.campi[k];
     if (!cm || !cm.voci.length) return [];
     const ora = Date.now();
-    const q = parole(el.value);
-    const qn = norm(el.value);
-    const parziale = /[a-z0-9]$/i.test(el.value) && q.length ? q[q.length - 1] : '';
-    const feats = contesto(el);
+    const q = parole(valoreCampo);
+    const qn = norm(valoreCampo);
+    const parziale = /[a-z0-9]$/i.test(valoreCampo || '') && q.length ? q[q.length - 1] : '';
     // rarità delle parole fra le frasi del campo
     const df = new Map();
     cm.voci.forEach((v) => new Set(parole(v.k)).forEach((p) => df.set(p, (df.get(p) || 0) + 1)));
@@ -6589,7 +6720,7 @@ window.EsgarTest = {
 
     const voci = [];
     cm.voci.forEach((v) => {
-      if (qn && v.k === qn) return;                     // è già quello che c'è scritto
+      if (qn && v.k === qn && !tutte) return;            // è già quello che c'è scritto
       let sim = 0;
       if (qn) {
         const pv = parole(v.k);
@@ -6598,7 +6729,7 @@ window.EsgarTest = {
           else if (p === parziale && p.length >= 2 && pv.some((x) => x.startsWith(p))) sim += 0.7 * idf(p);
         });
         if (v.k.startsWith(qn)) sim += 1.2;
-        if (sim <= 0) return;
+        if (sim <= 0 && !tutte) return;
       }
       // contesto: rapporto fra la frequenza della scelta con questa frase
       // e la sua frequenza media nel campo, levigato
@@ -6614,13 +6745,14 @@ window.EsgarTest = {
         + 0.8 * Math.log(1 + v.n)
         + 0.6 * ctx
         + 0.4 * Math.max(0, 1 - (ora - v.u) / SEI_MESI)
-        + gradimento(v);
+        + gradimento(v)
+        + (v.f ? 2.5 : 0);                                // preferita: scelta da chi usa il tool
       let testo = '', m = 0;
       Object.keys(v.t).forEach((t) => { if (v.t[t] > m) { m = v.t[t]; testo = t; } });
       voci.push({ v, testo, punti, motivo: mlift > Math.log(1.6) ? motivo : null });
     });
     voci.sort((a, b) => b.punti - a.punti || b.v.n - a.v.n);
-    return voci.slice(0, MAX_MOSTRATE);
+    return voci.slice(0, limite);
   }
 
   /* ── pannello dei suggerimenti ── */
@@ -6756,9 +6888,82 @@ window.EsgarTest = {
   // dall'archivio solo a salvataggio riuscito
   document.addEventListener('esgar:referto-salvato', imparaDalReferto);
 
+  /* ── gestione: la pagina «Memoria del tool» ── */
+  const testoDi = (v) => { let t = '', m = -1; Object.keys(v.t).forEach((x) => { if (v.t[x] > m) { m = v.t[x]; t = x; } }); return t; };
+  const trova = (k, chiaveVoce) => { const cm = mem.campi[k]; return cm ? cm.voci.find((v) => v.k === chiaveVoce) : null; };
+  const gestione = {
+    campi: () => Object.keys(mem.campi).map((k) => ({ k, n: mem.campi[k].n, voci: mem.campi[k].voci.length })),
+    voci: (k) => ((mem.campi[k] || {}).voci || []).map((v) => ({
+      chiave: v.k, testo: testoDi(v), varianti: Object.keys(v.t).length, n: v.n, ultima: v.u, scelte: v.s, scavalcate: v.x,
+      preferita: !!v.f, manuale: !!v.m,
+      contesto: Object.keys(v.c).filter((f) => v.c[f] >= 2)
+        .map((f) => ({ f, nome: nomeScelta(f), lift: ((v.c[f] + .5) / (v.n + 1)) / (((mem.campi[k].ctx[f] || 0) + .5) / (mem.campi[k].n + 1)) }))
+        .filter((x) => x.nome && x.lift > 1.6).sort((a, b) => b.lift - a.lift).slice(0, 3).map((x) => x.nome)
+    })),
+    prova: (k, testo, feats) => classifica(k, testo, feats || [], 8, false).map((x) => ({ chiave: x.v.k, testo: x.testo, punti: +x.punti.toFixed(2), motivo: x.motivo ? nomeScelta(x.motivo) : '' })),
+    contestoAttuale: (k) => {
+      const el = campiMemoria().find((e) => chiave(e) === k);
+      return el ? contesto(el) : [];
+    },
+    fissa: (k, c, si) => { const v = trova(k, c); if (v) { v.f = !!si; salva(); } },
+    elimina: (k, c) => { const cm = mem.campi[k]; if (cm) { cm.voci = cm.voci.filter((v) => v.k !== c); salva(); } },
+    /* nuovo testo per una frase: se coincide con un'altra, le due si uniscono */
+    modifica: (k, c, testo) => {
+      const cm = mem.campi[k]; const v = trova(k, c);
+      const t = String(testo || '').trim(); const nk = norm(t);
+      if (!cm || !v || nk.length < 2) return false;
+      const altra = nk !== c && cm.voci.find((x) => x.k === nk);
+      if (altra) {
+        altra.n += v.n; altra.s += v.s; altra.x += v.x; altra.u = Math.max(altra.u, v.u); altra.f = altra.f || v.f;
+        Object.keys(v.c).forEach((f) => { altra.c[f] = (altra.c[f] || 0) + v.c[f]; });
+        altra.t = { [t]: Object.values(altra.t).reduce((a, b) => a + b, 0) + Object.values(v.t).reduce((a, b) => a + b, 0) };
+        cm.voci = cm.voci.filter((x) => x !== v);
+      } else {
+        v.k = nk; v.t = { [t]: Math.max(1, Object.values(v.t).reduce((a, b) => a + b, 0)) };
+      }
+      salva(); return true;
+    },
+    /* insegnare una frase a mano, senza aspettare un referto */
+    aggiungi: (k, testo) => {
+      const t = String(testo || '').trim(); const nk = norm(t);
+      if (nk.length < 2) return false;
+      const cm = campoMem(k);
+      let v = cm.voci.find((x) => x.k === nk);
+      if (!v) { v = { k: nk, t: { [t]: 1 }, n: 0, u: Date.now(), s: 0, x: 0, c: {}, m: true }; cm.voci.push(v); }
+      v.f = true;
+      salva(); return true;
+    },
+    esporta: () => JSON.stringify({ app: 'StructuRad × ESGAR', tipo: 'memoria', esportato: new Date().toISOString(), memoria: mem }, null, 1),
+    /* importa unendo: le frasi uguali sommano gli usi */
+    importa: (testo) => {
+      const j = JSON.parse(testo);
+      const m = j && j.memoria;
+      if (!m || m.v !== 1 || !m.campi) throw new Error('file non riconosciuto');
+      let n = 0;
+      Object.keys(m.campi).forEach((k) => {
+        const da = m.campi[k]; if (!da || !Array.isArray(da.voci)) return;
+        const cm = campoMem(k);
+        cm.n += +da.n || 0;
+        Object.keys(da.ctx || {}).forEach((f) => { cm.ctx[f] = (cm.ctx[f] || 0) + (+da.ctx[f] || 0); });
+        da.voci.forEach((v) => {
+          if (!v || typeof v.k !== 'string' || !v.t) return;
+          const gia = cm.voci.find((x) => x.k === v.k);
+          if (gia) {
+            gia.n += +v.n || 0; gia.s += +v.s || 0; gia.x += +v.x || 0; gia.u = Math.max(gia.u, +v.u || 0); gia.f = gia.f || !!v.f;
+            Object.keys(v.t).forEach((t) => { gia.t[t] = (gia.t[t] || 0) + (+v.t[t] || 0); });
+            Object.keys(v.c || {}).forEach((f) => { gia.c[f] = (gia.c[f] || 0) + (+v.c[f] || 0); });
+          } else { cm.voci.push({ k: v.k, t: v.t, n: +v.n || 0, u: +v.u || 0, s: +v.s || 0, x: +v.x || 0, c: v.c || {}, f: !!v.f, m: !!v.m }); n++; }
+        });
+      });
+      sfoltisci(false); salva();
+      return n;
+    }
+  };
+
   window.EsgarMemoria = {
     impara: imparaDalReferto, suggerimenti: (el) => suggerimenti(el).map((x) => ({ testo: x.testo, punti: +x.punti.toFixed(3), n: x.v.n, motivo: x.motivo })),
-    stato: () => mem, azzera: () => { mem = { v: 1, campi: {}, visti: [] }; salva(); }
+    stato: () => mem, azzera: () => { mem = { v: 1, campi: {}, visti: [] }; salva(); },
+    gestione
   };
 })();
 </script>
@@ -6851,6 +7056,7 @@ window.EsgarTest = {
     const a = ev.target.closest('[data-imp]');
     if (!a) return;
     if (a.dataset.imp === 'profilo') { ev.stopPropagation(); apriPannello(true); }
+    if (a.dataset.imp === 'gestisci') { toggleRail(null); window.EsgarMemoriaPagina.apri(); }
     if (a.dataset.imp === 'azzera' && confirm('Cancellare tutte le frasi imparate su questo PC? I referti salvati non si toccano.')) {
       EsgarMemoria.azzera(); disegnaMemoria();
     }
@@ -6994,6 +7200,250 @@ window.EsgarTest = {
   document.addEventListener('scroll', chiudi, true);
 
   window.EsgarCT = { definizioni: CT };
+})();
+</script>
+<script>
+// ============================================================
+// MEMORIA DEL TOOL — gestire quello che impara
+//
+// Come «Personalizzazione del reparto» in ER Oncology Archivist: una
+// pagina con la panoramica e, campo per campo, le frasi imparate dai
+// referti. Si possono provare (cosa proporrebbe il tool scrivendo un
+// certo testo), insegnare a mano, segnare come preferite, correggere
+// (due frasi uguali si uniscono) ed eliminare; la memoria si esporta e
+// si importa per portarla su un altro PC.
+// ============================================================
+(function(){
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const G = () => window.EsgarMemoria.gestione;
+  const data = (t) => t ? new Date(t).toLocaleDateString('it-IT') : '—';
+  let campo = null;          // campo mostrato, o null per la panoramica
+  let ordine = 'punteggio';
+  let inModifica = null;
+
+  /* i campi liberi del form, con il loro nome e la scheda in cui stanno */
+  function campiForm(){
+    const out = [];
+    document.querySelectorAll('#form-pane input[type=text]').forEach((el) => {
+      if (el.hasAttribute('data-date') || el.classList.contains('narrow') || el.closest('[data-row]') || !el.id) return;
+      const lab = el.closest('label.field');
+      const card = el.closest('.card');
+      const pan = el.closest('.panel');
+      out.push({
+        k: el.id,
+        nome: lab ? lab.querySelector('.lab').textContent.trim() : el.id,
+        scheda: card ? card.querySelector('.card-title').textContent.trim() : '',
+        modo: pan && pan.id === 'panel-ristad' ? 'ristad' : 'primaria'
+      });
+    });
+    out.push({ k: 'td.sede', nome: 'Sede', scheda: 'Tumor deposit', modo: 'primaria' });
+    return out;
+  }
+  const contaVoci = (k) => { const c = G().campi().find((x) => x.k === k); return c ? c.voci : 0; };
+
+  function disegnaNav(){
+    const campi = campiForm();
+    const gruppo = (modo, titolo) => `<div class="mg-gruppo">${titolo}</div>` + campi.filter((c) => c.modo === modo).map((c) => {
+      const n = contaVoci(c.k);
+      return `<button type="button" class="pg-tab${n ? '' : ' vuoto'}" role="tab" data-campo="${esc(c.k)}" aria-selected="${campo === c.k}">
+        <span class="pg-tab-nome">${esc(c.nome)}</span><span class="pg-conta">${n}</span>
+        <span class="pg-tab-desc">${esc(c.scheda)}</span></button>`;
+    }).join('');
+    $('mgNav').innerHTML = `<button type="button" class="pg-tab" role="tab" data-campo="" aria-selected="${campo === null}">
+        <span class="pg-tab-nome">Panoramica</span><span class="pg-conta">${G().campi().reduce((a, c) => a + c.voci, 0)}</span>
+        <span class="pg-tab-desc">Come impara, esporta e importa</span></button>`
+      + gruppo('primaria', 'Stadiazione primaria') + gruppo('ristad', 'Ristadiazione')
+      + '<div class="pg-nav-nota">Le modifiche si salvano da sole, nel browser di questo PC. Si chiude con <kbd>Esc</kbd>.</div>';
+  }
+
+  function disegnaPanoramica(){
+    const m = window.EsgarMemoria.stato();
+    const campi = G().campi().filter((c) => c.voci);
+    const frasi = campi.reduce((a, c) => a + c.voci, 0);
+    const pref = campi.reduce((a, c) => a + G().voci(c.k).filter((v) => v.preferita).length, 0);
+    const nomi = new Map(campiForm().map((c) => [c.k, c]));
+    const top = campi.slice().sort((a, b) => b.voci - a.voci).slice(0, 6);
+    $('mgCorpo').innerHTML = `
+      <div class="pg-sez-testa"><h3>Cosa ha imparato il tool</h3>
+        <p>I campi di testo libero propongono le frasi dei referti precedenti. Il tool impara quando un referto si copia, si scarica, si stampa o si salva nell'archivio; lo stesso referto conta una volta sola.</p></div>
+      <div class="mg-kpi">
+        <div><b>${frasi}</b><span>frasi</span></div>
+        <div><b>${campi.length}</b><span>campi</span></div>
+        <div><b>${(m.visti || []).length}</b><span>referti letti</span></div>
+        <div><b>${pref}</b><span>preferite</span></div>
+      </div>
+      <div class="mg-blocco"><h4>Come ordina le proposte</h4>
+        <ul class="info-lista">
+          <li><b>Somiglianza</b> con quanto si sta scrivendo; le parole rare pesano di più.</li>
+          <li><b>Frequenza</b> d'uso e <b>recenza</b>, per sei mesi.</li>
+          <li><b>Contesto</b>: le scelte del form che compaiono spesso con quella frase, per esempio cT4b o un organo infiltrato.</li>
+          <li><b>Gradimento</b>: le frasi scelte salgono, quelle proposte in alto e scavalcate scendono.</li>
+          <li><b>Preferite</b> ★: stanno in cima e non si perdono mai, nemmeno quando il tool sfoltisce le frasi poco usate.</li>
+        </ul></div>
+      ${top.length ? `<div class="mg-blocco"><h4>Campi con più frasi</h4><div class="mg-top">${top.map((c) => {
+        const n = nomi.get(c.k);
+        return `<button type="button" class="mg-top-voce" data-campo="${esc(c.k)}"><span>${esc(n ? n.nome : c.k)}<em>${esc(n ? n.scheda : '')}</em></span><b>${c.voci}</b></button>`;
+      }).join('')}</div></div>` : ''}
+      <div class="mg-blocco"><h4>Su un altro PC</h4>
+        <p class="mg-nota">La memoria resta nel browser di questo PC. Per portarla altrove si esporta in un file e si importa sull'altro PC: le frasi uguali si uniscono e sommano gli usi.</p>
+        <div class="mg-azioni">
+          <button type="button" class="btn-secondary" data-mg="esporta">Esporta la memoria</button>
+          <label class="btn-secondary mg-file">Importa da file<input type="file" id="mgImporta" accept="application/json,.json" hidden></label>
+          <button type="button" class="btn-ghost" data-mg="azzera">Azzera tutto</button>
+        </div>
+        <div class="pp-stato" id="mgStato"></div>
+      </div>`;
+  }
+
+  function disegnaCampo(){
+    const c = campiForm().find((x) => x.k === campo) || { k: campo, nome: campo, scheda: '' };
+    $('mgCorpo').innerHTML = `
+      <div class="pg-sez-testa"><h3>${esc(c.nome)}</h3>
+        <p>${esc(c.scheda)} · ${c.modo === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}. Le frasi qui sotto sono quelle che il campo propone; ★ le fissa in cima.</p></div>
+      <div class="pg-prova">
+        <label for="mgProva">Prova: cosa proporrebbe il tool</label>
+        <input id="mgProva" type="text" autocomplete="off" placeholder="Scrivi come nel campo, o lascia vuoto per le proposte all'apertura">
+        <label class="mg-ctx"><input type="checkbox" id="mgCtx" checked> con le scelte del form attuale</label>
+        <div class="pg-prova-esito" id="mgProvaEsito"></div>
+      </div>
+      <div class="mg-insegna">
+        <input id="mgNuova" type="text" autocomplete="off" maxlength="300" placeholder="Insegna una frase nuova per questo campo">
+        <button type="button" class="btn-primary" data-mg="aggiungi">Insegna</button>
+      </div>
+      <div class="mg-lista-testa">
+        <span id="mgConta"></span>
+        <div class="sel-mg"><select id="mgOrdine" aria-label="Ordina">
+          <option value="punteggio">per punteggio</option><option value="uso">più usate</option>
+          <option value="recenti">più recenti</option><option value="az">dalla A alla Z</option>
+        </select></div>
+      </div>
+      <div class="mg-lista" id="mgLista"></div>`;
+    $('mgOrdine').value = ordine;
+    window.EsgarUI && EsgarUI.avvolgiSelect($('mgOrdine'));
+    disegnaLista();
+    disegnaProva();
+  }
+
+  function disegnaLista(){
+    const voci = G().voci(campo);
+    const posto = new Map(G().prova(campo, '', $('mgCtx') && $('mgCtx').checked ? G().contestoAttuale(campo) : []).map((x, i) => [x.chiave, i]));
+    const ord = {
+      punteggio: (a, b) => (b.preferita - a.preferita) || ((posto.has(a.chiave) ? posto.get(a.chiave) : 99) - (posto.has(b.chiave) ? posto.get(b.chiave) : 99)) || b.n - a.n,
+      uso: (a, b) => b.n - a.n,
+      recenti: (a, b) => b.ultima - a.ultima,
+      az: (a, b) => a.testo.localeCompare(b.testo, 'it')
+    }[ordine];
+    voci.sort(ord);
+    $('mgConta').textContent = voci.length ? `${voci.length} ${voci.length === 1 ? 'frase' : 'frasi'}` : 'Nessuna frase: il campo non ha ancora imparato niente.';
+    $('mgLista').innerHTML = voci.map((v) => {
+      const modifica = inModifica === v.chiave;
+      return `<div class="mg-voce${v.preferita ? ' preferita' : ''}" data-chiave="${esc(v.chiave)}">
+        <button type="button" class="mg-stella" data-mg="stella" aria-pressed="${v.preferita}" title="${v.preferita ? 'Togli dalle preferite' : 'Fissa in cima alle proposte'}">${v.preferita ? '★' : '☆'}</button>
+        <div class="mg-testo">
+          ${modifica ? `<input type="text" class="mg-edit" value="${esc(v.testo)}" maxlength="300">` : `<div class="mg-frase">${esc(v.testo)}</div>`}
+          <div class="mg-meta">${v.manuale && !v.n ? 'insegnata a mano' : `usata ${v.n} ${v.n === 1 ? 'volta' : 'volte'} · ultima ${data(v.ultima)}`}${v.scelte || v.scavalcate ? ` · scelta ${v.scelte}, scavalcata ${v.scavalcate}` : ''}${v.varianti > 1 ? ` · ${v.varianti} varianti` : ''}${v.contesto.length ? ` · tipica con <b>${v.contesto.map(esc).join(', ')}</b>` : ''}</div>
+        </div>
+        <div class="mg-btns">
+          ${modifica ? '<button type="button" class="btn-primary" data-mg="salva">Salva</button><button type="button" class="btn-ghost" data-mg="annulla">Annulla</button>'
+            : '<button type="button" class="mg-ico" data-mg="modifica" title="Correggi la frase" aria-label="Correggi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button><button type="button" class="mg-ico mg-via" data-mg="elimina" title="Dimentica la frase" aria-label="Dimentica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>'}
+        </div></div>`;
+    }).join('');
+    const ed = $('mgLista').querySelector('.mg-edit');
+    if (ed) { ed.focus(); ed.select(); }
+  }
+
+  function disegnaProva(){
+    const e = $('mgProvaEsito'); if (!e) return;
+    const ris = G().prova(campo, $('mgProva').value, $('mgCtx').checked ? G().contestoAttuale(campo) : []);
+    e.innerHTML = ris.length
+      ? ris.map((x, i) => `<div class="pg-prova-riga"><span class="mg-pos">${i + 1}</span><span class="mg-prova-testo">${esc(x.testo)}</span>${x.motivo ? `<span class="mem-perche">${esc(x.motivo)}</span>` : ''}<span class="mg-punti">${x.punti}</span></div>`).join('')
+      : '<div class="mg-nota">Nessuna proposta per questo testo.</div>';
+  }
+
+  function disegna(){
+    disegnaNav();
+    campo === null ? disegnaPanoramica() : disegnaCampo();
+    const corpo = $('mgCorpo');
+    corpo.classList.remove('pg-entra'); void corpo.offsetWidth; corpo.classList.add('pg-entra');
+  }
+  function aggiorna(){ disegnaNav(); disegnaLista(); disegnaProva(); }
+
+  function apri(k){
+    campo = k === undefined ? null : k;
+    $('mgOverlay').classList.add('open');
+    $('railMemoria').setAttribute('aria-expanded', 'true');
+    disegna();
+  }
+  function chiudi(){
+    $('mgOverlay').classList.remove('open');
+    $('railMemoria').setAttribute('aria-expanded', 'false');
+    inModifica = null;
+  }
+
+  $('mgOverlay').addEventListener('mousedown', (ev) => { if (ev.target === $('mgOverlay')) chiudi(); });
+  $('mgOverlay').addEventListener('click', (ev) => {
+    if (ev.target.closest('[data-mg-chiudi]')) { chiudi(); return; }
+    const tab = ev.target.closest('[data-campo]');
+    if (tab) { campo = tab.dataset.campo || null; inModifica = null; disegna(); return; }
+    const b = ev.target.closest('[data-mg]'); if (!b) return;
+    const voce = b.closest('.mg-voce'); const c = voce && voce.dataset.chiave;
+    switch (b.dataset.mg) {
+      case 'stella': G().fissa(campo, c, b.getAttribute('aria-pressed') !== 'true'); aggiorna(); break;
+      case 'modifica': inModifica = c; disegnaLista(); break;
+      case 'annulla': inModifica = null; disegnaLista(); break;
+      case 'salva': salvaModifica(voce); break;
+      case 'elimina':
+        if (confirm('Dimenticare questa frase? Il campo non la proporrà più.')) { G().elimina(campo, c); aggiorna(); }
+        break;
+      case 'aggiungi': {
+        const t = $('mgNuova').value;
+        if (G().aggiungi(campo, t)) { $('mgNuova').value = ''; aggiorna(); }
+        break;
+      }
+      case 'esporta': {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([G().esporta()], { type: 'application/json' }));
+        a.download = `memoria-esgar-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+        stato('Memoria esportata in un file.', 'ok');
+        break;
+      }
+      case 'azzera':
+        if (confirm('Cancellare tutte le frasi imparate su questo PC? I referti salvati non si toccano.')) { window.EsgarMemoria.azzera(); disegna(); stato('Memoria azzerata.', 'ok'); }
+        break;
+    }
+  });
+  function salvaModifica(voce){
+    const ed = voce.querySelector('.mg-edit');
+    if (ed && G().modifica(campo, voce.dataset.chiave, ed.value)) { inModifica = null; aggiorna(); }
+  }
+  function stato(t, tono){ const e = $('mgStato'); if (e) { e.className = 'pp-stato ' + (tono || ''); e.textContent = t; } }
+
+  $('mgOverlay').addEventListener('input', (ev) => { if (ev.target.id === 'mgProva') disegnaProva(); });
+  $('mgOverlay').addEventListener('change', async (ev) => {
+    if (ev.target.id === 'mgCtx') { disegnaProva(); disegnaLista(); }
+    if (ev.target.id === 'mgOrdine') { ordine = ev.target.value; disegnaLista(); }
+    if (ev.target.id === 'mgImporta' && ev.target.files[0]) {
+      try { const n = G().importa(await ev.target.files[0].text()); disegna(); stato(`Memoria importata: ${n} ${n === 1 ? 'frase nuova' : 'frasi nuove'}, le altre unite a quelle già presenti.`, 'ok'); }
+      catch (e) { stato('Importazione non riuscita: ' + e.message, 'ko'); }
+      ev.target.value = '';
+    }
+  });
+  $('mgOverlay').addEventListener('keydown', (ev) => {
+    if (ev.target.classList.contains('mg-edit')) {
+      if (ev.key === 'Enter') { ev.preventDefault(); salvaModifica(ev.target.closest('.mg-voce')); }
+      if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); inModifica = null; disegnaLista(); }
+      return;
+    }
+    if (ev.target.id === 'mgNuova' && ev.key === 'Enter') { ev.preventDefault(); $('mgOverlay').querySelector('[data-mg=aggiungi]').click(); }
+  });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && $('mgOverlay').classList.contains('open') && !document.querySelector('.sel-wrap.aperto')) chiudi();
+  });
+  $('railMemoria').addEventListener('click', () => ($('mgOverlay').classList.contains('open') ? chiudi() : apri()));
+
+  window.EsgarMemoriaPagina = { apri, chiudi };
 })();
 </script>
 </body>
