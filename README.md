@@ -10,6 +10,7 @@ modifica del form e conserva le correzioni manuali.
 | `telefono.html` | la pagina del telefono, che fa da chiave per l'accesso |
 | `test/accesso.test.js` | accesso e archivio, da capo a fondo |
 | `test/interfaccia.test.js` | menu a tendina, calendario e campi che imparano |
+| `test/struttura.test.js` | apprendimento dalla struttura del referto finito |
 
 ## Accesso con il telefono
 
@@ -148,6 +149,26 @@ infiltrati, EMVI, campo magnetico…). Il punteggio somma:
 La memoria resta nel browser di questo PC (localStorage): solo le frasi dei
 campi liberi e le scelte del form, nessun dato del paziente.
 
+### Struttura del referto
+
+Il tool impara anche dal **referto finito**. A ogni «Scarica .txt» confronta,
+sezione per sezione, il referto scaricato con quello che il form genera da solo,
+riga per riga come un diff. Le differenze sono il lavoro del medico:
+
+- **aggiunte**: frasi scritte di suo in una sezione, per esempio una nota fissa
+  in MRF;
+- **riformulazioni**: una frase generata riscritta a modo suo, per esempio
+  «- non coinvolta» → «- fascia mesorettale indenne».
+
+Le impara con le scelte del form, come i campi liberi. Sopra il referto il
+riquadro **«Dai tuoi referti»** propone le aggiunte tipiche per le scelte attuali
+e le riformulazioni delle frasi presenti, con un clic su «Aggiungi» o
+«Sostituisci»; la × nasconde una proposta per quel referto. Si propone solo ciò
+che è stato scritto almeno due volte, o che è preferito. Lo stesso referto
+scaricato più volte conta una volta sola. Nella pagina Memoria le sezioni
+compaiono sotto «Struttura del referto», con aggiunte e riformulazioni da
+provare, correggere o dimenticare.
+
 ### Memoria del tool
 
 Come la «Personalizzazione del reparto» di ER Oncology Archivist, la pagina
@@ -226,6 +247,7 @@ con «riduci movimento» attivo nel sistema né con `?nointro` nell'indirizzo.
 npm i playwright
 node test/accesso.test.js
 node test/interfaccia.test.js
+node test/struttura.test.js
 ```
 
 Il test avvia un relay finto in locale, fa l'accesso da un telefono simulato,

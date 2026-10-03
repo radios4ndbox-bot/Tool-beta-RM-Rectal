@@ -45,6 +45,8 @@
 }
 
 *{box-sizing:border-box;}
+/* hidden nasconde sempre, anche gli elementi a cui lo stile dà un display */
+[hidden]{display:none !important;}
 html{background:var(--bg);}
 body{
   margin:0; background:var(--bg); color:var(--text);
@@ -609,6 +611,21 @@ nav.intro-in-corso .nav-right,
 .cerca-anteprima{margin:8px 0 0; padding:8px 10px; max-height:180px; overflow:auto; white-space:pre-wrap; font-family:var(--mono); font-size:10.5px; line-height:1.5;
   background:#fff; border:1px solid var(--border); border-radius:8px; color:var(--text);}
 @media print{ .archivio-caso, .cerca-pannello{display:none !important;} }
+.proposte-ref{margin:10px 16px 0; padding:8px 10px 6px; border-radius:10px; border:1px solid var(--accent-line); background:var(--accent-bg);
+  animation:popSection .35s var(--molla) both; transform-origin:top center;}
+.proposte-ref[hidden]{display:none;}
+.pr-testa{font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:0 2px 6px;}
+.pr-voce{display:flex; align-items:center; gap:8px; padding:6px 4px; border-top:1px solid var(--accent-line); font-size:12px;}
+.pr-voce:first-of-type{border-top:none;}
+.pr-sez{flex-shrink:0; font-size:10px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:#fff; padding:2px 7px; border-radius:6px;
+  background:linear-gradient(135deg, var(--rose), var(--accent)); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.pr-testo{flex:1; min-width:0; line-height:1.4; color:var(--text);}
+.pr-testo em{font-style:normal; color:var(--muted);}
+.pr-volte{flex-shrink:0; font-family:var(--mono); font-size:10.5px; color:var(--faint);}
+.pr-voce .btn-secondary{flex-shrink:0; padding:4px 11px; font-size:11px;}
+.pr-x{flex-shrink:0; width:22px; height:22px; border:none; border-radius:6px; background:transparent; color:var(--faint); font-size:15px; line-height:1; cursor:pointer;}
+.pr-x:hover{background:rgba(0,0,0,.06); color:var(--accent);}
+@media print{ .proposte-ref{display:none !important;} }
 .archivio-stato{margin:6px 18px 0; font-size:11.5px; line-height:1.45; color:var(--muted);}
 .archivio-stato.ok{color:var(--green);}
 .archivio-stato.ko{color:#9A2A2A;}
@@ -1716,6 +1733,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
       </div>
       <div class="archivio-stato" id="archivioStato"></div>
       <div class="report-hint">Il referto si aggiorna a ogni modifica del form. Le correzioni manuali restano intatte nelle sezioni che non dipendono dai campi appena cambiati; &laquo;Rigenera tutto&raquo; riscrive tutto da zero.</div>
+      <div class="proposte-ref" id="proposteRef" hidden></div>
       <div class="status" id="status"></div>
       <textarea id="output" spellcheck="false" aria-label="Testo del referto"></textarea>
       <pre id="printArea"></pre>
@@ -5888,7 +5906,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-03 · memoria';
+const VERSIONE = '2026-10-03 · struttura';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -6625,8 +6643,9 @@ window.EsgarTest = {
 
   /* il contesto: le scelte fatte nel pannello del campo (radio, caselle,
      menu), esclusi i menu delle sole unità di misura */
-  function contesto(el){
-    const pan = el.closest('.panel') || $('form-pane');
+  function contesto(el){ return contestoDi(el.closest('.panel') || $('form-pane')); }
+  const contestoModo = (modo) => contestoDi($(modo === 'ristad' ? 'panel-ristad' : 'panel-primaria'));
+  function contestoDi(pan){
     const f = [];
     pan.querySelectorAll('input[type=radio]:checked').forEach((r) => f.push(r.name + '=' + r.value));
     pan.querySelectorAll('input[type=checkbox]:checked').forEach((c) => f.push('x:' + (c.id || c.className + '=' + c.value)));
@@ -6902,9 +6921,44 @@ window.EsgarTest = {
     })),
     prova: (k, testo, feats) => classifica(k, testo, feats || [], 8, false).map((x) => ({ chiave: x.v.k, testo: x.testo, punti: +x.punti.toFixed(2), motivo: x.motivo ? nomeScelta(x.motivo) : '' })),
     contestoAttuale: (k) => {
+      if (/^ref:/.test(k)) return contestoModo(k.split(':')[1]);
       const el = campiMemoria().find((e) => chiave(e) === k);
       return el ? contesto(el) : [];
     },
+    contestoModo,
+    /* ── struttura del referto: aggiunte e riformulazioni del medico ──
+       aggiunte: frasi scritte di suo in una sezione → memoria «ref:modo:sezione»
+       sostituzioni: frase generata dal form → come la riscrive il medico     */
+    imparaStruttura: (modo, aggiunte, sostituzioni) => {
+      const feats = contestoModo(modo), ora = Date.now();
+      aggiunte.forEach((x) => impara('ref:' + modo + ':' + x.sez, x.testo, feats, ora));
+      const S = mem.sost || (mem.sost = {});
+      sostituzioni.forEach((x) => {
+        const ks = modo + ':' + x.sez, kg = norm(x.gen);
+        const sez = S[ks] || (S[ks] = {});
+        const r = sez[kg] || (sez[kg] = { gen: x.gen, alt: {}, n: 0, u: 0 });
+        r.n++; r.u = ora; r.alt[x.alt] = (r.alt[x.alt] || 0) + 1;
+      });
+      sfoltisci(false); salva();
+    },
+    /* la riformulazione più usata per una frase generata, se c'è */
+    riformulazione: (modo, sez, gen) => {
+      const r = ((mem.sost || {})[modo + ':' + sez] || {})[norm(gen)];
+      if (!r) return null;
+      let alt = '', m = 0;
+      Object.keys(r.alt).forEach((t) => { if (r.alt[t] > m) { m = r.alt[t]; alt = t; } });
+      return { gen: r.gen, alt, volte: m, n: r.n };
+    },
+    sostituzioni: (modo, sez) => Object.entries((mem.sost || {})[modo + ':' + sez] || {}).map(([k, r]) => {
+      let alt = '', m = 0; Object.keys(r.alt).forEach((t) => { if (r.alt[t] > m) { m = r.alt[t]; alt = t; } });
+      return { chiave: k, gen: r.gen, alt, volte: m, n: r.n, ultima: r.u };
+    }),
+    sezioniStruttura: () => {
+      const k = new Set(Object.keys(mem.campi).filter((x) => /^ref:/.test(x) && mem.campi[x].voci.length).map((x) => x.slice(4)));
+      Object.keys(mem.sost || {}).forEach((x) => { if (Object.keys(mem.sost[x]).length) k.add(x); });
+      return Array.from(k);
+    },
+    eliminaSostituzione: (modo, sez, k) => { const z = (mem.sost || {})[modo + ':' + sez]; if (z) { delete z[k]; salva(); } },
     fissa: (k, c, si) => { const v = trova(k, c); if (v) { v.f = !!si; salva(); } },
     elimina: (k, c) => { const cm = mem.campi[k]; if (cm) { cm.voci = cm.voci.filter((v) => v.k !== c); salva(); } },
     /* nuovo testo per una frase: se coincide con un'altra, le due si uniscono */
@@ -6953,6 +7007,15 @@ window.EsgarTest = {
             Object.keys(v.t).forEach((t) => { gia.t[t] = (gia.t[t] || 0) + (+v.t[t] || 0); });
             Object.keys(v.c || {}).forEach((f) => { gia.c[f] = (gia.c[f] || 0) + (+v.c[f] || 0); });
           } else { cm.voci.push({ k: v.k, t: v.t, n: +v.n || 0, u: +v.u || 0, s: +v.s || 0, x: +v.x || 0, c: v.c || {}, f: !!v.f, m: !!v.m }); n++; }
+        });
+      });
+      Object.keys(m.sost || {}).forEach((ks) => {
+        const S = mem.sost || (mem.sost = {}); const sez = S[ks] || (S[ks] = {});
+        Object.keys(m.sost[ks] || {}).forEach((kg) => {
+          const da = m.sost[ks][kg]; if (!da || !da.alt) return;
+          const r = sez[kg] || (sez[kg] = { gen: da.gen, alt: {}, n: 0, u: 0 });
+          r.n += +da.n || 0; r.u = Math.max(r.u, +da.u || 0);
+          Object.keys(da.alt).forEach((t) => { r.alt[t] = (r.alt[t] || 0) + (+da.alt[t] || 0); });
         });
       });
       sfoltisci(false); salva();
@@ -7203,6 +7266,14 @@ window.EsgarTest = {
 })();
 </script>
 <script>
+/* «STAGE FINALE (sintesi):» → «Stage finale (sintesi)»; le sigle restano sigle */
+window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w, i) => {
+  const nudo = w.replace(/[()]/g, '');
+  if (/^(MRF|EMVI|ycMRF|ycEMVI|TD|TNM)$/.test(nudo)) return w;
+  const l = w.toLowerCase();
+  return i === 0 ? l.charAt(0).toUpperCase() + l.slice(1) : l;
+}).join(' ');
+
 // ============================================================
 // MEMORIA DEL TOOL — gestire quello che impara
 //
@@ -7239,9 +7310,20 @@ window.EsgarTest = {
       });
     });
     out.push({ k: 'td.sede', nome: 'Sede', scheda: 'Tumor deposit', modo: 'primaria' });
+    // le sezioni del referto in cui il medico aggiunge o riformula
+    G().sezioniStruttura().forEach((x) => {
+      const [modo, sez] = x.split(':');
+      const defs = modo === 'ristad' ? SECTION_HEADERS_RISTAD : SECTION_HEADERS_PRIMARIA;
+      const h = sez === 'intro' ? 'Apertura' : ((defs.find(([d]) => d === sez) || [])[1] || sez).replace(/:$/, '');
+      out.push({ k: 'ref:' + x, nome: sez === 'intro' ? h : window.EsgarSezione(h), scheda: modo === 'ristad' ? 'Referto di ristadiazione' : 'Referto di stadiazione', modo: 'struttura', sez, modoRef: modo });
+    });
     return out;
   }
-  const contaVoci = (k) => { const c = G().campi().find((x) => x.k === k); return c ? c.voci : 0; };
+  const contaVoci = (k) => {
+    const c = G().campi().find((x) => x.k === k);
+    const sos = /^ref:/.test(k) ? G().sostituzioni(k.split(':')[1], k.split(':')[2]).length : 0;
+    return (c ? c.voci : 0) + sos;
+  };
 
   function disegnaNav(){
     const campi = campiForm();
@@ -7255,6 +7337,7 @@ window.EsgarTest = {
         <span class="pg-tab-nome">Panoramica</span><span class="pg-conta">${G().campi().reduce((a, c) => a + c.voci, 0)}</span>
         <span class="pg-tab-desc">Come impara, esporta e importa</span></button>`
       + gruppo('primaria', 'Stadiazione primaria') + gruppo('ristad', 'Ristadiazione')
+      + (campi.some((c) => c.modo === 'struttura') ? gruppo('struttura', 'Struttura del referto') : '')
       + '<div class="pg-nav-nota">Le modifiche si salvano da sole, nel browser di questo PC. Si chiude con <kbd>Esc</kbd>.</div>';
   }
 
@@ -7301,7 +7384,9 @@ window.EsgarTest = {
     const c = campiForm().find((x) => x.k === campo) || { k: campo, nome: campo, scheda: '' };
     $('mgCorpo').innerHTML = `
       <div class="pg-sez-testa"><h3>${esc(c.nome)}</h3>
-        <p>${esc(c.scheda)} · ${c.modo === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}. Le frasi qui sotto sono quelle che il campo propone; ★ le fissa in cima.</p></div>
+        <p>${c.modo === 'struttura'
+          ? `${esc(c.scheda)}. Frasi che il medico aggiunge di suo in questa sezione: il tool le impara dal referto finito, a ogni «Scarica .txt», e le propone sopra il referto. ★ le fissa in cima.`
+          : `${esc(c.scheda)} · ${c.modo === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}. Le frasi qui sotto sono quelle che il campo propone; ★ le fissa in cima.`}</p></div>
       <div class="pg-prova">
         <label for="mgProva">Prova: cosa proporrebbe il tool</label>
         <input id="mgProva" type="text" autocomplete="off" placeholder="Scrivi come nel campo, o lascia vuoto per le proposte all'apertura">
@@ -7319,11 +7404,23 @@ window.EsgarTest = {
           <option value="recenti">più recenti</option><option value="az">dalla A alla Z</option>
         </select></div>
       </div>
-      <div class="mg-lista" id="mgLista"></div>`;
+      <div class="mg-lista" id="mgLista"></div>
+      ${c.modo === 'struttura' ? '<div class="mg-blocco"><h4>Riformulazioni</h4><p class="mg-nota">Frasi generate dal form che il medico riscrive a modo suo: sopra il referto il tool propone di sostituirle.</p><div class="mg-lista" id="mgSost"></div></div>' : ''}`;
     $('mgOrdine').value = ordine;
     window.EsgarUI && EsgarUI.avvolgiSelect($('mgOrdine'));
     disegnaLista();
     disegnaProva();
+    disegnaSost();
+  }
+  function disegnaSost(){
+    const box = $('mgSost'); if (!box) return;
+    const [, modo, sez] = campo.split(':');
+    const l = G().sostituzioni(modo, sez).sort((a, b) => b.volte - a.volte);
+    box.innerHTML = l.length ? l.map((r) => `<div class="mg-voce" data-sost="${esc(r.chiave)}">
+        <div class="mg-testo"><div class="mg-meta">al posto di «${esc(r.gen)}»</div><div class="mg-frase">${esc(r.alt)}</div>
+        <div class="mg-meta">riscritta così ${r.volte} ${r.volte === 1 ? 'volta' : 'volte'} · ultima ${data(r.ultima)}</div></div>
+        <div class="mg-btns"><button type="button" class="mg-ico mg-via" data-mg="elimina-sost" title="Dimentica la riformulazione" aria-label="Dimentica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>`).join('')
+      : '<div class="mg-nota">Nessuna riformulazione imparata in questa sezione.</div>';
   }
 
   function disegnaLista(){
@@ -7397,6 +7494,11 @@ window.EsgarTest = {
       case 'elimina':
         if (confirm('Dimenticare questa frase? Il campo non la proporrà più.')) { G().elimina(campo, c); aggiorna(); }
         break;
+      case 'elimina-sost': {
+        const [, modo, sez] = campo.split(':');
+        if (confirm('Dimenticare questa riformulazione?')) { G().eliminaSostituzione(modo, sez, b.closest('[data-sost]').dataset.sost); disegnaNav(); disegnaSost(); }
+        break;
+      }
       case 'aggiungi': {
         const t = $('mgNuova').value;
         if (G().aggiungi(campo, t)) { $('mgNuova').value = ''; aggiorna(); }
@@ -7444,6 +7546,179 @@ window.EsgarTest = {
   $('railMemoria').addEventListener('click', () => ($('mgOverlay').classList.contains('open') ? chiudi() : apri()));
 
   window.EsgarMemoriaPagina = { apri, chiudi };
+})();
+</script>
+<script>
+// ============================================================
+// STRUTTURA DEL REFERTO — il tool impara anche dal referto finito
+//
+// A ogni «Scarica .txt» il referto scaricato si confronta, sezione per
+// sezione, con quello che il form genera da solo. Le differenze sono
+// il lavoro del medico, e il tool le impara con le scelte del form:
+//   · aggiunte — frasi scritte di suo in una sezione (memoria
+//     «ref:modo:sezione», con lo stesso punteggio dei campi liberi);
+//   · riformulazioni — una frase generata riscritta a modo suo.
+// Sopra il referto, «Dai tuoi referti» propone poi le aggiunte tipiche
+// per le scelte attuali e le riformulazioni delle frasi presenti; un
+// clic le inserisce nella sezione giusta. Si propone solo ciò che è
+// stato scritto almeno due volte, o che è segnato come preferito.
+// ============================================================
+(function(){
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const G = () => window.EsgarMemoria.gestione;
+  const MIN_VOLTE = 2;
+  const MAX_PROPOSTE = 5;
+  const norm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const intestazioni = () => mode === 'ristad' ? SECTION_HEADERS_RISTAD : SECTION_HEADERS_PRIMARIA;
+  const generato = () => mode === 'ristad' ? computeSectionsRistad() : computeSectionsPrimaria();
+  const nomeSezione = (k) => k === 'intro' ? 'Apertura' : window.EsgarSezione(((intestazioni().find(([x]) => x === k) || [])[1] || k));
+  const scartate = new Set();      // proposte chiuse con ×, per questa pagina
+
+  /* le righe di una sezione, senza l'intestazione */
+  function righe(testo, k){
+    const r = String(testo || '').split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+    const h = (intestazioni().find(([x]) => x === k) || [])[1];
+    if (h && r[0] === h) r.shift();
+    return r;
+  }
+  /* sezioni del referto a schermo e di quello generato dal form */
+  function sezioni(){
+    const fresh = generato();
+    const defs = intestazioni();
+    const cur = splitByHeaders($('output').value, defs.concat([['__tail__', fresh.tail]]));
+    const out = [{ k: 'intro', gen: fresh.intro, cur: cur.intro }];
+    defs.forEach(([k]) => out.push({ k, gen: fresh.sections[k] || '', cur: cur.sections[k] || '' }));
+    return out;
+  }
+
+  /* il confronto, riga per riga come un diff: le righe uguali (sottosequenza
+     comune più lunga) fanno da punti fermi; fra due punti fermi, una riga
+     generata tolta e una nuova al suo posto sono una riscrittura, le righe
+     nuove in più sono aggiunte. */
+  function confronta(g, c){
+    const gn = g.map(norm), cn = c.map(norm);
+    const L = Array.from({ length: g.length + 1 }, () => new Array(c.length + 1).fill(0));
+    for (let i = g.length - 1; i >= 0; i--) for (let j = c.length - 1; j >= 0; j--)
+      L[i][j] = gn[i] === cn[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    const agg = [], sos = [];
+    let i = 0, j = 0, tolte = [], nuove = [];
+    const chiudi = () => {
+      // nello stesso tratto: le prime nuove riscrivono le tolte, nell'ordine
+      nuove.forEach((x, k) => { if (k < tolte.length) sos.push({ gen: tolte[k], alt: x }); else agg.push(x); });
+      tolte = []; nuove = [];
+    };
+    while (i < g.length || j < c.length) {
+      if (i < g.length && j < c.length && gn[i] === cn[j]) { chiudi(); i++; j++; }
+      else if (j < c.length && (i >= g.length || L[i][j + 1] >= L[i + 1][j])) nuove.push(c[j++]);
+      else tolte.push(g[i++]);
+    }
+    chiudi();
+    return { agg: agg.filter((x) => norm(x).length >= 3), sos: sos.filter((x) => norm(x.alt).length >= 3) };
+  }
+  function differenze(){
+    const agg = [], sos = [];
+    sezioni().forEach(({ k, gen, cur }) => {
+      if (!cur) return;
+      const d = confronta(righe(gen, k), righe(cur, k));
+      d.agg.forEach((t) => agg.push({ sez: k, testo: t }));
+      d.sos.forEach((x) => sos.push({ sez: k, gen: x.gen, alt: x.alt }));
+    });
+    return { agg, sos };
+  }
+
+  const vistiStruttura = new Set();
+  function analizza(){
+    const firma = mode + '|' + $('output').value;
+    if (vistiStruttura.has(firma)) return null;
+    vistiStruttura.add(firma);
+    const d = differenze();
+    if (d.agg.length || d.sos.length) G().imparaStruttura(mode, d.agg, d.sos);
+    proponi();
+    return d;
+  }
+
+  /* ── proposte sopra il referto ── */
+  function proposte(){
+    const out = [];
+    const feats = G().contestoModo(mode);
+    sezioni().forEach(({ k, cur }) => {
+      if (!cur && k !== 'intro') return;
+      const qui = new Set(righe(cur, k).map(norm));
+      // riformulazioni delle frasi generate presenti
+      righe(cur, k).forEach((riga) => {
+        const r = G().riformulazione(mode, k, riga);
+        if (r && r.volte >= MIN_VOLTE && !qui.has(norm(r.alt))) out.push({ tipo: 'sos', sez: k, gen: riga, testo: r.alt, volte: r.volte, punti: 100 + r.volte });
+      });
+      // aggiunte tipiche della sezione, per le scelte del form
+      const chiave = 'ref:' + mode + ':' + k;
+      const info = new Map(G().voci(chiave).map((v) => [v.chiave, v]));
+      G().prova(chiave, '', feats).forEach((x) => {
+        const v = info.get(x.chiave);
+        if (!v || qui.has(norm(x.testo)) || !(v.n >= MIN_VOLTE || v.preferita)) return;
+        out.push({ tipo: 'agg', sez: k, testo: x.testo, volte: v.n, motivo: x.motivo, punti: x.punti });
+      });
+    });
+    return out.filter((p) => !scartate.has(p.tipo + '|' + p.sez + '|' + norm(p.testo))).sort((a, b) => b.punti - a.punti).slice(0, MAX_PROPOSTE);
+  }
+  let correnti = [];
+  function proponi(){
+    const box = $('proposteRef'); if (!box) return;
+    correnti = proposte();
+    box.hidden = !correnti.length;
+    if (!correnti.length) { box.innerHTML = ''; return; }
+    box.innerHTML = '<div class="pr-testa">Dai tuoi referti</div>' + correnti.map((p, i) => `<div class="pr-voce">
+        <span class="pr-sez">${esc(nomeSezione(p.sez))}</span>
+        <span class="pr-testo">${p.tipo === 'sos' ? `<em>di solito scrivi</em> ${esc(p.testo)}` : esc(p.testo)}${p.motivo ? ` <span class="mem-perche">${esc(p.motivo)}</span>` : ''}</span>
+        <span class="pr-volte">×${p.volte}</span>
+        <button type="button" class="btn-secondary" data-pr="${i}">${p.tipo === 'sos' ? 'Sostituisci' : 'Aggiungi'}</button>
+        <button type="button" class="pr-x" data-prx="${i}" aria-label="Non ora" title="Non proporla per questo referto">×</button>
+      </div>`).join('');
+  }
+
+  /* inserisce nella sezione giusta del referto a schermo */
+  function applica(p){
+    const o = $('output');
+    const lines = o.value.split('\n');
+    if (p.tipo === 'sos') {
+      const i = lines.findIndex((l) => l.trim() === p.gen);
+      if (i >= 0) lines[i] = lines[i].replace(p.gen, p.testo);
+    } else {
+      const defs = intestazioni();
+      const pos = (h) => lines.findIndex((l) => l.trim() === h);
+      const inizio = p.sez === 'intro' ? 0 : pos((defs.find(([x]) => x === p.sez) || [])[1]);
+      if (inizio < 0) return;
+      // fine della sezione: la prossima intestazione, o l'attribuzione finale
+      let fine = lines.length;
+      for (let j = inizio + 1; j < lines.length; j++) {
+        if (defs.some(([, h]) => lines[j].trim() === h) || /^Referto redatto secondo/.test(lines[j].trim())) { fine = j; break; }
+      }
+      while (fine > inizio + 1 && !lines[fine - 1].trim()) fine--;
+      lines.splice(fine, 0, p.testo);
+    }
+    o.value = lines.join('\n');
+    o.classList.remove('flash'); void o.offsetWidth; o.classList.add('flash');
+    proponi();
+  }
+  $('proposteRef').addEventListener('click', (ev) => {
+    const a = ev.target.closest('[data-pr]');
+    if (a) { applica(correnti[+a.dataset.pr]); return; }
+    const x = ev.target.closest('[data-prx]');
+    if (x) { const p = correnti[+x.dataset.prx]; scartate.add(p.tipo + '|' + p.sez + '|' + norm(p.testo)); proponi(); }
+  });
+
+  // impara a ogni «Scarica .txt»; le proposte seguono il referto e il form
+  $('btnDownload').addEventListener('click', analizza);
+  let t = null;
+  const dopo = () => { clearTimeout(t); t = setTimeout(proponi, 250); };
+  $('form-pane').addEventListener('input', dopo);
+  $('form-pane').addEventListener('change', dopo);
+  $('output').addEventListener('input', dopo);
+  ['btnModePrimaria', 'btnModeRistad', 'btnGenerate'].forEach((id) => $(id).addEventListener('click', dopo));
+  proponi();
+
+  window.EsgarStruttura = { analizza, differenze, proposte: () => proposte().map((p) => ({ tipo: p.tipo, sez: p.sez, testo: p.testo, volte: p.volte })), nomeSezione };
 })();
 </script>
 </body>
