@@ -151,7 +151,8 @@ campi liberi e le scelte del form, nessun dato del paziente.
 
 ### Struttura del referto
 
-Il tool impara anche dal **referto finito**. A ogni «Scarica .txt» confronta,
+Il tool impara anche dal **referto finito**. A ogni «Scarica .txt» e a ogni
+salvataggio riuscito con «Salva nell'archivio» confronta,
 sezione per sezione, il referto scaricato con quello che il form genera da solo,
 riga per riga come un diff. Le differenze sono il lavoro del medico:
 

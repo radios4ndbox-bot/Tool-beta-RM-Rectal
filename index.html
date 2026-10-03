@@ -7552,7 +7552,8 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
 // ============================================================
 // STRUTTURA DEL REFERTO — il tool impara anche dal referto finito
 //
-// A ogni «Scarica .txt» il referto scaricato si confronta, sezione per
+// A ogni «Scarica .txt», e a ogni salvataggio riuscito con «Salva
+// nell'archivio», il referto si confronta, sezione per
 // sezione, con quello che il form genera da solo. Le differenze sono
 // il lavoro del medico, e il tool le impara con le scelte del form:
 //   · aggiunte — frasi scritte di suo in una sezione (memoria
@@ -7708,8 +7709,10 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     if (x) { const p = correnti[+x.dataset.prx]; scartate.add(p.tipo + '|' + p.sez + '|' + norm(p.testo)); proponi(); }
   });
 
-  // impara a ogni «Scarica .txt»; le proposte seguono il referto e il form
+  // impara a ogni «Scarica .txt» e a ogni salvataggio riuscito nell'archivio;
+  // le proposte seguono il referto e il form
   $('btnDownload').addEventListener('click', analizza);
+  document.addEventListener('esgar:referto-salvato', analizza);
   let t = null;
   const dopo = () => { clearTimeout(t); t = setTimeout(proponi, 250); };
   $('form-pane').addEventListener('input', dopo);

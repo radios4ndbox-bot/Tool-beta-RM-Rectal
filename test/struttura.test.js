@@ -37,6 +37,12 @@ const RISCRITTA = '- fascia mesorettale indenne';
   await scarica();
   check((await p.evaluate(() => EsgarMemoria.gestione.voci('ref:primaria:mrf')))[0].n === 2, 'lo stesso referto scaricato due volte conta una');
 
+  // anche un salvataggio riuscito nell'archivio insegna
+  await p.fill('#p_estensione', '8');
+  await p.evaluate(() => { const o = document.getElementById('output'); o.value = o.value.replace('METASTASI PELVICHE:', 'METASTASI PELVICHE:\nNon versamento libero nello scavo pelvico.'); });
+  await p.evaluate(() => document.dispatchEvent(new CustomEvent('esgar:referto-salvato')));
+  check((await p.evaluate(() => EsgarMemoria.gestione.voci('ref:primaria:meta'))).some((v) => /versamento/.test(v.testo)), 'anche «Salva nell\'archivio» insegna (frase aggiunta in Metastasi pelviche)');
+
   // nuovo referto: le proposte compaiono sopra il referto
   await p.reload(); await p.waitForTimeout(500);
   check(await p.isVisible('#proposteRef') && await p.locator('#proposteRef .pr-voce').count() === 2, 'riaprendo: due proposte sopra il referto');
