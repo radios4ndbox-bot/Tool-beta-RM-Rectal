@@ -14,13 +14,13 @@ modifica del form e conserva le correzioni manuali.
 ## Accesso con il telefono
 
 Il telefono è solo la **chiave**: conserva nome, cognome e titolo di chi
-referta, nient'altro. I referti restano sul PC.
+referta, più una chiave di firma del dispositivo. I referti restano sul PC.
 
 1. Sul PC, in alto a destra, «Accedi» → «Accedi con il telefono» mostra un QR.
 2. Lo si inquadra con la fotocamera del telefono: si apre `telefono.html`.
    La prima volta chiede nome, cognome e titolo (Dr., Dr.ssa o nessuno).
-3. Il telefono chiede conferma, poi manda i dati al PC. Il PC saluta per
-   nome («Dr.ssa Bianchi») e salva i referti a nome di chi ha fatto l'accesso.
+3. Il telefono chiede conferma, poi manda i dati al PC. Il PC saluta per nome
+   («Dr.ssa Bianchi») e salva i referti a nome di chi ha fatto l'accesso.
 
 L'accesso dura 12 ore, oppure finché non si preme «Esci»: su un PC condiviso
 conviene uscire a fine turno. Il QR vale 5 minuti.
@@ -31,6 +31,24 @@ cifrato con AES-GCM a 256 bit, e la chiave passa solo nel QR, nel frammento
 `#…` dell'indirizzo, che non arriva a nessun server. Il relay vede solo testo
 cifrato. Finito l'accesso nessuno dei due conserva la chiave, e aprire il tool
 non contatta la rete: la rete serve solo nel momento dell'accesso.
+
+### Codice dispositivo e amministratore
+
+Al primo uso il telefono crea una coppia di chiavi ECDSA P-256. La privata non
+è esportabile e non lascia mai il telefono. A ogni accesso il telefono firma
+l'argomento del QR e l'id del profilo, e il PC verifica la firma: una firma
+copiata da un altro accesso non vale. Dalla chiave pubblica nasce il **codice
+dispositivo** (per esempio `22FC-5461-8834-94AA`), visibile sul telefono in «La
+tua chiave».
+
+L'**amministratore** si riconosce dal codice dispositivo, non dal nome. Solo
+lui sceglie o cambia la cartella comune del PC.
+
+- I codici in `ADMIN_DISPOSITIVI`, in `index.html`, sono amministratori su ogni
+  PC.
+- Finché la lista è vuota, su un PC senza cartella comune il primo che entra
+  può configurarlo: sceglie la cartella comune e ne diventa l'amministratore
+  per quel PC.
 
 ### Pubblicare la pagina del telefono
 
@@ -45,51 +63,48 @@ scritto in `TEL_PUBBLICO` in `index.html`.
 
 ## Archivio dei referti
 
-Ogni profilo ha la **sua cartella** su questo PC, anche dentro Google Drive o
-OneDrive per desktop.
+I referti vanno in una **cartella comune** del PC, anche dentro Google Drive o
+OneDrive per desktop. La sceglie l'amministratore dal pannello del profilo,
+«Amministrazione di questo PC».
 
-- **Primo accesso:** appena entrati, il pannello del profilo chiede l'ultimo
-  passo, «Scegli la tua cartella». Il browser apre la finestra di scelta solo
-  dopo un clic, e l'accesso arriva dal telefono: per questo serve quel pulsante.
-  Se lo si salta, la scelta si apre al primo «Salva nell'archivio», e il referto
-  si salva subito dopo.
-- **Accessi successivi:** il tool ritrova da solo la cartella del profilo e la
-  nomina nel saluto. Un altro operatore sullo stesso PC ha la sua.
-- **Permesso:** Chrome può chiedere di nuovo il permesso di scrivere. Lo chiede
-  da solo al primo salvataggio, oppure si concede con «Riattiva» nel pannello.
-- «Cambia cartella» la sostituisce per quel profilo.
-
-«Salva nell'archivio», nella scheda del referto, ci scrive il referto con numero
-d'accesso e data d'esame:
+A ogni accesso il tool crea, se manca, la **cartella del medico** («Cognome
+Nome») dentro la cartella comune: è la sua directory. «Salva nell'archivio»,
+nella scheda del referto, ci scrive il referto con numero d'accesso e data
+d'esame:
 
 ```
-<cartella del profilo>/
-├── indice-referti.csv
-├── Stadiazione primaria/
-│   └── 2026/
-│       └── 2026-09/
-│           └── 2026-09-28_1412_A123456_cT3c_cN+_MRF-_EMVI+.txt
-└── Ristadiazione/
-    └── 2026/
-        └── 2026-10/
-            └── 2026-10-30_0930_A123456_near-cCR_ycT1-2_MRF-.txt
+<cartella comune>/
+├── Bianchi Giulia/
+│   ├── indice-referti.csv
+│   ├── Stadiazione primaria/
+│   │   └── 2026/
+│   │       └── 2026-09/
+│   │           └── 2026-09-28_1412_A123456_cT3c_cN+_MRF-_EMVI+.txt
+│   └── Ristadiazione/
+│       └── 2026/
+│           └── 2026-10/
+│               └── 2026-10-30_0930_A123456_near-cCR_ycT1-2_MRF-.txt
+└── Neri Marco/
+    └── …
 ```
 
-- **Tipo di esame**, poi **anno** e **mese** della data d'esame.
+- **Medico**, poi **tipo di esame**, poi **anno** e **mese** della data
+  d'esame.
 - Nel nome del file ci sono data d'esame, ora di salvataggio, numero d'accesso
   e la sintesi della stadiazione: cT, cN, MRF ed EMVI per la primaria; risposta,
   ycT, ycN, MRF ed EMVI per la ristadiazione.
-- `indice-referti.csv` elenca tutti i referti del profilo, con le stesse
+- `indice-referti.csv` elenca tutti i referti del medico, con le stesse
   informazioni in colonne. Si apre in Excel (separatore `;`) per cercare un
   numero d'accesso o ordinare per data o stadio.
 - Ogni file ha in testa tipo di esame, data, numero d'accesso, chi l'ha
   refertato e quando è stato salvato. Un salvataggio nello stesso minuto non
   sovrascrive: aggiunge `_2`, `_3`…
 
-L'associazione profilo → cartella resta nel browser di questo PC (IndexedDB),
-non sul telefono: il telefono resta solo la chiave. Serve Chrome o Edge (File
-System Access); negli altri browser il referto si scarica come file, con lo
-stesso nome.
+Chrome può chiedere di nuovo il permesso di scrivere nella cartella comune: lo
+chiede da solo al primo salvataggio, o lo si concede con «Riattiva». Finché
+l'amministratore non ha scelto la cartella comune, i referti si scaricano come
+file, con lo stesso nome; lo stesso vale nei browser senza File System Access
+(serve Chrome o Edge).
 
 Per salvare serve l'accesso: senza, «Salva nell'archivio» apre il pannello del
 profilo. Copia, «Scarica .txt» e Stampa funzionano anche senza accesso.

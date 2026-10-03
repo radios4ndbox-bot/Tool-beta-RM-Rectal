@@ -559,6 +559,8 @@ nav.intro-in-corso .nav-right,
 .qr-box canvas{width:200px; height:200px; border-radius:10px; border:1px solid var(--border);
   animation:popSection .4s var(--molla) both;}
 .qr-box[hidden]{display:none;}
+.pp-sez[hidden]{display:none;}
+.pp-percorso b{font-weight:600; color:var(--accent);}
 .pp-sez.da-fare{background:var(--accent-bg); box-shadow:inset 4px 0 0 var(--accent); animation:popSection .4s var(--molla) both;}
 .pp-percorso{font-family:var(--mono); font-size:11px; color:var(--text); background:var(--surface2);
   border:1px solid var(--border); border-radius:7px; padding:6px 9px; margin-top:6px; overflow-wrap:break-word;}
@@ -928,6 +930,11 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
           <div class="pp-tit">La tua cartella dei referti</div>
           <div class="pp-testo" id="ppCartellaTesto"></div>
           <div class="pp-azioni" id="ppCartellaAzioni"></div>
+        </div>
+        <div class="pp-sez" id="ppAdmin" hidden>
+          <div class="pp-tit">Amministrazione di questo PC</div>
+          <div class="pp-testo" id="ppAdminTesto"></div>
+          <div class="pp-azioni" id="ppAdminAzioni"></div>
         </div>
       </div>
     </div>
@@ -3093,10 +3100,32 @@ avviaIntro();
       && (p.titolo === '' || TITOLI.includes(p.titolo));
   }
 
+
+  /* ─── identità del dispositivo ─────────────────────────────────────
+     Ogni telefono ha una coppia di chiavi ECDSA P-256: la privata nasce
+     sul telefono, non esportabile, e non lo lascia mai. A ogni accesso
+     il telefono firma argomento del relay e id del profilo; il PC
+     verifica con la pubblica. Il codice dispositivo è un'impronta della
+     pubblica: è lui, non il nome, a dire chi è l'amministratore.       */
+  const testoFirma = (t, id) => `structurad-esgar|accesso|${t}|${id}`;
+  async function codiceDispositivo(pub) {
+    if (!pub || pub.kty !== 'EC' || pub.crv !== 'P-256' || !pub.x || !pub.y) return '';
+    const h = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pub.x + '.' + pub.y)));
+    const hex = Array.from(h.slice(0, 8), (b) => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    return hex.match(/.{4}/g).join('-');
+  }
+  async function verificaFirma(pub, firma, testo) {
+    try {
+      const k = await crypto.subtle.importKey('jwk', { kty: 'EC', crv: 'P-256', x: pub.x, y: pub.y, ext: true },
+        { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+      return await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, k, b64u.a(firma), new TextEncoder().encode(testo));
+    } catch (_) { return false; }
+  }
   root.Canale = {
     get RELAY() { return RELAY; }, usaRelay: u => { RELAY = u; },
     nuovoAbbinamento, daFrammento, frammento, valido, apri, cifra, decifra, invia, ascolta,
     casuale, TITOLI, nomeCortese, iniziali, profiloValido,
+    testoFirma, codiceDispositivo, verificaFirma, b64u,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -5442,7 +5471,7 @@ function scriviSessione(s){
 }
 /* la sessione scade da sola anche a tool aperto */
 function sessioneValida(){
-  if (sessione && !(sessione.scade > Date.now())) { scriviSessione(null); cartella = null; disegnaProfilo(); }
+  if (sessione && !(sessione.scade > Date.now())) { scriviSessione(null); disegnaProfilo(); }
   return sessione;
 }
 setInterval(sessioneValida, 60 * 1000);
@@ -5463,7 +5492,7 @@ function disegnaProfilo(){
 
   $id('ppKicker').textContent = p ? 'Accesso con il telefono' : 'StructuRad × ESGAR';
   $id('ppChi').textContent = p ? `${saluto()}, ${Canale.nomeCortese(p)}` : 'Accedi con il tuo telefono';
-  $id('ppDet').textContent = p ? `dal ${s.dispositivo || 'telefono'} · fino alle ${ora(s.scade)}` : 'il telefono fa da chiave';
+  $id('ppDet').textContent = p ? `dal ${s.dispositivo || 'telefono'} · fino alle ${ora(s.scade)}` + (eAdmin() ? ' · amministratore' : '') : 'il telefono fa da chiave';
 
   $id('ppFuori').hidden = !!p;
   $id('ppDentro').hidden = !p;
@@ -5518,20 +5547,20 @@ $id('ppAccedi').addEventListener('click', async () => {
       messaggio: async (m) => {
         if (accesso !== acc || !m || m.tipo !== 'accesso' || !Canale.profiloValido(m.profilo)) return;
         const p = m.profilo;
+        // il codice dispositivo vale solo se la firma torna: è lui, non il
+        // nome, a dire chi è l'amministratore
+        const firmato = m.pub && m.firma && await Canale.verificaFirma(m.pub, m.firma, Canale.testoFirma(a.t, p.id));
         const s = {
           profilo: { id: p.id, nome: p.nome.trim(), cognome: p.cognome.trim(), titolo: p.titolo },
           dispositivo: String(m.dispositivo || 'telefono').slice(0, 60),
+          codice: firmato ? await Canale.codiceDispositivo(m.pub) : '',
           dal: Date.now(), scade: Date.now() + SESSIONE_ORE * 3600 * 1000
         };
+        if (accesso !== acc) return;
         try { await Canale.invia(sess, 'pc', { tipo: 'benvenuto', nome: Canale.nomeCortese(s.profilo), scade: s.scade }); } catch (_) {}
         chiudiAccesso();
         scriviSessione(s);
-        await caricaCartella();
-        disegnaProfilo();
-        statoAccesso(cartella || !supportaCartelle
-          ? `Accesso effettuato. I referti si salvano a nome di <b>${escH(Canale.nomeCortese(s.profilo))}</b>`
-            + (cartella ? ` nella sua cartella <b>${escH(cartella.name)}</b>.` : '.')
-          : 'Accesso effettuato.', 'ok');
+        await dopoAccesso();
       }
     });
     acc.timer = setTimeout(() => {
@@ -5548,8 +5577,7 @@ $id('ppAnnulla').addEventListener('click', () => { chiudiAccesso(); statoAccesso
 $id('ppEsci').addEventListener('click', () => {
   const nome = sessione ? Canale.nomeCortese(sessione.profilo) : '';
   scriviSessione(null);
-  cartella = null; permesso = 'prompt';
-  statoAccesso(`${escH(nome)} è uscito da questo PC. La sua cartella resta ricordata per il prossimo accesso.`, 'ok');
+  statoAccesso(`${escH(nome)} è uscito da questo PC.`, 'ok');
   disegnaProfilo(); disegnaArchivioRow();
 });
 
@@ -5574,25 +5602,35 @@ function disegnaQR(canvas, testo){
 // ============================================================
 // ARCHIVIO DEI REFERTI
 //
-// Ogni profilo ha la sua cartella su questo PC (File System Access,
-// Chrome o Edge; anche dentro Drive o OneDrive per desktop). Si sceglie
-// al primo accesso; agli accessi successivi il tool la ritrova da solo.
-// Dentro:
+// Una cartella comune del PC, scelta dall'amministratore (File System
+// Access, Chrome o Edge; anche dentro Drive o OneDrive per desktop). A
+// ogni accesso il tool crea, se manca, la cartella del medico, che
+// diventa la sua directory:
 //
-//   <cartella>/Stadiazione primaria/2026/2026-10/
+//   <cartella comune>/Rossi Mario/Stadiazione primaria/2026/2026-10/
 //       2026-10-03_1412_A123456_cT3c_cN+_MRF+_EMVI-.txt
-//   <cartella>/indice-referti.csv
+//   <cartella comune>/Rossi Mario/indice-referti.csv
 //
-// Tipo di esame, poi anno e mese della data d'esame; nel nome del file
-// data, ora di salvataggio, numero d'accesso e sintesi della
-// stadiazione. L'indice CSV (si apre in Excel) elenca tutti i referti
-// del profilo con le stesse informazioni in colonne.
+// Medico, poi tipo di esame, poi anno e mese della data d'esame; nel
+// nome del file data, ora di salvataggio, numero d'accesso e sintesi
+// della stadiazione. L'indice CSV (si apre in Excel) elenca i referti
+// del medico con le stesse informazioni in colonne.
+//
+// AMMINISTRATORE
+// Solo l'amministratore sceglie o cambia la cartella comune. Lo si
+// riconosce dal codice del dispositivo, che nasce dalla chiave di firma
+// del suo telefono (verificata a ogni accesso), non dal nome. I codici
+// in ADMIN_DISPOSITIVI valgono su ogni PC. Finché la lista è vuota, su
+// un PC senza cartella comune il primo che la sceglie ne diventa
+// l'amministratore, e lo resta per quel PC.
 // ============================================================
+const ADMIN_DISPOSITIVI = [];
 const ARCH_DB = 'structurad-esgar', ARCH_STORE = 'cartella';
-const chiaveCartella = (p) => 'profilo:' + p.id;
+const K_RADICE = 'radice', K_ADMIN = 'admin-pc';
 const INDICE = 'indice-referti.csv';
 const supportaCartelle = typeof window.showDirectoryPicker === 'function';
-let cartella = null;          // FileSystemDirectoryHandle del profilo entrato
+let radice = null;            // cartella comune del PC
+let adminPc = '';             // codice dell'amministratore di questo PC, se la lista è vuota
 let permesso = 'prompt';      // granted | prompt | denied
 
 function idb(){
@@ -5619,71 +5657,110 @@ async function idbScrivi(k, v){
   });
 }
 
-/* la cartella del profilo entrato; nessuna se non è entrato nessuno */
-async function caricaCartella(){
-  const p = sessione && sessione.profilo;
-  try { cartella = p ? await idbLeggi(chiaveCartella(p)) : null; } catch (_) { cartella = null; }
-  await aggiornaPermesso();
-  disegnaArchivioRow();
+/* chi è entrato è l'amministratore? */
+function eAdmin(){
+  const c = sessione && sessione.codice;
+  if (!c) return false;
+  return ADMIN_DISPOSITIVI.length ? ADMIN_DISPOSITIVI.includes(c) : c === adminPc;
 }
+/* su un PC nuovo, senza lista e senza cartella comune, il primo che entra
+   con un telefono firmato può configurarlo */
+const puoConfigurare = () => !!(sessione && sessione.codice && !ADMIN_DISPOSITIVI.length && !adminPc);
+
+/* la cartella del medico dentro la comune: «Cognome Nome» */
+const cartellaMedico = (p) => pulisci(`${p.cognome} ${p.nome}`) || 'Operatore';
+async function dirMedico(crea){
+  if (!radice || !sessione) return null;
+  return radice.getDirectoryHandle(cartellaMedico(sessione.profilo), { create: !!crea });
+}
+
+/* dopo l'accesso: la cartella del medico si crea subito se il browser
+   ha già il permesso; altrimenti al primo salvataggio */
+async function dopoAccesso(){
+  await aggiornaPermesso();
+  const nome = Canale.nomeCortese(sessione.profilo);
+  let msg = `Accesso effettuato, ${escH(nome)}.`;
+  if (radice && permesso === 'granted') {
+    try { await dirMedico(true); msg += ` La tua cartella: <b>${escH(radice.name)}/${escH(cartellaMedico(sessione.profilo))}</b>.`; } catch (_) {}
+  } else if (radice) msg += ' La tua cartella si crea al primo salvataggio.';
+  disegnaProfilo();
+  statoAccesso(msg, 'ok');
+}
+
 /* da chiamare dentro un clic: la finestra di scelta si apre solo così */
-async function scegliCartella(){
-  const p = sessione && sessione.profilo;
-  if (!p || !supportaCartelle) return false;
+async function scegliRadice(){
+  if (!supportaCartelle || !(eAdmin() || puoConfigurare())) return false;
   try {
-    const h = await window.showDirectoryPicker({ id: 'referti-esgar', mode: 'readwrite', startIn: cartella || 'documents' });
-    cartella = h; permesso = 'granted';
-    await idbScrivi(chiaveCartella(p), h);
-    disegnaCartella(); disegnaArchivioRow();
+    const h = await window.showDirectoryPicker({ id: 'referti-esgar', mode: 'readwrite', startIn: radice || 'documents' });
+    await impostaRadice(h);
     return true;
   } catch (_) { return false; }        // scelta annullata
 }
+async function impostaRadice(h){
+  if (puoConfigurare()) { adminPc = sessione.codice; await idbScrivi(K_ADMIN, adminPc); }
+  radice = h; permesso = 'granted';
+  await idbScrivi(K_RADICE, h);
+  try { await dirMedico(true); } catch (_) {}
+  disegnaProfilo();
+}
 
 async function aggiornaPermesso(){
-  if (!cartella) { permesso = 'prompt'; disegnaCartella(); return; }
-  try { permesso = cartella.queryPermission ? await cartella.queryPermission({ mode: 'readwrite' }) : 'granted'; }
+  if (!radice) { permesso = 'prompt'; disegnaCartella(); return; }
+  try { permesso = radice.queryPermission ? await radice.queryPermission({ mode: 'readwrite' }) : 'granted'; }
   catch (_) { permesso = 'prompt'; }
   disegnaCartella();
 }
 /* da chiamare dentro un clic: il browser chiede il permesso solo così */
 async function chiediPermesso(){
-  if (!cartella) return false;
-  if (!cartella.requestPermission) return true;
-  try { permesso = await cartella.requestPermission({ mode: 'readwrite' }); } catch (_) { permesso = 'denied'; }
+  if (!radice) return false;
+  if (!radice.requestPermission) return true;
+  try { permesso = await radice.requestPermission({ mode: 'readwrite' }); } catch (_) { permesso = 'denied'; }
   disegnaCartella();
   return permesso === 'granted';
 }
 
 function disegnaCartella(){
   const testo = $id('ppCartellaTesto'), azioni = $id('ppCartellaAzioni'), sez = $id('ppCartella');
+  const aTesto = $id('ppAdminTesto'), aAzioni = $id('ppAdminAzioni'), aSez = $id('ppAdmin');
   if (!testo) return;
   const p = sessione && sessione.profilo;
-  sez.classList.toggle('da-fare', !!(p && !cartella && supportaCartelle));
+  const admin = eAdmin(), config = puoConfigurare();
+
+  // la cartella di chi è entrato
+  sez.classList.remove('da-fare');
   if (!p) {
-    testo.innerHTML = 'Ogni profilo ha la sua cartella: la scegli al primo accesso e da lì il tool la ricorda.';
-    azioni.innerHTML = '';
-    return;
+    testo.innerHTML = 'Ogni medico ha la sua cartella dentro la cartella comune di questo PC: il tool la crea al primo accesso.';
+  } else if (!supportaCartelle) {
+    testo.innerHTML = 'Questo browser non può scrivere in una cartella del PC: i referti si <b>scaricano</b> come file. Per l\'archivio usa Chrome o Edge.';
+  } else if (!radice) {
+    testo.innerHTML = admin || config
+      ? 'Scegli qui sotto la cartella comune: dentro il tool crea la tua.'
+      : 'La cartella comune di questo PC non è ancora stata scelta dall\'amministratore: per ora i referti si <b>scaricano</b>.';
+  } else {
+    testo.innerHTML = `<div class="pp-percorso">${escH(radice.name)} / <b>${escH(cartellaMedico(p))}</b> / tipo di esame / anno / mese</div>`
+      + (permesso === 'granted' ? '' : '<div class="pp-stato">Chrome chiede di nuovo il permesso di scrivere: lo chiede da solo al primo salvataggio, o premi «Riattiva».</div>');
   }
-  if (!supportaCartelle) {
-    testo.innerHTML = 'Questo browser non può scrivere in una cartella del PC: i referti si <b>scaricano</b> come file. Per l\'archivio ordinato usa Chrome o Edge.';
-    azioni.innerHTML = '';
-    return;
-  }
-  if (!cartella) {
-    testo.innerHTML = `<b>Ultimo passo:</b> scegli la cartella dove salvare i referti di ${escH(Canale.nomeCortese(p))}, anche dentro Google Drive o OneDrive. Da qui in poi, a ogni accesso, il tool la ritrova da solo.`;
-    azioni.innerHTML = '<button type="button" class="btn-primary" data-cartella="scegli">Scegli la tua cartella</button>';
-    return;
-  }
-  testo.innerHTML = `<div class="pp-percorso">${escH(cartella.name)} / tipo di esame / anno / mese</div>`
-    + (permesso === 'granted' ? '<div class="pp-stato ok">Cartella di questo profilo, ricordata su questo PC.</div>'
-      : '<div class="pp-stato">Il browser chiede di nuovo il permesso di scrivere: lo chiede da solo al primo salvataggio, o premi «Riattiva».</div>');
-  azioni.innerHTML = (permesso === 'granted' ? '' : '<button type="button" class="btn-primary" data-cartella="riattiva">Riattiva</button>')
-    + '<button type="button" class="btn-secondary" data-cartella="scegli">Cambia cartella</button>';
+  azioni.innerHTML = p && radice && permesso !== 'granted' ? '<button type="button" class="btn-primary" data-cartella="riattiva">Riattiva</button>' : '';
+
+  // amministrazione: solo per l'amministratore, o per chi configura un PC nuovo
+  aSez.hidden = !(p && supportaCartelle && (admin || config));
+  aSez.classList.toggle('da-fare', !!(p && !radice && (admin || config)));
+  if (aSez.hidden) return;
+  aTesto.innerHTML = (config
+      ? `Questo PC non ha ancora un amministratore. Scegliendo la cartella comune lo diventi tu, con questo telefono (codice <b>${escH(sessione.codice)}</b>).`
+      : `Sei l'amministratore (codice <b>${escH(sessione.codice)}</b>).`)
+    + (radice ? `<div class="pp-percorso">Cartella comune: <b>${escH(radice.name)}</b></div>`
+      : '<div class="pp-percorso">Cartella comune: nessuna</div>');
+  aAzioni.innerHTML = `<button type="button" class="${radice ? 'btn-secondary' : 'btn-primary'}" data-cartella="radice">${radice ? 'Cambia cartella comune' : 'Scegli la cartella comune'}</button>`;
 }
 $id('ppCartellaAzioni').addEventListener('click', async (e) => {
   const b = e.target.closest('[data-cartella]'); if (!b) return;
-  if (b.dataset.cartella === 'riattiva') { await chiediPermesso(); return; }
-  if (await scegliCartella()) statoAccesso('');
+  if (b.dataset.cartella === 'riattiva') { if (await chiediPermesso()) try { await dirMedico(true); } catch (_) {} }
+});
+$id('ppAdminAzioni').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-cartella="radice"]'); if (!b) return;
+  if (radice && !confirm('Cambiare la cartella comune di questo PC? I referti già salvati restano dove sono; i prossimi andranno nella nuova cartella.')) return;
+  if (await scegliRadice()) statoAccesso(`Cartella comune impostata: <b>${escH(radice.name)}</b>.`, 'ok');
 });
 
 /* ── nomi di cartelle e file ── */
@@ -5732,7 +5809,7 @@ function disegnaArchivioRow(){
   const b = $id('btnSalva');
   if (!b) return;
   b.title = !sessione ? 'Accedi con il telefono per salvare i referti a tuo nome'
-    : !cartella && supportaCartelle ? 'Scegli la tua cartella, poi il referto si salva' : 'Salva il referto nella tua cartella';
+    : !radice ? 'La cartella comune non è ancora scelta: il referto si scarica' : 'Salva il referto nella tua cartella';
 }
 
 $id('btnSalva').addEventListener('click', async () => {
@@ -5761,18 +5838,17 @@ $id('btnSalva').addEventListener('click', async () => {
   const contenuto = intest + '\r\n' + testo.replace(/\r?\n/g, '\r\n') + '\r\n';
   const base = nomeFile(data, adesso, accessoN, s);
 
-  // senza accesso alle cartelle (Firefox, Safari) il referto si scarica
-  if (!supportaCartelle && !cartella) {
+  // l'amministratore che salva su un PC senza cartella comune la sceglie adesso
+  if (!radice && supportaCartelle && (eAdmin() || puoConfigurare())) await scegliRadice();
+  // senza cartella comune, o senza accesso alle cartelle (Firefox, Safari), il referto si scarica
+  if (!supportaCartelle || !radice) {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([contenuto], { type: 'text/plain;charset=utf-8' }));
     a.download = base + '.txt'; a.click();
-    statoArchivio(`Scaricato <code>${escH(base)}.txt</code>. Con Chrome o Edge si salva direttamente nell'archivio ordinato.`, 'ok');
+    statoArchivio(`Scaricato <code>${escH(base)}.txt</code>. ` + (supportaCartelle
+      ? 'La cartella comune di questo PC non è ancora scelta: la sceglie l\'amministratore.'
+      : 'Con Chrome o Edge si salva direttamente nell\'archivio ordinato.'), 'ok');
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
-    return;
-  }
-  // nessuna cartella ancora: la si sceglie adesso, e il referto si salva subito dopo
-  if (!cartella && !(await scegliCartella())) {
-    statoArchivio('Per salvare scegli la <b>tua cartella</b> dei referti: il tool la ricorderà per i prossimi accessi.', 'ko');
     return;
   }
   if (!(await chiediPermesso())) {
@@ -5782,16 +5858,17 @@ $id('btnSalva').addEventListener('click', async () => {
   }
   try {
     const anno = String(data.getFullYear()), mese = `${anno}-${due(data.getMonth() + 1)}`;
-    let dir = cartella;
+    const dirMed = await dirMedico(true);
+    let dir = dirMed;
     for (const parte of [s.tipo, anno, mese]) dir = await dir.getDirectoryHandle(parte, { create: true });
     let nome = base + '.txt', k = 2;
     while (await esiste(dir, nome)) nome = `${base}_${k++}.txt`;
     const w = await (await dir.getFileHandle(nome, { create: true })).createWritable();
     await w.write(contenuto); await w.close();
-    const percorso = [s.tipo, anno, mese, nome].join('/');
-    await aggiungiIndice(cartella, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
+    const percorso = [cartellaMedico(p), s.tipo, anno, mese, nome].join('/');
+    await aggiungiIndice(dirMed, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
       Canale.nomeCortese(p), [s.tipo, anno, mese, nome].join('/')]);
-    statoArchivio(`Salvato in <code>${escH(cartella.name)}/${escH(percorso)}</code>`, 'ok');
+    statoArchivio(`Salvato in <code>${escH(radice.name)}/${escH(percorso)}</code>`, 'ok');
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
   } catch (e) {
     statoArchivio('Salvataggio non riuscito: ' + escH(e && e.message || e), 'ko');
@@ -5800,14 +5877,16 @@ $id('btnSalva').addEventListener('click', async () => {
 
 (async function avviaArchivio(){
   EsgarUI.impostaData($id('arcData'), dataIso(new Date()));
-  await caricaCartella();
+  try { radice = await idbLeggi(K_RADICE); adminPc = (await idbLeggi(K_ADMIN)) || ''; } catch (_) { radice = null; }
+  await aggiornaPermesso();
   disegnaProfilo();
 })();
 
 /* solo per i test: relay finto e cartella finta */
 window.EsgarTest = {
-  // associa una cartella al profilo entrato, come farebbe «Scegli la tua cartella»
-  usaCartella: async (h) => { cartella = h; await idbScrivi(chiaveCartella(sessione.profilo), h); await aggiornaPermesso(); disegnaProfilo(); },
+  // sceglie la cartella comune come farebbe l'amministratore dalla finestra del browser
+  usaRadice: async (h) => { if (!(eAdmin() || puoConfigurare())) return false; await impostaRadice(h); return true; },
+  eAdmin: () => eAdmin(),
   sessione: () => sessione
 };
 </script>
