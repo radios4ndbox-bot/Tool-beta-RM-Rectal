@@ -717,6 +717,118 @@ label.field.confronto > .sel-wrap{flex:1 1 160px;}
 .mem-piede{padding:6px 8px 3px; font-size:10.5px; color:var(--faint); border-top:1px solid var(--border); margin-top:3px;}
 @media (hover:none){ .mem-via{opacity:1;} .mem-piede{display:none;} }
 @media print{ .sel-opzioni, .cal-panel, .mem-pannello{display:none !important;} }
+
+/* ══════════════════════════════════════════════════════════════════
+   IMPOSTAZIONI — barra laterale come in ER Oncology Archivist
+   Un rail di icone a destra che si estende nel pannello della voce
+   scelta. Il contenuto della pagina rientra: il pannello non copre mai
+   il form né il referto.
+   ══════════════════════════════════════════════════════════════════ */
+:root{ --rail-w:56px; --pan-w:360px; }
+body{ padding-right:var(--rail-w); }
+body.rail-aperto{ padding-right:calc(var(--rail-w) + var(--pan-w)); }
+.app-footer{ right:calc(var(--rail-w) + 2rem); left:auto; transition:right .5s cubic-bezier(.22,1,.36,1); }
+body.rail-aperto .app-footer{ right:calc(var(--rail-w) + var(--pan-w) + 2rem); }
+
+.side-rail{ position:fixed; top:0; right:0; bottom:0; z-index:300; width:var(--rail-w); }
+.rail-icone{
+  position:absolute; top:0; right:0; bottom:0; width:var(--rail-w); z-index:2;
+  display:flex; flex-direction:column; gap:4px; padding:10px 6px;
+  background:var(--ink); border-left:1px solid rgba(255,255,255,.07);
+}
+.rail-btn{
+  position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  width:44px; height:48px; flex-shrink:0; cursor:pointer;
+  border:1px solid transparent; border-radius:10px; background:transparent; color:#A8979C;
+  transition:background-color .18s, color .18s, border-color .18s, transform .3s cubic-bezier(.26,1.6,.46,.9);
+}
+.rail-btn svg{ width:19px; height:19px; }
+.rail-eco{ font-family:var(--sans); font-size:8px; letter-spacing:.03em; text-transform:uppercase; opacity:.8; }
+.rail-btn:hover{ background:rgba(255,255,255,.07); color:#fff; transform:scale(1.06); }
+.rail-btn[aria-selected="true"]{
+  color:#fff; transform:scale(1.06); border-color:rgba(238,90,104,.35);
+  background:linear-gradient(135deg, var(--rose), var(--accent) 75%);
+}
+.rail-pannello{
+  position:fixed; top:0; bottom:0; right:var(--rail-w); width:var(--pan-w); z-index:1;
+  overflow-y:auto; overflow-x:hidden; background:var(--surface); border-left:1px solid var(--border);
+  padding:18px 18px 28px; transform:translateX(100%); pointer-events:none;
+  transition:transform .5s cubic-bezier(.22,1,.36,1), box-shadow .5s ease;
+}
+.rail-pannello.aperto{ transform:none; pointer-events:auto; box-shadow:-18px 0 40px -24px rgba(26,12,17,.5); }
+.pan{ display:none; }
+.pan.attivo{ display:block; }
+.pan.attivo > *{ animation:panVoce .5s cubic-bezier(.22,1,.36,1) calc(90ms + var(--i, 0) * 45ms) both; }
+@keyframes panVoce{ from{ opacity:0; transform:translateX(20px); } }
+.pan-tit{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--accent); margin:0 0 10px; font-weight:500; }
+.pan-desc{ font-size:11.5px; line-height:1.6; color:var(--muted); margin:0 0 12px; }
+.pan-desc b{ color:var(--text); font-weight:500; }
+.pan-nota{ margin-top:16px; padding-top:12px; border-top:1px solid var(--border); font-size:10px; line-height:1.6; color:var(--faint); }
+.pan-voce{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  padding:10px 11px; margin-bottom:6px; cursor:pointer;
+  border:1px solid var(--border); border-radius:10px; background:var(--surface2); color:var(--text); font-family:var(--sans);
+  transition:background-color .14s, border-color .14s, transform .2s;
+}
+.pan-voce:hover:not(:disabled){ background:var(--accent-bg); border-color:var(--accent); transform:translateX(-2px); }
+.pan-voce:disabled{ opacity:.45; cursor:not-allowed; }
+.pan-voce > span{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.pan-voce strong{ font-size:12.5px; font-weight:600; }
+.pan-voce em{ font-style:normal; font-size:10.5px; color:var(--muted); line-height:1.45; }
+.pan-ico{ flex-shrink:0; width:18px; height:18px; color:var(--accent); }
+.pan-toggle{ justify-content:space-between; }
+.pan-pill{ position:relative; flex-shrink:0; width:38px; height:21px; border-radius:11px; background:var(--border2); transition:background-color 250ms; }
+.pan-pill::after{ content:''; position:absolute; top:3px; left:3px; width:15px; height:15px; border-radius:50%; background:#fff;
+  transition:transform 500ms cubic-bezier(.26,2,.46,.71); }
+.pan-toggle[aria-checked="true"] .pan-pill{ background:var(--accent); }
+.pan-toggle[aria-checked="true"] .pan-pill::after{ transform:translateX(17px); }
+.pan-toggle[aria-checked="true"] strong{ color:var(--accent); }
+.pan-blocco{ font-family:var(--mono); font-size:10.5px; line-height:1.7; color:var(--muted); background:var(--surface2);
+  border:1px solid var(--border); border-radius:10px; padding:9px 11px; margin-bottom:12px; overflow-wrap:break-word; }
+.pan-blocco b{ color:var(--text); font-weight:500; }
+
+/* Info */
+.info-hero{ position:relative; overflow:hidden; background:var(--ink); color:#fff; border-radius:14px; padding:14px 16px 15px 20px; margin-bottom:16px; }
+.info-hero::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+  background:linear-gradient(180deg, var(--red-light), var(--rose) 40%, var(--accent) 72%, var(--wine)); }
+.info-etichetta{ font-size:9px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:#EE6B78; }
+.info-titolo{ font-size:17px; font-weight:600; margin:5px 0 4px; }
+.info-hero p{ margin:0; font-size:11.5px; line-height:1.55; color:#D4C4C9; }
+.info-sez{ margin-bottom:16px; }
+.info-sez h4{ margin:0 0 7px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.info-sez p{ margin:0 0 6px; font-size:12px; line-height:1.62; color:var(--text); }
+.info-lista{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.info-lista li{ position:relative; padding:8px 10px 8px 30px; background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+  font-size:11.5px; line-height:1.5; color:var(--text); }
+.info-lista li::before{ content:''; position:absolute; left:12px; top:13px; width:7px; height:7px; border-radius:50%;
+  background:var(--accent); box-shadow:0 0 0 3px var(--accent-bg); }
+.info-lista li b{ font-weight:600; color:var(--accent-hover); }
+.info-tab{ width:100%; border-collapse:separate; border-spacing:0; font-size:11.5px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.info-tab td{ padding:6px 9px; border-bottom:1px solid var(--border); vertical-align:top; line-height:1.45; }
+.info-tab tr:last-child td{ border-bottom:none; }
+.info-tab td:first-child{ font-family:var(--mono); font-weight:500; color:var(--accent); white-space:nowrap; background:var(--surface2); width:1%; }
+.info-avviso{ padding:9px 11px; border-radius:10px; background:var(--amber-bg); color:var(--amber); font-size:11.5px; line-height:1.5; }
+
+/* preferenze */
+body.dense .card-head{ padding:.6rem 1rem; }
+body.dense .card-body{ padding:.75rem 1rem .9rem; gap:8px 12px; }
+body.dense .card{ margin-bottom:10px; }
+body.dense .opt{ padding:5px 10px 5px 8px; font-size:12.5px; }
+body.dense input[type=text], body.dense .sel-trigger{ padding-top:6px; padding-bottom:6px; }
+body.dense #output{ font-size:12px; line-height:1.55; }
+body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
+  animation-duration:.01ms !important; animation-delay:0ms !important; transition-duration:.01ms !important; }
+
+/* durante l'intro le icone compaiono con la barra */
+.side-rail.intro-in-corso .rail-btn{ opacity:0; }
+
+@media (max-width:760px){
+  :root{ --rail-w:46px; --pan-w:calc(100vw - 46px); }
+  body.rail-aperto{ padding-right:var(--rail-w); }
+  .rail-btn{ width:36px; height:42px; }
+  .rail-eco{ display:none; }
+}
+@media print{ .side-rail{ display:none !important; } body, body.rail-aperto{ padding-right:0 !important; } }
 </style>
 </head>
 <body>
@@ -2321,6 +2433,131 @@ updateFormaDisplay();
 updateEmviDisplay();
 liveUpdate();
 </script>
+
+<!-- Barra laterale delle impostazioni: rail di icone che si estende nel
+     pannello della voce scelta, come in ER Oncology Archivist. -->
+<aside class="side-rail" id="sideRail" aria-label="Impostazioni">
+  <div class="rail-icone" role="tablist" aria-orientation="vertical">
+    <button type="button" class="rail-btn" data-pan="archivio" role="tab" aria-selected="false" title="Archivio e memoria">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h5l2 2h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M3 10h18"/></svg>
+      <span class="rail-eco">Archivio</span>
+    </button>
+    <button type="button" class="rail-btn" data-pan="aspetto" role="tab" aria-selected="false" title="Aspetto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg>
+      <span class="rail-eco">Aspetto</span>
+    </button>
+    <button type="button" class="rail-btn" data-pan="info" role="tab" aria-selected="false" title="Criteri ESGAR e informazioni">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M12 16v-5"/><path d="M12 8h.01"/></svg>
+      <span class="rail-eco">Info</span>
+    </button>
+  </div>
+
+  <div class="rail-pannello" id="railPannello" role="tabpanel">
+
+    <section class="pan" data-pan="archivio">
+      <h3 class="pan-tit">Archivio</h3>
+      <p class="pan-desc" id="impArchivio"></p>
+      <button type="button" class="pan-voce" data-imp="profilo">
+        <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="20" x="6" y="2" rx="2"/><path d="M11 18h2"/></svg>
+        <span><strong>Accesso e cartella</strong><em>Apre il pannello del profilo: accesso con il telefono, cartella dei referti</em></span>
+      </button>
+      <h3 class="pan-tit" style="margin-top:18px">Campi che imparano</h3>
+      <p class="pan-desc" id="impMemoria"></p>
+      <button type="button" class="pan-voce" data-imp="azzera">
+        <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <span><strong>Azzera la memoria</strong><em>Cancella le frasi imparate su questo PC; i referti salvati non si toccano</em></span>
+      </button>
+    </section>
+
+    <section class="pan" data-pan="aspetto">
+      <h3 class="pan-tit">Aspetto</h3>
+      <p class="pan-desc">Scelte di questa postazione. Non contengono dati clinici.</p>
+      <button type="button" class="pan-voce pan-toggle" data-pref="dense" role="switch" aria-checked="false">
+        <span><strong>Form compatto</strong><em>Schede e campi più fitti, più voci a schermo</em></span>
+        <span class="pan-pill" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="pan-voce pan-toggle" data-pref="reduceMotion" role="switch" aria-checked="false">
+        <span><strong>Riduci le animazioni</strong><em>Utile sui PC più lenti</em></span>
+        <span class="pan-pill" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="pan-voce pan-toggle" data-pref="skipIntro" role="switch" aria-checked="false">
+        <span><strong>Salta l'intro all'avvio</strong><em>Apre subito il form</em></span>
+        <span class="pan-pill" aria-hidden="true"></span>
+      </button>
+    </section>
+
+    <section class="pan" data-pan="info">
+      <h3 class="pan-tit">Informazioni</h3>
+      <div class="info-hero">
+        <div class="info-etichetta">StructuRad × ESGAR</div>
+        <div class="info-titolo">RM Retto</div>
+        <p>Referto strutturato per la stadiazione primaria e la ristadiazione del carcinoma del retto, secondo i criteri ESGAR.</p>
+      </div>
+      <div class="info-sez">
+        <h4>Cosa sono i criteri ESGAR</h4>
+        <p>ESGAR (European Society of Gastrointestinal and Abdominal Radiology) pubblica raccomandazioni di consenso su come eseguire e refertare la RM del retto.</p>
+        <p>Fissano un lessico e categorie comuni: chirurgo, oncologo e radioterapista leggono il referto allo stesso modo e lo usano per scegliere la terapia. Il tool segue la versione citata in fondo a ogni referto (Eur Radiol 2026).</p>
+      </div>
+      <div class="info-sez">
+        <h4>Stadiazione primaria · cT</h4>
+        <table class="info-tab">
+          <tr><td>cT1</td><td>invasione della sottomucosa</td></tr>
+          <tr><td>cT2</td><td>invasione della muscolare propria, senza estensione extramurale</td></tr>
+          <tr><td>cT3a</td><td>estensione extramurale &lt;1 mm</td></tr>
+          <tr><td>cT3b</td><td>estensione extramurale 1–5 mm</td></tr>
+          <tr><td>cT3c</td><td>estensione extramurale 5–15 mm</td></tr>
+          <tr><td>cT3d</td><td>estensione extramurale &gt;15 mm</td></tr>
+          <tr><td>cT4a</td><td>infiltrazione del peritoneo viscerale</td></tr>
+          <tr><td>cT4b</td><td>infiltrazione di organi o strutture adiacenti</td></tr>
+        </table>
+      </div>
+      <div class="info-sez">
+        <h4>Stadiazione primaria · cosa si descrive</h4>
+        <ul class="info-lista">
+          <li><b>Sede e morfologia.</b> Sede lungo l'asse del retto (basso, medio, alto), pareti coinvolte e forma (a placca, semicircolare, sub-circonferenziale, circonferenziale), estensione longitudinale, distanze dalla giunzione anorettale e dal margine anale. Rapporti con la riflessione peritoneale anteriore, la linea pube–promontorio e il sigmoid take-off.</li>
+          <li><b>Sfinteri e organi.</b> L'invasione dello sfintere interno non cambia il cT. Sfintere esterno, puborettale, elevatore dell'ano o un qualsiasi organo pelvico infiltrato configurano cT4b: il tool lo assegna da solo.</li>
+          <li><b>MRF.</b> La fascia mesorettale è coinvolta quando tumore, deposito, linfonodo o EMVI arrivano a 1 mm o meno: se ne riportano la causa e la distanza minima.</li>
+          <li><b>EMVI.</b> Invasione venosa extramurale in cinque gradi: 0–2 negativa, 3–4 positiva.</li>
+          <li><b>Linfonodi regionali.</b> Mesorettali, presacrali, otturatori e iliaci interni. Sospetti: mesorettali ≥9 mm o con segnale mucinoso; laterali ≥7 mm. Iliaci esterni e comuni e inguinali non sono regionali: vanno fra le metastasi pelviche. Categorie: cN0, possibile cN+, cN+.</li>
+          <li><b>Depositi tumorali.</b> Noduli tumorali del mesoretto distinti dai linfonodi: si riportano a parte, con sede e diametro.</li>
+        </ul>
+      </div>
+      <div class="info-sez">
+        <h4>Ristadiazione dopo terapia</h4>
+        <table class="info-tab">
+          <tr><td>cCR</td><td>fibrosi omogenea, nessuna restrizione focale della diffusione</td></tr>
+          <tr><td>near-cCR</td><td>fibrosi prevalentemente omogenea, con o senza piccoli foci di restrizione</td></tr>
+          <tr><td>minore</td><td>fibrosi eterogenea con segnale tumorale intermedio, ± restrizione focale</td></tr>
+          <tr><td>maggiore</td><td>massa solida persistente con restrizione della diffusione</td></tr>
+        </table>
+        <ul class="info-lista" style="margin-top:8px">
+          <li><b>ycT</b> se resta malattia: ycT1-2, ycT3ab (crescita extramurale ≤5 mm), ycT3cd (&gt;5 mm), ycT4a, ycT4b.</li>
+          <li><b>Componente mucinosa:</b> residuo di una neoplasia già mucinosa, o trasformazione mucinosa di una neoplasia solida.</li>
+          <li><b>ycMRF</b> coinvolta se il margine è di 1 mm o meno, specificando se per malattia, fibrosi, EMVI o linfonodo. <b>yEMVI</b> con gli stessi gradi del basale.</li>
+          <li><b>Linfonodi e depositi</b> confrontati con la RM basale: ycN0, possibile ycN+, ycN+.</li>
+        </ul>
+      </div>
+      <div class="info-sez">
+        <h4>Come lavora il tool</h4>
+        <ul class="info-lista">
+          <li>Il referto si riscrive a ogni modifica del form; le correzioni fatte a mano restano, nelle sezioni che non dipendono dai campi cambiati.</li>
+          <li>I campi di testo libero propongono le frasi dei referti precedenti, ordinate anche in base alle scelte del form.</li>
+          <li>Con l'accesso dal telefono i referti si salvano nella cartella del medico, dentro la cartella comune del PC.</li>
+        </ul>
+      </div>
+      <div class="info-sez">
+        <p class="info-avviso">È un riassunto dei criteri come li applica il tool. Per i casi dubbi fa fede la pubblicazione ESGAR, e il referto resta responsabilità del radiologo che lo firma.</p>
+      </div>
+      <div class="info-sez">
+        <h4>Versione</h4>
+        <div class="pan-blocco" id="impVersione"></div>
+      </div>
+      <p class="pan-nota">&copy; 2026 StructuRad. All rights reserved.<br>Powered by RadioPako.</p>
+    </section>
+
+  </div>
+</aside>
+
 <div class="app-footer">&copy; 2026 StructuRad. All rights reserved. Powered by RadioPako.</div>
 
 <script>
@@ -2498,7 +2735,7 @@ function posizionaRiga(){
 }
 
 function segnaIntro(attiva){
-  ['nav', '.app-footer'].forEach((sel) => {
+  ['nav', '.app-footer', '#sideRail'].forEach((sel) => {
     const e = document.querySelector(sel);
     if (e) e.classList.toggle('intro-in-corso', attiva);
   });
@@ -2508,7 +2745,9 @@ function avviaIntro(){
   const screen = document.getElementById('splashScreen');
   const stage = document.getElementById('splashStage');
   if (!screen) return;
-  if (riduciMovimento() || /[?&]nointro\b/.test(location.search)) {
+  let pref = {};
+  try { pref = JSON.parse(localStorage.getItem('structurad.esgar.prefs') || '{}'); } catch (_) {}
+  if (riduciMovimento() || pref.skipIntro || pref.reduceMotion || /[?&]nointro\b/.test(location.search)) {
     screen.parentNode.removeChild(screen);
     document.getElementById('navLogo').classList.add('landed');
     popSections(); posizionaFondino();
@@ -2628,7 +2867,9 @@ function popBarra(){
   const el = [].concat(
     [document.querySelector('.nav-title > span:not(.nav-logo)'), document.querySelector('.nav-sub'), document.querySelector('.nav-dock')],
     Array.prototype.slice.call(document.querySelectorAll('.dock-item')),
-    [document.querySelector('.nav-right'), document.querySelector('.app-footer')]
+    [document.querySelector('.nav-right')],
+    Array.prototype.slice.call(document.querySelectorAll('.rail-btn')),
+    [document.querySelector('.app-footer')]
   ).filter(Boolean);
   el.forEach((e, i) => { e.style.setProperty('--pop-delay', (i * BARRA_PASSO) + 'ms'); e.classList.add('pop-barra'); });
   segnaIntro(false);
@@ -5445,7 +5686,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-03 · amministratore';
+const VERSIONE = '2026-10-03 · impostazioni';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -5498,7 +5739,8 @@ function disegnaProfilo(){
   $id('ppKicker').textContent = p ? 'Accesso con il telefono' : 'StructuRad × ESGAR';
   $id('ppChi').textContent = p ? `${saluto()}, ${Canale.nomeCortese(p)}` : 'Accedi con il tuo telefono';
   $id('ppDet').textContent = p ? `dal ${s.dispositivo || 'telefono'} · fino alle ${ora(s.scade)}` + (eAdmin() ? ' · amministratore' : '') : 'il telefono fa da chiave';
-  $id('ppVersione').textContent = 'versione ' + VERSIONE + (p ? ' · codice dispositivo ' + (s.codice || 'assente') : '');
+  // il codice dispositivo non si mostra: basta sapere se l'accesso è firmato
+  $id('ppVersione').textContent = 'versione ' + VERSIONE + (p ? (s.codice ? ' · accesso firmato' : ' · accesso senza firma') : '');
   // una sessione senza codice viene da un accesso fatto con la versione
   // precedente (o da una pagina del telefono non aggiornata): il PC non
   // può riconoscere l'amministratore finché non si rientra
@@ -5759,13 +6001,13 @@ function disegnaCartella(){
   aSez.classList.toggle('da-fare', !!(p && supportaCartelle && !radice && (admin || config)));
   if (aSez.hidden) return;
   if (!supportaCartelle) {
-    aTesto.innerHTML = `Sei l'amministratore (codice <b>${escH(sessione.codice)}</b>), ma questo browser non può scrivere nelle cartelle del PC: per scegliere la cartella comune apri il tool in <b>Chrome</b> o <b>Edge</b>.`;
+    aTesto.innerHTML = 'Sei l\'amministratore, ma questo browser non può scrivere nelle cartelle del PC: per scegliere la cartella comune apri il tool in <b>Chrome</b> o <b>Edge</b>.';
     aAzioni.innerHTML = '';
     return;
   }
   aTesto.innerHTML = (config
-      ? `Questo PC non ha ancora un amministratore. Scegliendo la cartella comune lo diventi tu, con questo telefono (codice <b>${escH(sessione.codice)}</b>).`
-      : `Sei l'amministratore (codice <b>${escH(sessione.codice)}</b>).`)
+      ? 'Questo PC non ha ancora un amministratore. Scegliendo la cartella comune lo diventi tu, con questo telefono.'
+      : 'Sei l\'amministratore: scegli tu la cartella comune, in cui il tool crea le cartelle dei medici.')
     + (radice ? `<div class="pp-percorso">Cartella comune: <b>${escH(radice.name)}</b></div>`
       : '<div class="pp-percorso">Cartella comune: nessuna</div>');
   aAzioni.innerHTML = `<button type="button" class="${radice ? 'btn-secondary' : 'btn-primary'}" data-cartella="radice">${radice ? 'Cambia cartella comune' : 'Scegli la cartella comune'}</button>`;
@@ -6246,6 +6488,104 @@ window.EsgarTest = {
     impara: imparaDalReferto, suggerimenti: (el) => suggerimenti(el).map((x) => ({ testo: x.testo, punti: +x.punti.toFixed(3), n: x.v.n, motivo: x.motivo })),
     stato: () => mem, azzera: () => { mem = { v: 1, campi: {}, visti: [] }; salva(); }
   };
+})();
+</script>
+<script>
+// ============================================================
+// IMPOSTAZIONI — barra laterale come in ER Oncology Archivist
+//
+// Archivio (cartelle e memoria dei campi), Aspetto (preferenze della
+// postazione) e Info (i criteri ESGAR come li applica il tool).
+// Le preferenze stanno in localStorage: sono scelte del PC, non dati
+// clinici.
+// ============================================================
+(function(){
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const PREFS_KEY = 'structurad.esgar.prefs';
+  let prefs = { dense: false, reduceMotion: false, skipIntro: false };
+  try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')); } catch (_) {}
+  let aperto = null;
+
+  function applicaPrefs(){
+    document.body.classList.toggle('dense', !!prefs.dense);
+    document.body.classList.toggle('reduce-motion', !!prefs.reduceMotion);
+    document.querySelectorAll('.pan-toggle[data-pref]').forEach((b) => b.setAttribute('aria-checked', prefs[b.dataset.pref] ? 'true' : 'false'));
+  }
+
+  function disegnaArchivio(){
+    const e = $('impArchivio'); if (!e) return;
+    const p = sessione && sessione.profilo;
+    let h;
+    if (typeof supportaCartelle !== 'undefined' && !supportaCartelle) h = 'Questo browser non scrive nelle cartelle del PC: i referti si scaricano come file. Per l\'archivio usa Chrome o Edge.';
+    else if (!radice) h = 'La cartella comune di questo PC non è ancora stata scelta dall\'amministratore: finché manca, i referti si scaricano come file.';
+    else h = `Cartella comune: <b>${esc(radice.name)}</b>.`
+      + (p ? ` I tuoi referti vanno in <b>${esc(radice.name)}/${esc(cartellaMedico(p))}</b>, per tipo di esame, anno e mese.` : ' Ogni medico ha la sua cartella, creata al primo accesso.')
+      + (permesso === 'granted' ? '' : ' Chrome chiederà di nuovo il permesso di scrivere al primo salvataggio.');
+    if (p && eAdmin()) h += ' Sei l\'amministratore: la cartella comune si sceglie dal pannello del profilo.';
+    e.innerHTML = h;
+  }
+  function disegnaMemoria(){
+    const e = $('impMemoria'); if (!e || !window.EsgarMemoria) return;
+    const m = EsgarMemoria.stato();
+    const campi = Object.keys(m.campi).filter((k) => m.campi[k].voci.length);
+    const frasi = campi.reduce((n, k) => n + m.campi[k].voci.length, 0);
+    const referti = (m.visti || []).length;
+    e.innerHTML = frasi
+      ? `Su questo PC il tool ricorda <b>${frasi} ${frasi === 1 ? 'frase' : 'frasi'}</b> in ${campi.length} ${campi.length === 1 ? 'campo' : 'campi'}, imparate da ${referti} ${referti === 1 ? 'referto' : 'referti'}. Le propone ordinate per somiglianza, frequenza, scelte del form, recenza e gradimento.`
+      : 'Il tool non ha ancora imparato niente su questo PC: comincia a proporre frasi dopo i primi referti copiati, scaricati, stampati o salvati.';
+  }
+  function disegnaVersione(){
+    const e = $('impVersione'); if (!e) return;
+    const p = sessione && sessione.profilo;
+    e.innerHTML = `versione <b>${esc(typeof VERSIONE !== 'undefined' ? VERSIONE : '')}</b><br>`
+      + (p ? `accesso: <b>${esc(Canale.nomeCortese(p))}</b>${sessione.codice ? ', firmato' : ', senza firma'}${eAdmin() ? ' · amministratore' : ''}` : 'nessun accesso');
+  }
+
+  function toggleRail(pan){
+    const chiudi = !pan || aperto === pan;
+    aperto = chiudi ? null : pan;
+    document.body.classList.toggle('rail-aperto', !chiudi);
+    $('railPannello').classList.toggle('aperto', !chiudi);
+    document.querySelectorAll('.rail-btn[data-pan]').forEach((b) => b.setAttribute('aria-selected', b.dataset.pan === aperto ? 'true' : 'false'));
+    document.querySelectorAll('.pan').forEach((sez) => {
+      const suo = sez.dataset.pan === aperto;
+      sez.classList.remove('attivo');
+      if (suo) {
+        Array.prototype.forEach.call(sez.children, (c, i) => c.style.setProperty('--i', String(Math.min(i, 12))));
+        void sez.offsetWidth;
+        sez.classList.add('attivo');
+      }
+    });
+    if (aperto === 'archivio') { disegnaArchivio(); disegnaMemoria(); }
+    if (aperto === 'info') disegnaVersione();
+    // la pagina ha cambiato larghezza: il fondino del dock si riallinea
+    requestAnimationFrame(() => { if (typeof posizionaFondino === 'function') posizionaFondino(); });
+  }
+
+  document.querySelectorAll('.rail-btn[data-pan]').forEach((b) => b.addEventListener('click', () => toggleRail(b.dataset.pan)));
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && aperto && !document.querySelector('.sel-wrap.aperto, #memPannello.aperto, #calPanel.open') && $('pannelloProfilo').hidden) toggleRail(null);
+  });
+  $('railPannello').addEventListener('click', (ev) => {
+    const t = ev.target.closest('[data-pref]');
+    if (t) {
+      prefs[t.dataset.pref] = !prefs[t.dataset.pref];
+      try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (_) {}
+      applicaPrefs();
+      return;
+    }
+    const a = ev.target.closest('[data-imp]');
+    if (!a) return;
+    if (a.dataset.imp === 'profilo') { ev.stopPropagation(); apriPannello(true); }
+    if (a.dataset.imp === 'azzera' && confirm('Cancellare tutte le frasi imparate su questo PC? I referti salvati non si toccano.')) {
+      EsgarMemoria.azzera(); disegnaMemoria();
+    }
+  });
+
+  applicaPrefs();
+  window.EsgarImpostazioni = { prefs: () => Object.assign({}, prefs), apri: toggleRail };
 })();
 </script>
 </body>

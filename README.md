@@ -146,6 +146,26 @@ confronto» e «Data esame». Digitando bastano le cifre: le barre le mette il
 campo. Nei nomi di file e cartelle dell'archivio la data resta anno-mese-giorno,
 così l'ordine alfabetico è anche quello cronologico.
 
+## Impostazioni
+
+A destra, come in ER Oncology Archivist, una colonna di icone si allarga nel
+pannello della voce scelta; la pagina rientra, così il pannello non copre il
+form né il referto.
+
+- **Archivio**: la cartella comune del PC e quella del medico entrato, il
+  collegamento al pannello del profilo, quante frasi ricordano i campi che
+  imparano e «Azzera la memoria».
+- **Aspetto**: form compatto, riduci le animazioni, salta l'intro all'avvio.
+  Sono scelte della postazione (localStorage), non dati clinici.
+- **Info**: i criteri ESGAR come li applica il tool. Ci sono la tabella cT, cosa
+  si descrive in stadiazione primaria (sede e morfologia, sfinteri e organi,
+  MRF, EMVI, linfonodi regionali, depositi tumorali), le categorie di risposta e
+  le voci della ristadiazione, come lavora il tool e la versione. Per i casi
+  dubbi fa fede la pubblicazione ESGAR.
+
+Il codice dispositivo non compare nel tool: il pannello del profilo dice solo
+se l'accesso è firmato. Il codice si legge sul telefono, in «La tua chiave».
+
 ## Intro
 
 All'apertura: ESGAR gigante a contorno che scorre; stacco su ESGAR media sul
