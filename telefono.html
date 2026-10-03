@@ -87,6 +87,9 @@ input[type=text]:focus{border-color:var(--red-light); background:rgba(255,255,25
 .spunta circle{stroke:var(--green); stroke-width:3; fill:none; stroke-dasharray:180; stroke-dashoffset:180; animation:traccia .6s ease forwards;}
 .spunta path{stroke:var(--green); stroke-width:4; fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:40; stroke-dashoffset:40; animation:traccia .4s ease .45s forwards;}
 @keyframes traccia{to{stroke-dashoffset:0;}}
+.codice{margin-top:16px; padding:10px 12px; border-radius:10px; border:1px dashed var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px;}
+.codice span{white-space:nowrap; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint);}
+.codice b{white-space:nowrap; font-family:var(--mono); font-weight:500; font-size:13px; color:var(--text); letter-spacing:.04em;}
 .nota{font-size:12px; color:var(--faint); text-align:center; line-height:1.5; padding:0 10px;}
 [hidden]{display:none !important;}
 </style>
@@ -262,10 +265,11 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
     <div class="kicker">La tua chiave</div>
     <div class="chiave"><div class="av" id="kAv"></div><div><div class="nome" id="kNome"></div><div class="det" id="kDet"></div></div></div>
     <p style="margin-top:16px">Per accedere, sul PC apri <b>Accedi con il telefono</b> e inquadra il codice con la fotocamera.</p>
+    <div class="codice"><span>Codice dispositivo</span><b data-codice>…</b></div>
     <div class="azioni"><button type="button" class="btn btn-vuoto" id="kModifica">Modifica i tuoi dati</button></div>
   </section>
 
-  <p class="nota">Sul telefono restano solo nome, cognome e titolo. Il collegamento con il PC è cifrato e passa da un relay che vede solo testo illeggibile.</p>
+  <p class="nota">Sul telefono restano solo nome, cognome, titolo e la chiave di firma di questo dispositivo, che non lo lascia mai. Il collegamento con il PC è cifrato e passa da un relay che vede solo testo illeggibile.</p>
 </main>
 
 <script>
@@ -392,10 +396,32 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
       && (p.titolo === '' || TITOLI.includes(p.titolo));
   }
 
+
+  /* ─── identità del dispositivo ─────────────────────────────────────
+     Ogni telefono ha una coppia di chiavi ECDSA P-256: la privata nasce
+     sul telefono, non esportabile, e non lo lascia mai. A ogni accesso
+     il telefono firma argomento del relay e id del profilo; il PC
+     verifica con la pubblica. Il codice dispositivo è un'impronta della
+     pubblica: è lui, non il nome, a dire chi è l'amministratore.       */
+  const testoFirma = (t, id) => `structurad-esgar|accesso|${t}|${id}`;
+  async function codiceDispositivo(pub) {
+    if (!pub || pub.kty !== 'EC' || pub.crv !== 'P-256' || !pub.x || !pub.y) return '';
+    const h = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pub.x + '.' + pub.y)));
+    const hex = Array.from(h.slice(0, 8), (b) => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    return hex.match(/.{4}/g).join('-');
+  }
+  async function verificaFirma(pub, firma, testo) {
+    try {
+      const k = await crypto.subtle.importKey('jwk', { kty: 'EC', crv: 'P-256', x: pub.x, y: pub.y, ext: true },
+        { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+      return await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, k, b64u.a(firma), new TextEncoder().encode(testo));
+    } catch (_) { return false; }
+  }
   root.Canale = {
     get RELAY() { return RELAY; }, usaRelay: u => { RELAY = u; },
     nuovoAbbinamento, daFrammento, frammento, valido, apri, cifra, decifra, invia, ascolta,
     casuale, TITOLI, nomeCortese, iniziali, profiloValido,
+    testoFirma, codiceDispositivo, verificaFirma, b64u,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -405,12 +431,45 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
   'use strict';
   const CHIAVE = 'structurad.esgar.chiave';
   const $ = (id) => document.getElementById(id);
+
+  /* La coppia di chiavi del dispositivo: la privata non è esportabile e
+     resta in questo browser (IndexedDB). Firma ogni accesso; dalla
+     pubblica nasce il codice dispositivo. */
+  function idbDisp(){
+    return new Promise((ok, ko) => {
+      const r = indexedDB.open('structurad-esgar-dispositivo', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('chiavi');
+      r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error);
+    });
+  }
+  async function chiaviDispositivo(){
+    const db = await idbDisp();
+    const leggi = () => new Promise((ok) => { const r = db.transaction('chiavi').objectStore('chiavi').get('firma'); r.onsuccess = () => ok(r.result || null); r.onerror = () => ok(null); });
+    let c = await leggi();
+    if (!c) {
+      const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify']);
+      const j = await crypto.subtle.exportKey('jwk', kp.publicKey);
+      c = { privata: kp.privateKey, pub: { kty: 'EC', crv: 'P-256', x: j.x, y: j.y } };
+      await new Promise((ok) => { const t = db.transaction('chiavi', 'readwrite'); t.objectStore('chiavi').put(c, 'firma'); t.oncomplete = ok; t.onerror = ok; });
+    }
+    return c;
+  }
+  async function firma(testo){
+    const c = await chiaviDispositivo();
+    const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, c.privata, new TextEncoder().encode(testo));
+    return { pub: c.pub, firma: Canale.b64u.da(sig) };
+  }
+  let codice = '';
+  chiaviDispositivo().then((c) => Canale.codiceDispositivo(c.pub)).then((k) => {
+    codice = k;
+    document.querySelectorAll('[data-codice]').forEach((e) => { e.textContent = k; });
+  }).catch(() => {});
   const viste = ['vCrea', 'vAccesso', 'vFatto', 'vChiave'];
   const mostra = (v) => viste.forEach((x) => { $(x).hidden = x !== v; });
   const stato = (id, t, tono) => { const e = $(id); e.textContent = t || ''; e.className = 'stato ' + (tono || ''); };
 
   // l'abbinamento arriva dal QR nel frammento: si toglie subito dall'indirizzo
-  const abb = Canale.daFrammento(location.hash);
+  let abb = Canale.daFrammento(location.hash);
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 
   function leggi(){ try { const p = JSON.parse(localStorage.getItem(CHIAVE) || 'null'); return Canale.profiloValido(p) ? p : null; } catch (_) { return null; } }
@@ -492,8 +551,9 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
           }
         }
       });
+      const f = await firma(Canale.testoFirma(abb.t, profilo.id));
       await Canale.invia(sess, 'tel', {
-        tipo: 'accesso', dispositivo: dispositivo(),
+        tipo: 'accesso', dispositivo: dispositivo(), pub: f.pub, firma: f.firma,
         profilo: { id: profilo.id, nome: profilo.nome, cognome: profilo.cognome, titolo: profilo.titolo }
       });
       stato('aStato', 'In attesa di conferma dal PC…');
@@ -506,7 +566,20 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
   else if (abb) apriAccesso();
   else apriChiave();
 
-  window.EsgarTelefono = { usaRelay: (u) => Canale.usaRelay(u) };
+  // un nuovo QR inquadrato con la pagina già aperta cambia solo il
+  // frammento: la pagina non si ricarica, quindi si riparte da qui
+  window.addEventListener('hashchange', () => {
+    const nuovo = Canale.daFrammento(location.hash);
+    history.replaceState(null, '', location.pathname + location.search);
+    if (!nuovo) return;
+    abb = nuovo;
+    $('aConferma').disabled = false;
+    document.querySelector('#vFatto .spunta').style.display = '';
+    profilo ? apriAccesso() : apriCrea();
+  });
+
+  /* solo per i test */
+  window.EsgarTelefono = { usaRelay: (u) => Canale.usaRelay(u), firma, codice: () => codice };
 })();
 </script>
 </body>
