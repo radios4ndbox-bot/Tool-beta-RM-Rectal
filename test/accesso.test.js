@@ -85,6 +85,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   const ses = await pc.evaluate(() => EsgarTest.sessione());
   check(/^[0-9A-F]{4}(-[0-9A-F]{4}){3}$/.test(codiceTel) && ses.codice === codiceTel, 'il PC riconosce il codice dispositivo firmato: ' + codiceTel);
   check(await pc.textContent('#profiloNome') === 'Dr.ssa Bianchi', 'il PC saluta Dr.ssa Bianchi');
+  check(new RegExp('codice dispositivo ' + codiceTel).test(await pc.textContent('#ppVersione')) && await pc.isHidden('#ppSenzaCodice'), 'il pannello mostra versione e codice dispositivo');
   check(!(await pc.evaluate(() => JSON.stringify(localStorage))).match(/esgar-[a-z0-9]{22}/), 'il PC non conserva la chiave di abbinamento');
   check(await pc.isHidden('#ppAdmin') && !(await pc.evaluate(() => EsgarTest.eAdmin())), 'un telefono fuori dalla lista non è amministratore, nemmeno su un PC nuovo');
   check(!(await pc.evaluate(async () => EsgarTest.usaRadice(await navigator.storage.getDirectory()))), 'e non può scegliere la cartella comune');
@@ -153,6 +154,11 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
     await Canale.verificaFirma(f.pub, f.firma, 'structurad-esgar|accesso|esgar-bbbbbbbbbbbbbbbbbbbbbb|op-aaaaaaaaaaaa')], f);
   check(ver[0] === true && ver[1] === false, 'la firma vale solo per quell\'accesso: rigiocata su un altro QR non passa');
 
+  // sessione di prima dell'aggiornamento, senza codice: l'avviso dice di rientrare
+  await pc.evaluate(() => { localStorage.setItem('structurad.esgar.sessione', JSON.stringify({ profilo: { id: 'op-abcdefghijkm', nome: 'Pasquale', cognome: 'Viggiano', titolo: 'Dr.' }, dispositivo: 'iPhone', dal: Date.now(), scade: Date.now() + 3600e3 })); });
+  await pc.reload(); await pc.waitForTimeout(400); await pc.click('#profiloBtn');
+  check(await pc.isVisible('#ppSenzaCodice') && /codice dispositivo assente/.test(await pc.textContent('#ppVersione')), 'sessione senza codice: avviso «esci e accedi di nuovo»');
+  await pc.screenshot({ path: SHOTS + '/acc_pc_senzacodice.png' });
   // sessione scaduta
   await pc.evaluate(() => { localStorage.setItem('structurad.esgar.sessione', JSON.stringify({ profilo: { id: 'op-abcdefghijkm', nome: 'A', cognome: 'B', titolo: '' }, scade: Date.now() - 1 })); });
   await pc.reload(); await pc.waitForTimeout(400);

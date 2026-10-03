@@ -560,6 +560,8 @@ nav.intro-in-corso .nav-right,
   animation:popSection .4s var(--molla) both;}
 .qr-box[hidden]{display:none;}
 .pp-sez[hidden]{display:none;}
+.pp-versione{padding:7px 18px 9px; border-top:1px solid var(--border); font-family:var(--mono); font-size:10px; color:var(--faint); background:var(--surface2);}
+.pp-avviso{margin-top:10px; padding:8px 10px; border-radius:8px; background:var(--amber-bg); color:var(--amber); font-size:12px; line-height:1.45;}
 .pp-percorso b{font-weight:600; color:var(--accent);}
 .pp-sez.da-fare{background:var(--accent-bg); box-shadow:inset 4px 0 0 var(--accent); animation:popSection .4s var(--molla) both;}
 .pp-percorso{font-family:var(--mono); font-size:11px; color:var(--text); background:var(--surface2);
@@ -923,6 +925,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
           <div id="ppDentro" hidden>
             <div class="pp-testo">I referti che salvi finiscono nella tua cartella dell'archivio. L'accesso dura 12 ore: su un PC condiviso esci quando hai finito.</div>
             <div class="pp-azioni"><button type="button" class="btn-secondary" id="ppEsci">Esci</button></div>
+            <div class="pp-avviso" id="ppSenzaCodice" hidden>Questo accesso non porta il <b>codice dispositivo</b>: è stato fatto prima dell'aggiornamento, o la pagina del telefono non era aggiornata. Premi «Esci» e accedi di nuovo con il QR: senza codice il tool non può riconoscere l'amministratore.</div>
           </div>
           <div class="pp-stato" id="ppAccessoStato"></div>
         </div>
@@ -936,6 +939,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
           <div class="pp-testo" id="ppAdminTesto"></div>
           <div class="pp-azioni" id="ppAdminAzioni"></div>
         </div>
+        <div class="pp-versione" id="ppVersione"></div>
       </div>
     </div>
   </div>
@@ -5441,6 +5445,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
+const VERSIONE = '2026-10-03 · amministratore';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -5493,6 +5498,11 @@ function disegnaProfilo(){
   $id('ppKicker').textContent = p ? 'Accesso con il telefono' : 'StructuRad × ESGAR';
   $id('ppChi').textContent = p ? `${saluto()}, ${Canale.nomeCortese(p)}` : 'Accedi con il tuo telefono';
   $id('ppDet').textContent = p ? `dal ${s.dispositivo || 'telefono'} · fino alle ${ora(s.scade)}` + (eAdmin() ? ' · amministratore' : '') : 'il telefono fa da chiave';
+  $id('ppVersione').textContent = 'versione ' + VERSIONE + (p ? ' · codice dispositivo ' + (s.codice || 'assente') : '');
+  // una sessione senza codice viene da un accesso fatto con la versione
+  // precedente (o da una pagina del telefono non aggiornata): il PC non
+  // può riconoscere l'amministratore finché non si rientra
+  $id('ppSenzaCodice').hidden = !(p && !s.codice);
 
   $id('ppFuori').hidden = !!p;
   $id('ppDentro').hidden = !p;
@@ -5745,9 +5755,14 @@ function disegnaCartella(){
   azioni.innerHTML = p && radice && permesso !== 'granted' ? '<button type="button" class="btn-primary" data-cartella="riattiva">Riattiva</button>' : '';
 
   // amministrazione: solo per l'amministratore, o per chi configura un PC nuovo
-  aSez.hidden = !(p && supportaCartelle && (admin || config));
-  aSez.classList.toggle('da-fare', !!(p && !radice && (admin || config)));
+  aSez.hidden = !(p && (admin || config));
+  aSez.classList.toggle('da-fare', !!(p && supportaCartelle && !radice && (admin || config)));
   if (aSez.hidden) return;
+  if (!supportaCartelle) {
+    aTesto.innerHTML = `Sei l'amministratore (codice <b>${escH(sessione.codice)}</b>), ma questo browser non può scrivere nelle cartelle del PC: per scegliere la cartella comune apri il tool in <b>Chrome</b> o <b>Edge</b>.`;
+    aAzioni.innerHTML = '';
+    return;
+  }
   aTesto.innerHTML = (config
       ? `Questo PC non ha ancora un amministratore. Scegliendo la cartella comune lo diventi tu, con questo telefono (codice <b>${escH(sessione.codice)}</b>).`
       : `Sei l'amministratore (codice <b>${escH(sessione.codice)}</b>).`)
