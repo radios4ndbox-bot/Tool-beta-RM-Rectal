@@ -113,13 +113,32 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.fill('#arcAccesso', 'A 123/456'); await pc.fill('#arcData', '28092026'); await pc.click('#arcAccesso');
   await pc.click('#btnSalva');
   await pc.waitForFunction(() => /Salvato/.test(document.getElementById('archivioStato').textContent), null, { timeout: 5000 });
-  check(/Referti RM Retto\/Bianchi Giulia\/Stadiazione primaria\/2026\/2026-09\/2026-09-28_\d{4}_A123456_cT3c_cN\+_MRF-_EMVI\+\.txt/.test(await pc.textContent('#archivioStato')), 'salvato: ' + await pc.textContent('#archivioStato'));
+  const codice = (await pc.evaluate(() => EsgarTest.caso())).codice;
+  check(/^RT\d{2}-[A-Z2-9]{4}$/.test(codice) && await pc.textContent('#casoChip .caso-cod') === codice, 'il tool crea il codice del caso: ' + codice);
+  check(new RegExp('Referti RM Retto/Bianchi Giulia/2026/2026-09-28_' + codice + '/2026-09-28_\\d{4}_Stadiazione_A123456_cT3c_cN\\+_MRF-_EMVI\\+\\.txt').test(await pc.textContent('#archivioStato')), 'salvato nella cartella del caso: ' + await pc.textContent('#archivioStato'));
   await pc.click('#btnSalva'); await pc.waitForTimeout(400);
-  check(/_2\.txt/.test(await pc.textContent('#archivioStato')), 'stesso minuto: nessuna sovrascrittura');
+  check(/_2\.txt/.test(await pc.textContent('#archivioStato')) && (await pc.evaluate(() => EsgarTest.caso())).codice === codice, 'stesso minuto: nessuna sovrascrittura, stesso caso');
+  // ristadiazione: senza associazione chiede conferma; con «Ricerca precedente» va nello stesso caso
+  await pc.click('#btnNuovoCaso');
   await pc.click('#btnModeRistad'); await pc.waitForTimeout(300);
   await pc.click('input[name=r_risposta][value=near-cCR]'); await pc.click('input[name=r_yct][value=ycT1-2]');
+  pc.once('dialog', (d) => d.dismiss());
+  await pc.click('#btnSalva'); await pc.waitForTimeout(300);
+  check(/Ricerca precedente/.test(await pc.textContent('#archivioStato')), 'ristadiazione non associata: chiede conferma e non salva');
+  await pc.click('#btnCerca'); await pc.waitForSelector('#cercaPannello.aperto .cerca-caso', { timeout: 5000 });
+  await pc.fill('#cercaQ', codice.toLowerCase().slice(0, 6));
+  check(await pc.locator('#cercaPannello .cerca-caso').count() === 1 && /Stadiazione/.test(await pc.textContent('#cercaPannello .cerca-caso')), 'Ricerca precedente trova il caso dal codice');
+  await pc.fill('#cercaQ', 'A1234');
+  check(await pc.locator('#cercaPannello .cerca-caso').count() === 1, '…e anche dal numero d\'accesso della stadiazione');
+  await pc.click('#cercaPannello [data-vedi="0"]'); await pc.waitForTimeout(200);
+  check(new RegExp('Codice caso: ' + codice).test(await pc.textContent('#cercaPannello .cerca-anteprima')), 'anteprima della stadiazione, con il codice del caso');
+  await pc.screenshot({ path: SHOTS + '/casi_cerca.png' });
+  await pc.click('#cercaPannello [data-associa="0"]');
+  check(await pc.inputValue('#r_confronto') === '28/09/2026' && (await pc.inputValue('#output')).includes('Confronto con RM basale del: 28/09/2026'), 'associando, la RM basale di confronto prende la data della stadiazione');
+  await pc.fill('#arcAccesso', 'A178902'); await pc.fill('#arcData', '20122026'); await pc.click('#arcAccesso');
   await pc.click('#btnSalva'); await pc.waitForTimeout(400);
-  check(/Bianchi Giulia\/Ristadiazione\//.test(await pc.textContent('#archivioStato')), 'ristadiazione nella sua cartella');
+  check(new RegExp('Bianchi Giulia/2026/2026-09-28_' + codice + '/2026-12-20_\\d{4}_Ristadiazione_A178902_near-cCR_ycT1-2').test(await pc.textContent('#archivioStato')), 'ristadiazione nella stessa cartella della stadiazione');
+  await pc.screenshot({ path: SHOTS + '/casi_salvato.png' });
   await pc.screenshot({ path: SHOTS + '/acc_pc_salvato.png' });
   await pc.click('#btnModePrimaria'); await pc.waitForTimeout(200);
 
@@ -143,10 +162,26 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.screenshot({ path: SHOTS + '/acc_pc_medico.png' });
   await pc.click('#profiloBtn');
   await pc.click('#btnSalva'); await pc.waitForTimeout(400);
-  check(/Referti RM Retto\/Neri Marco\/Stadiazione primaria\//.test(await pc.textContent('#archivioStato')), 'i suoi referti vanno nella sua cartella');
+  check(/Referti RM Retto\/Neri Marco\/\d{4}\/\d{4}-\d{2}-\d{2}_RT\d{2}-[A-Z2-9]{4}\/[^/]*_Stadiazione_/.test(await pc.textContent('#archivioStato')), 'i suoi referti vanno nella sua cartella, in un caso suo');
+  const codiceNeri = (await pc.evaluate(() => EsgarTest.caso())).codice;
+  check(codiceNeri !== codice, 'un altro paziente, un altro codice');
+  // un numero d'accesso diverso dopo il salvataggio è un altro paziente
+  await pc.fill('#arcAccesso', 'B999');
+  check(!(await pc.evaluate(() => EsgarTest.caso())), 'cambiando il numero d\'accesso il caso si chiude');
+  // ristadiazione di Neri per un paziente stadiato da Bianchi: va nel caso di Bianchi
+  await pc.click('#btnModeRistad'); await pc.waitForTimeout(300);
+  await pc.click('#btnCerca'); await pc.waitForSelector('#cercaPannello.aperto .cerca-caso', { timeout: 5000 });
+  await pc.fill('#cercaQ', codice);
+  await pc.click('#cercaPannello [data-associa="0"]');
+  await pc.click('#btnSalva'); await pc.waitForTimeout(400);
+  check(new RegExp('Bianchi Giulia/2026/2026-09-28_' + codice + '/[^/]*_Ristadiazione_').test(await pc.textContent('#archivioStato')), 'ristadiazione di un altro medico: nella cartella del caso');
   const files = await albero();
   console.log(files.join('\n'));
   check(files.filter((f) => f.endsWith('indice-referti.csv')).length === 2, 'un indice per medico');
+  const caseB = files.filter((f) => f.includes('_' + codice + '/'));
+  check(caseB.length === 4 && caseB.filter((f) => /_Ristadiazione_/.test(f)).length === 2, 'nel caso di Bianchi: due stadiazioni e due ristadiazioni, vicine');
+  const idxNeri = await pc.evaluate(async () => (await (await (await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto')).getDirectoryHandle('Neri Marco')).getFileHandle('indice-referti.csv')).getFile()).text());
+  check(/Codice caso/.test(idxNeri) && idxNeri.includes(codice) && idxNeri.includes('Bianchi Giulia/2026/2026-09-28_' + codice), 'l\'indice di Neri ha la sua ristadiazione, con codice e percorso');
 
   // ── firma: un accesso con firma falsa non porta il codice ──
   const f = await tel.evaluate(() => EsgarTelefono.firma('structurad-esgar|accesso|esgar-aaaaaaaaaaaaaaaaaaaaaa|op-aaaaaaaaaaaa'));
