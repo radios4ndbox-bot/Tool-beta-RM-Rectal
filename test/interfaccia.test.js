@@ -111,7 +111,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await p.evaluate(() => document.querySelector('.ct-info-btn[data-ct=cT4a]').scrollIntoView({ block: 'center' }));
   const ctPrima = await p.evaluate(() => (document.querySelector('input[name=p_ct]:checked') || {}).value);
   await p.click('.ct-info-btn[data-ct=cT4a]'); await p.waitForTimeout(400);
-  check(await p.isVisible('#ctInfo.aperta') && /peritoneo viscerale/.test(await p.textContent('#ctInfo')) && /ESGAR/.test(await p.textContent('#ctInfo .ct-info-fonte')), 'la finestra spiega cT4a e dice la fonte');
+  check(await p.isVisible('#ctInfo.aperta') && /riflessione peritoneale/.test(await p.textContent('#ctInfo')) && /ESGAR/.test(await p.textContent('#ctInfo .ct-info-fonte')), 'la finestra spiega cT4a e dice la fonte');
   check(await p.evaluate(() => (document.querySelector('input[name=p_ct]:checked') || {}).value) === ctPrima, 'aprire l\'info non cambia lo stadio scelto');
   await p.keyboard.press('Escape');
   check(!(await p.isVisible('#ctInfo.aperta')), 'Esc chiude la finestra');
@@ -120,7 +120,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await p.click('.rail-btn[data-pan=info]'); await p.waitForTimeout(700);
   check(await p.isVisible('#railPannello.aperto .pan[data-pan=info]') && await p.evaluate(() => document.body.classList.contains('rail-aperto')), 'Info apre il pannello e la pagina rientra');
   const info = await p.textContent('.pan[data-pan=info]');
-  check(/cT3c/.test(info) && /5–15 mm/.test(info) && /near-cCR/.test(info) && /EMVI/.test(info) && /≥9 mm/.test(info), 'Info spiega cT, EMVI, linfonodi e risposta');
+  check(/cT3c/.test(info) && /5–15 mm/.test(info) && /near-cCR/.test(info) && /EMVI/.test(info) && /≥9 mm/.test(info) && /cT3 MRF+|cT3cd/.test(info) && /4592/.test(info), 'Info spiega cT, EMVI, linfonodi e risposta');
   await p.screenshot({ path: SHOTS + '/imp_info.png' });
   await p.click('.rail-btn[data-pan=archivio]'); await p.waitForTimeout(500);
   check(/ricorda <b>|ricorda \d|frasi/.test(await p.innerHTML('#impMemoria')) && /1 frase|\d+ frasi/.test(await p.textContent('#impMemoria')), 'Archivio: quante frasi ricorda: ' + (await p.textContent('#impMemoria')).slice(0, 70));

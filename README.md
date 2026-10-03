@@ -164,10 +164,12 @@ form né il referto.
   dubbi fa fede la pubblicazione ESGAR.
 
 Nella scheda **cT stage** ogni stadio ha a sinistra un pulsante «i»: apre una
-piccola finestra che spiega a cosa corrisponde lo stadio e come lo si riconosce
-in RM. Le definizioni sono quelle TNM adottate dalle raccomandazioni ESGAR
-(consenso 2016, riprese nell'aggiornamento 2026). I testi non sono ancora stati
-confrontati parola per parola con la pubblicazione 2026, e la finestra lo dice.
+piccola finestra che spiega a cosa corrisponde lo stadio secondo le
+raccomandazioni ESGAR 2026 per la stadiazione primaria (Eur Radiol
+2026;36:4592–4607), con le percentuali di consenso del panel. Le soglie dei
+singoli sottostadi sono quelle del TNM; il modello di referto ESGAR le raggruppa
+in cT1-2, cT3ab, cT3cd, cT4a e cT4b. Anche la sezione Info riassume le due
+pubblicazioni 2026, stadiazione primaria e ristadiazione (4608–4621).
 
 Il codice dispositivo non compare nel tool: il pannello del profilo dice solo
 se l'accesso è firmato. Il codice si legge sul telefono, in «La tua chiave».

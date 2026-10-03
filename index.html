@@ -1311,7 +1311,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
           <label class="opt"><input type="radio" name="p_lnPresente" value="no" checked> Non presenti</label>
           <label class="opt"><input type="radio" name="p_lnPresente" value="si"> Presenti</label>
         </div>
-        <div class="hint">Solo stazioni regionali: mesorettale, presacrale, otturatorio, iliaco interno. Criteri di sospetto: mesorettale ≥9 mm o segnale mucinoso; laterale (otturatorio/iliaco interno) ≥7 mm. Le stazioni non regionali (iliaco esterno/comune, inguinale) vanno in Metastasi pelviche.</div>
+        <div class="hint">Solo stazioni regionali: mesorettale, presacrale, otturatorio, iliaco interno. Criteri di sospetto ESGAR 2026: mesorettale ≥9 mm, 5–9 mm con ≥2 criteri morfologici, &lt;5 mm con tutti e 3, oppure segnale mucinoso; laterale (otturatorio/iliaco interno) ≥7 mm, o 5–7 mm con criteri morfologici. Criteri morfologici: forma rotonda, margine irregolare, segnale eterogeneo. Le stazioni non regionali (iliaco esterno/comune; inguinale, salvo tumore esteso sotto la linea dentata) vanno in Metastasi pelviche.</div>
         <label class="field"><span class="lab">Unità di misura asse corto</span>
           <select id="p_lnUnit" class="unit">
             <option value="mm" selected>mm</option>
@@ -2527,8 +2527,8 @@ liveUpdate();
       </div>
       <div class="info-sez">
         <h4>Cosa sono i criteri ESGAR</h4>
-        <p>ESGAR (European Society of Gastrointestinal and Abdominal Radiology) pubblica raccomandazioni di consenso su come eseguire e refertare la RM del retto.</p>
-        <p>Fissano un lessico e categorie comuni: chirurgo, oncologo e radioterapista leggono il referto allo stesso modo e lo usano per scegliere la terapia. Il tool segue la versione citata in fondo a ogni referto (Eur Radiol 2026).</p>
+        <p>ESGAR (European Society of Gastrointestinal and Abdominal Radiology) pubblica raccomandazioni di consenso su come eseguire, leggere e refertare la RM del retto.</p>
+        <p>L'aggiornamento 2026 nasce da un panel di 26 esperti che ha votato 126 voci, con consenso (≥80%) su 121. È diviso in due pubblicazioni: <b>stadiazione primaria</b> (Eur Radiol 2026;36:4592–4607) e <b>ristadiazione</b> dopo terapia neoadiuvante (Eur Radiol 2026;36:4608–4621). Il referto strutturato è raccomandato (96%).</p>
       </div>
       <div class="info-sez">
         <h4>Stadiazione primaria · cT</h4>
@@ -2539,19 +2539,22 @@ liveUpdate();
           <tr><td>cT3b</td><td>estensione extramurale 1–5 mm</td></tr>
           <tr><td>cT3c</td><td>estensione extramurale 5–15 mm</td></tr>
           <tr><td>cT3d</td><td>estensione extramurale &gt;15 mm</td></tr>
-          <tr><td>cT4a</td><td>infiltrazione del peritoneo viscerale</td></tr>
-          <tr><td>cT4b</td><td>infiltrazione di organi o strutture adiacenti</td></tr>
+          <tr><td>cT4a</td><td>invasione del peritoneo o della riflessione peritoneale</td></tr>
+          <tr><td>cT4b</td><td>invasione di organi o strutture adiacenti</td></tr>
         </table>
+        <p style="margin-top:8px">Il modello di referto ESGAR 2026 raggruppa le voci in cT1-2, cT3ab (crescita extramurale ≤5 mm), cT3cd (&gt;5 mm), cT4a e cT4b. Il pulsante «i» accanto a ogni stadio, nella scheda cT, spiega i dettagli.</p>
       </div>
       <div class="info-sez">
         <h4>Stadiazione primaria · cosa si descrive</h4>
         <ul class="info-lista">
-          <li><b>Sede e morfologia.</b> Sede lungo l'asse del retto (basso, medio, alto), pareti coinvolte e forma (a placca, semicircolare, sub-circonferenziale, circonferenziale), estensione longitudinale, distanze dalla giunzione anorettale e dal margine anale. Rapporti con la riflessione peritoneale anteriore, la linea pube–promontorio e il sigmoid take-off.</li>
-          <li><b>Sfinteri e organi.</b> L'invasione dello sfintere interno non cambia il cT. Sfintere esterno, puborettale, elevatore dell'ano o un qualsiasi organo pelvico infiltrato configurano cT4b: il tool lo assegna da solo.</li>
-          <li><b>MRF.</b> La fascia mesorettale è coinvolta quando tumore, deposito, linfonodo o EMVI arrivano a 1 mm o meno: se ne riportano la causa e la distanza minima.</li>
-          <li><b>EMVI.</b> Invasione venosa extramurale in cinque gradi: 0–2 negativa, 3–4 positiva.</li>
-          <li><b>Linfonodi regionali.</b> Mesorettali, presacrali, otturatori e iliaci interni. Sospetti: mesorettali ≥9 mm o con segnale mucinoso; laterali ≥7 mm. Iliaci esterni e comuni e inguinali non sono regionali: vanno fra le metastasi pelviche. Categorie: cN0, possibile cN+, cN+.</li>
-          <li><b>Depositi tumorali.</b> Noduli tumorali del mesoretto distinti dai linfonodi: si riportano a parte, con sede e diametro.</li>
+          <li><b>Sede.</b> Un tumore il cui margine inferiore parte sotto il sigmoid take-off è del retto, sopra è del sigma (92%). Per l'altezza il panel suggerisce, senza raggiungere il consenso (77%), misure in linea retta dalla giunzione anorettale o dal margine anale, con un riferimento definito e sempre lo stesso. Si riporta il rapporto con la riflessione peritoneale anteriore.</li>
+          <li><b>Sfinteri e pavimento pelvico.</b> Sfintere interno e spazio intersfinterico non cambiano il cT (85%); sfintere esterno (96%) e muscoli del pavimento pelvico o della parete laterale (100%) danno cT4b. Il tool assegna il cT4b da solo.</li>
+          <li><b>MRF.</b> Coinvolta se a 1 mm o meno arrivano tumore, EMVI o noduli irregolari, cioè depositi tumorali o linfonodi con estensione extracapsulare (100%). Un linfonodo a margini lisci entro 1 mm non la coinvolge (96%). La categoria «minacciata» (1–2 mm) non si usa più (92%).</li>
+          <li><b>EMVI.</b> Cinque gradi: 3 e 4 sono positivi (100%).</li>
+          <li><b>Linfonodi.</b> Mesorettali sospetti: asse corto ≥9 mm; 5–9 mm con almeno 2 criteri morfologici; &lt;5 mm con tutti e 3; segnale mucinoso. Laterali (otturatori, iliaci interni): ≥7 mm (89%), o 5–7 mm con criteri morfologici. I criteri morfologici sono forma rotonda, margine irregolare e segnale eterogeneo.</li>
+          <li><b>Regionali o no.</b> Mesorettali, otturatori e iliaci interni sono N; iliaci esterni e comuni sono M; gli inguinali sono M, salvo tumore esteso sotto la linea dentata (96%).</li>
+          <li><b>cN con grado di fiducia.</b> cN0, possibile cN+ o cN+ (92%), tenendo conto anche di cT, EMVI e numero di linfonodi sospetti (89%).</li>
+          <li><b>Depositi tumorali.</b> Si riconoscono da forma irregolare e continuità con le vene (92%); insieme ai linfonodi sospetti concorrono al cN (81%).</li>
         </ul>
       </div>
       <div class="info-sez">
@@ -2563,10 +2566,11 @@ liveUpdate();
           <tr><td>maggiore</td><td>massa solida persistente con restrizione della diffusione</td></tr>
         </table>
         <ul class="info-lista" style="margin-top:8px">
-          <li><b>ycT</b> se resta malattia: ycT1-2, ycT3ab (crescita extramurale ≤5 mm), ycT3cd (&gt;5 mm), ycT4a, ycT4b.</li>
-          <li><b>Componente mucinosa:</b> residuo di una neoplasia già mucinosa, o trasformazione mucinosa di una neoplasia solida.</li>
-          <li><b>ycMRF</b> coinvolta se il margine è di 1 mm o meno, specificando se per malattia, fibrosi, EMVI o linfonodo. <b>yEMVI</b> con gli stessi gradi del basale.</li>
-          <li><b>Linfonodi e depositi</b> confrontati con la RM basale: ycN0, possibile ycN+, ycN+.</li>
+          <li><b>Classe di risposta</b> obbligatoria nel referto: risposta (quasi) completa, residuo minore o residuo maggiore (89%). T2 e DWI si leggono insieme, e con l'endoscopia per la risposta (quasi) completa (92%).</li>
+          <li><b>ycT</b> solo se si sospetta residuo: è una stima del massimo ycT e comprende la fibrosi del letto tumorale (85%). Nella risposta (quasi) completa non si riporta (81%). Voci: ycT1-2, ycT3ab, ycT3cd, ycT4a, ycT4b.</li>
+          <li><b>Componente mucinosa:</b> la degenerazione mucinosa di un tumore solido non è segno di mancata risposta (100%).</li>
+          <li><b>ycMRF.</b> Libera se ricompare il grasso fra tumore e fascia (100%); lo stranding persistente verso la MRF è un segno dubbio (96%). <b>yEMVI</b> con la stessa scala del basale (89%).</li>
+          <li><b>ycN.</b> Mesorettali: ycN0 se non restano linfonodi o solo &lt;5 mm; possibile ycN+ con linfonodi ≥5 mm o segnale mucinoso (soglia di 5 mm, 92%). Per i laterali non ci sono soglie raccomandate dopo terapia (85%).</li>
         </ul>
       </div>
       <div class="info-sez">
@@ -2578,7 +2582,7 @@ liveUpdate();
         </ul>
       </div>
       <div class="info-sez">
-        <p class="info-avviso">È un riassunto dei criteri come li applica il tool. Per i casi dubbi fa fede la pubblicazione ESGAR, e il referto resta responsabilità del radiologo che lo firma.</p>
+        <p class="info-avviso">Riassunto delle raccomandazioni ESGAR 2026; le percentuali sono il consenso del panel. Per i casi dubbi fanno fede le pubblicazioni, e il referto resta responsabilità del radiologo che lo firma.</p>
       </div>
       <div class="info-sez">
         <h4>Versione</h4>
@@ -5718,7 +5722,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-03 · info cT';
+const VERSIONE = '2026-10-03 · ESGAR 2026';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -6624,85 +6628,69 @@ window.EsgarTest = {
 // ============================================================
 // cT STAGE — pulsante info accanto a ogni stadio
 //
-// Una piccola finestra spiega a cosa corrisponde lo stadio e come lo si
-// riconosce in RM. Le definizioni sono quelle TNM adottate dalle
-// raccomandazioni ESGAR (consenso 2016, riprese nell'aggiornamento
-// 2026); i testi non sono stati confrontati parola per parola con la
-// pubblicazione 2026.
+// Una piccola finestra spiega a cosa corrisponde lo stadio secondo le
+// raccomandazioni ESGAR 2026 per la stadiazione primaria (Eur Radiol
+// 2026;36:4592–4607), con le percentuali di consenso del panel; le
+// soglie dei singoli sottostadi sono quelle del TNM.
 // ============================================================
 (function(){
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const FONTE = 'Definizioni TNM adottate dalle raccomandazioni ESGAR (consenso 2016, aggiornamento 2026). Testo da verificare sulla pubblicazione ESGAR 2026.';
+  const FONTE = 'ESGAR Rectal Imaging Guideline Group, Eur Radiol 2026;36:4592–4607 (stadiazione primaria). Le percentuali sono il consenso del panel di 26 esperti; le soglie dei singoli sottostadi sono quelle del TNM.';
+  const T3AB = 'Il modello di referto ESGAR 2026 riunisce cT3a e cT3b nella voce <b>cT3ab: crescita extramurale ≤5 mm</b>.';
+  const T3CD = 'Il modello di referto ESGAR 2026 riunisce cT3c e cT3d nella voce <b>cT3cd: crescita extramurale &gt;5 mm</b>.';
+  const MRF = 'Se la crescita arriva a 1 mm o meno dalla fascia mesorettale, senza invadere altri organi, resta <b>cT3 con MRF+</b>: non è un cT4 (consenso 92%).';
   const CT = {
     'cT1': {
       tit: 'cT1 — invasione della sottomucosa',
       testo: [
-        'Il tumore arriva alla <b>sottomucosa</b> ma non alla muscolare propria.',
-        'In T2 la muscolare propria, ipointensa, resta integra sotto la lesione, separata da uno strato di sottomucosa conservato.',
-        'La RM standard distingue male cT1 da cT2: nella pratica si parla di <b>tumore precoce (cT1–2)</b>. Per la stadiazione fine delle lesioni piccole serve l\'ecoendoscopia.'
+        'Il tumore arriva alla <b>sottomucosa</b> senza raggiungere la muscolare propria (TNM).',
+        'Il modello di referto ESGAR 2026 riunisce cT1 e cT2 in un\'unica voce, <b>cT1-2</b>.',
+        'Per distinguere e classificare i T1 la tecnica preferita è l\'<b>ecografia endorettale</b> (consenso 88%): la RM ad alta risoluzione può riconoscere tumori precoci candidabili a escissione locale, ma per stadiarli il panel preferisce l\'ecoendoscopia.'
       ]
     },
     'cT2': {
       tit: 'cT2 — invasione della muscolare propria',
       testo: [
-        'Il tumore entra nella <b>muscolare propria</b> senza superarla.',
-        'La banda ipointensa della muscolare è coinvolta, ma il suo margine esterno resta netto e regolare e il grasso mesorettale è libero.',
-        'Le sottili spicule ipointense nel grasso sono in genere fibrosi o reazione desmoplastica, non tumore: da sole non fanno un cT3.'
+        'Il tumore infiltra la <b>muscolare propria</b> senza superarla: nessuna crescita nel grasso mesorettale (TNM).',
+        'Nel modello di referto ESGAR 2026 rientra nella voce <b>cT1-2</b>.',
+        'Per separare cT1 da cT2 nei tumori precoci ESGAR preferisce l\'ecografia endorettale (88%).'
       ]
     },
     'cT3a': {
       tit: 'cT3a — estensione extramurale < 1 mm',
-      testo: [
-        'Il tumore supera la muscolare propria ed entra nel grasso mesorettale per <b>meno di 1 mm</b>.',
-        COME_MISURARE(),
-        'cT3a e cT3b (fino a 5 mm) hanno una prognosi vicina al cT2.'
-      ]
+      testo: ['Il tumore supera la muscolare propria e cresce nel grasso mesorettale per <b>meno di 1 mm</b> (TNM).', T3AB, MRF]
     },
     'cT3b': {
       tit: 'cT3b — estensione extramurale 1–5 mm',
-      testo: [
-        'Estensione nel grasso mesorettale <b>da 1 a 5 mm</b> oltre il margine esterno della muscolare propria.',
-        COME_MISURARE(),
-        'La soglia di 5 mm separa il cT3 a prognosi più favorevole (a–b) da quello a rischio più alto (c–d).'
-      ]
+      testo: ['Crescita nel grasso mesorettale <b>da 1 a 5 mm</b> oltre la muscolare propria (TNM).', T3AB, MRF]
     },
     'cT3c': {
       tit: 'cT3c — estensione extramurale 5–15 mm',
-      testo: [
-        'Estensione nel grasso mesorettale <b>oltre 5 e fino a 15 mm</b>.',
-        COME_MISURARE(),
-        'Oltre i 5 mm aumenta il rischio di recidiva locale: conviene valutare con particolare cura MRF ed EMVI.'
-      ]
+      testo: ['Crescita nel grasso mesorettale <b>oltre 5 e fino a 15 mm</b> (TNM).', T3CD, MRF]
     },
     'cT3d': {
       tit: 'cT3d — estensione extramurale > 15 mm',
-      testo: [
-        'Estensione nel grasso mesorettale <b>oltre 15 mm</b>.',
-        COME_MISURARE(),
-        'Con un\'estensione così profonda va controllata con attenzione la distanza dalla fascia mesorettale (MRF).'
-      ]
+      testo: ['Crescita nel grasso mesorettale <b>oltre 15 mm</b> (TNM).', T3CD, MRF]
     },
     'cT4a': {
       tit: 'cT4a — infiltrazione del peritoneo viscerale',
       testo: [
-        'Il tumore raggiunge e supera la superficie del <b>peritoneo viscerale</b>: di norma nel retto alto o all\'altezza della riflessione peritoneale anteriore, dove il retto è rivestito di peritoneo.',
-        'Per questo conta il rapporto della lesione con la riflessione peritoneale anteriore, che il tool chiede in Localizzazione.',
-        'Non va confuso con il coinvolgimento della fascia mesorettale (MRF), che non è un T4.'
+        'Il tumore invade il <b>peritoneo o la riflessione peritoneale</b> (definizione del modello di referto ESGAR 2026).',
+        'Un\'invasione anteriore al di sopra della riflessione peritoneale è invasione del peritoneo, non della fascia mesorettale (consenso 100%).',
+        'Per questo il referto riporta il rapporto del tumore con la riflessione peritoneale anteriore: sotto, a cavallo o sopra.'
       ]
     },
     'cT4b': {
       tit: 'cT4b — infiltrazione di organi o strutture adiacenti',
       testo: [
-        'Il tumore invade un <b>organo o una struttura vicina</b>: prostata, vescicole seminali, vescica, utero, vagina, ovaie, ureteri, parete pelvica laterale, sacro o coccige.',
-        'Nel tool configurano cT4b, assegnato in automatico, anche l\'invasione di <b>sfintere esterno, puborettale o elevatore dell\'ano</b>. Lo sfintere interno da solo non cambia il cT.',
-        'Nel campo sotto si indica quale struttura è infiltrata.'
+        'Il tumore invade <b>organi o strutture adiacenti</b>. Il modello di referto ESGAR 2026 elenca: organi pelvici, pavimento pelvico, parete pelvica laterale, sfintere esterno o altri muscoli, vasi, nervi, osso, compartimenti anatomici fuori dal mesoretto, altre anse intestinali.',
+        'Lo <b>sfintere anale esterno</b> dà cT4b (consenso 96%), come i muscoli del pavimento pelvico, cioè puborettale ed elevatore, o della parete pelvica laterale (100%).',
+        'Sfintere interno e spazio intersfinterico non contano: il cT si definisce al livello del retto (85%). Il loro coinvolgimento va comunque descritto, con gli strati interessati e l\'estensione cranio-caudale.',
+        'Una fascia mesorettale invasa senza altri organi resta <b>cT3 MRF+</b>, non cT4 (92%).'
       ]
     }
   };
-  function COME_MISURARE(){
-    return 'Si misura in mm, sul piano assiale perpendicolare alla parete, dal margine esterno della muscolare propria (ricostruito sotto la lesione) al punto più profondo di tumore nel grasso.';
-  }
 
   /* la finestra: una sola, posizionata accanto al pulsante */
   let aperto = null;
