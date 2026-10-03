@@ -106,6 +106,27 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   check(rimaste.length === 1, '× toglie la frase dalla memoria: ' + rimaste.join(', '));
   await p.reload(); await p.waitForTimeout(300);
   check(await p.evaluate(() => EsgarMemoria.stato().campi.p_ctNote.voci.length) === 2, 'la memoria resta alla ricarica');
+  // ── impostazioni ──
+  await p.click('.rail-btn[data-pan=info]'); await p.waitForTimeout(700);
+  check(await p.isVisible('#railPannello.aperto .pan[data-pan=info]') && await p.evaluate(() => document.body.classList.contains('rail-aperto')), 'Info apre il pannello e la pagina rientra');
+  const info = await p.textContent('.pan[data-pan=info]');
+  check(/cT3c/.test(info) && /5–15 mm/.test(info) && /near-cCR/.test(info) && /EMVI/.test(info) && /≥9 mm/.test(info), 'Info spiega cT, EMVI, linfonodi e risposta');
+  await p.screenshot({ path: SHOTS + '/imp_info.png' });
+  await p.click('.rail-btn[data-pan=archivio]'); await p.waitForTimeout(500);
+  check(/ricorda <b>|ricorda \d|frasi/.test(await p.innerHTML('#impMemoria')) && /1 frase|\d+ frasi/.test(await p.textContent('#impMemoria')), 'Archivio: quante frasi ricorda: ' + (await p.textContent('#impMemoria')).slice(0, 70));
+  await p.screenshot({ path: SHOTS + '/imp_archivio.png' });
+  p.once('dialog', (d) => d.accept());
+  await p.click('[data-imp=azzera]'); await p.waitForTimeout(200);
+  check(await p.evaluate(() => Object.keys(EsgarMemoria.stato().campi).length === 0), 'Azzera la memoria');
+  await p.click('.rail-btn[data-pan=aspetto]'); await p.waitForTimeout(500);
+  await p.click('[data-pref=dense]');
+  check(await p.evaluate(() => document.body.classList.contains('dense')) && await p.getAttribute('[data-pref=dense]', 'aria-checked') === 'true', 'Form compatto si attiva');
+  await p.screenshot({ path: SHOTS + '/imp_aspetto.png' });
+  await p.click('.rail-btn[data-pan=aspetto]'); await p.waitForTimeout(600);
+  check(!(await p.evaluate(() => document.body.classList.contains('rail-aperto'))), 'un secondo clic chiude il pannello');
+  await p.click('.rail-btn[data-pan=aspetto]'); await p.click('[data-pref=skipIntro]');
+  await p.goto(URL.replace('?nointro', '')); await p.waitForTimeout(500);
+  check(await p.evaluate(() => !document.getElementById('splashScreen') && document.body.classList.contains('dense')), 'alla riapertura: niente intro, form compatto ricordato');
   check(errs.length === 0, 'nessun errore JS ' + errs.join(' | '));
   await b.close();
 })();
