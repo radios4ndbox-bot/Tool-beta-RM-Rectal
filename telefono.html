@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#12070A">
+<meta name="referrer" content="no-referrer">
+<title>StructuRad × ESGAR — Chiave</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   StructuRad × ESGAR — il telefono come chiave
+   Conserva solo nome, cognome e titolo di chi referta. Inquadrando il
+   QR del PC, conferma l'accesso e manda questi dati, cifrati, al PC.
+   Nient'altro passa dal telefono: i referti restano sul PC.
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --ink:#12070A; --ink2:#1E0D12; --line:rgba(255,255,255,.09);
+  --text:#F3E9EC; --muted:#A8979C; --faint:#76656A;
+  --red-light:#EE5A68; --rose:#C42A40; --accent:#7B1E34; --wine:#3A0A14;
+  --green:#5FCB8E;
+  --molla:cubic-bezier(.34,1.28,.64,1);
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+  --sans:'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0; min-height:100%; background:var(--ink); color:var(--text);}
+body{
+  font-family:var(--sans); font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  min-height:100dvh; display:flex; flex-direction:column;
+  background:radial-gradient(900px 600px at 50% -10%, #3A0E19 0%, var(--ink) 60%);
+  padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px);
+}
+header{display:flex; align-items:center; gap:10px; padding:18px 4px 6px;}
+header svg{width:34px; height:auto; display:block;}
+.marchio{font-family:var(--mono); font-size:13px; letter-spacing:.04em;}
+.marchio b{font-weight:500; color:var(--red-light);}
+main{flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px; max-width:440px; width:100%; margin:0 auto; padding:12px 0;}
+.carta{
+  position:relative; overflow:hidden;
+  background:linear-gradient(160deg, var(--ink2), #150A0E); border:1px solid var(--line); border-radius:18px;
+  padding:22px 20px 20px 24px; animation:entra .5s var(--molla) both;
+}
+.carta::before{content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
+  background:linear-gradient(180deg, var(--red-light), var(--rose) 40%, var(--accent) 72%, var(--wine));}
+@keyframes entra{from{opacity:0; transform:translateY(10px) scale(.97);} to{opacity:1; transform:none;}}
+.kicker{font-size:10px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:#EE6B78;}
+h1{font-size:22px; font-weight:500; margin:4px 0 6px; letter-spacing:-.01em;}
+p{margin:0; color:var(--muted); font-size:14px;}
+p b{color:var(--text); font-weight:500;}
+.chiave{display:flex; align-items:center; gap:14px; margin-top:16px;}
+.av{width:48px; height:48px; border-radius:50%; flex-shrink:0; display:grid; place-items:center;
+  font-family:var(--mono); font-size:16px; font-weight:500; color:#fff;
+  background:linear-gradient(135deg, var(--red-light), var(--accent));}
+.chiave .nome{font-size:17px; font-weight:500;}
+.chiave .det{font-family:var(--mono); font-size:11.5px; color:var(--faint); margin-top:2px;}
+label{display:block; margin-top:14px;}
+label span{display:block; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px;}
+input[type=text]{
+  width:100%; font-family:var(--sans); font-size:16px; color:var(--text);
+  padding:12px 14px; border-radius:10px; border:1.5px solid var(--line); background:rgba(255,255,255,.04); outline:none;
+}
+input[type=text]:focus{border-color:var(--red-light); background:rgba(255,255,255,.07);}
+.titoli{display:flex; gap:8px;}
+.titoli button{
+  flex:1; font-family:var(--sans); font-size:14px; color:var(--muted); cursor:pointer;
+  padding:10px 0; border-radius:10px; border:1.5px solid var(--line); background:transparent;
+  transition:all .2s ease;
+}
+.titoli button.on{color:#fff; border-color:var(--red-light); background:rgba(238,90,104,.14);}
+.azioni{display:flex; flex-direction:column; gap:10px; margin-top:20px;}
+.btn{
+  width:100%; font-family:var(--sans); font-size:16px; font-weight:600; cursor:pointer;
+  padding:14px 18px; border-radius:999px; border:1.5px solid transparent;
+  transition:transform .2s var(--molla), opacity .2s ease;
+}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.55;}
+.btn-pieno{color:#fff; background:linear-gradient(135deg, var(--rose), var(--accent)); box-shadow:0 10px 26px -12px rgba(196,42,64,.8);}
+.btn-vuoto{color:var(--text); background:transparent; border-color:var(--line);}
+.stato{font-size:13.5px; margin-top:14px; color:var(--muted); min-height:1.2em;}
+.stato.ok{color:var(--green);}
+.stato.ko{color:var(--red-light);}
+.spunta{width:64px; height:64px; margin:4px 0 10px;}
+.spunta circle{stroke:var(--green); stroke-width:3; fill:none; stroke-dasharray:180; stroke-dashoffset:180; animation:traccia .6s ease forwards;}
+.spunta path{stroke:var(--green); stroke-width:4; fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:40; stroke-dashoffset:40; animation:traccia .4s ease .45s forwards;}
+@keyframes traccia{to{stroke-dashoffset:0;}}
+.nota{font-size:12px; color:var(--faint); text-align:center; line-height:1.5; padding:0 10px;}
+[hidden]{display:none !important;}
+</style>
+</head>
+<body>
+<header>
+  <svg version="1.0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+ viewBox="0 0 340.000000 192.000000"
+ preserveAspectRatio="xMidYMid meet">
+<defs><linearGradient id="gradLogoTel" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#5E1222"/><stop offset=".5" stop-color="#B0213A"/><stop offset="1" stop-color="#F0505F"/></linearGradient></defs>
+<g transform="translate(0.000000,192.000000) scale(0.100000,-0.100000)"
+fill="url(#gradLogoTel)" stroke="none">
+<path d="M1615 1895 c-137 -29 -227 -85 -316 -195 -131 -162 -154 -393 -60
+-590 38 -80 146 -190 231 -234 94 -50 177 -66 341 -66 153 0 191 -10 247 -63
+76 -72 100 -176 62 -265 -27 -62 -95 -127 -149 -142 -20 -5 -116 -10 -213 -10
+l-178 0 0 -61 0 -60 208 3 c240 4 263 10 356 98 79 75 110 149 111 265 0 79
+-3 97 -29 149 -36 73 -97 136 -168 172 -50 26 -63 28 -233 35 -209 8 -256 19
+-343 83 -95 70 -151 161 -173 280 -29 157 51 337 188 424 93 59 119 63 432 66
+l286 2 3 62 3 62 -273 -1 c-179 -1 -294 -5 -333 -14z"/>
+<path d="M2314 1713 l1 -198 -315 -5 c-245 -4 -321 -8 -340 -19 -105 -59 -103
+-214 4 -265 26 -12 66 -16 173 -16 104 0 156 -5 213 -20 193 -50 343 -174 424
+-352 76 -164 79 -362 8 -516 -40 -87 -100 -168 -166 -224 -34 -29 -65 -56 -71
+-61 -6 -6 69 -7 200 -4 233 7 320 24 448 88 184 93 352 273 429 463 103 253
+88 624 -34 845 -104 188 -222 305 -393 389 -145 71 -247 92 -451 92 l-130 0 0
+-197z m401 46 c259 -79 441 -266 526 -539 21 -67 24 -94 24 -250 -1 -138 -4
+-189 -19 -239 -39 -141 -109 -263 -208 -362 -102 -101 -211 -164 -351 -200
+-72 -19 -162 -25 -155 -11 96 186 118 265 118 417 0 134 -19 216 -80 340 -85
+176 -239 314 -413 371 -72 24 -103 28 -260 33 -184 6 -196 9 -197 51 0 38 16
+40 333 40 297 0 310 1 338 21 52 37 59 64 59 220 l0 142 108 -6 c65 -4 135
+-15 177 -28z"/>
+<path d="M1596 1709 c-78 -32 -135 -77 -176 -140 -48 -74 -64 -139 -58 -239 8
+-134 83 -247 204 -306 55 -27 68 -29 239 -35 99 -4 194 -12 210 -17 106 -33
+209 -121 258 -221 30 -62 32 -73 32 -176 0 -103 -2 -114 -32 -177 -35 -75
+-103 -149 -175 -191 -79 -46 -144 -57 -340 -57 l-178 0 0 -55 0 -55 98 -1
+c343 -2 399 7 510 82 251 167 322 502 159 746 -116 173 -265 243 -522 243
+-170 0 -204 9 -272 75 -57 56 -73 96 -73 185 0 70 25 124 78 172 73 66 83 68
+388 68 l274 0 0 60 0 60 -287 -1 c-263 0 -292 -2 -337 -20z"/>
+<path d="M925 997 c-36 -21 -216 -119 -395 -215 -36 -19 -68 -38 -72 -41 -4
+-4 34 -28 85 -54 89 -46 125 -65 331 -176 l98 -54 37 19 c187 97 479 259 475
+265 -2 4 -57 35 -122 69 -187 100 -263 140 -329 176 -34 19 -63 34 -65 34 -1
+0 -21 -11 -43 -23z m33 -93 c5 -10 21 -16 38 -16 52 2 173 -48 210 -86 33 -34
+38 -47 34 -87 -3 -36 -29 -63 -87 -92 -54 -26 -67 -28 -173 -28 -102 0 -120 3
+-165 25 -39 19 -57 37 -80 77 -16 29 -35 52 -42 53 -31 1 -26 53 8 71 24 12
+59 3 59 -16 0 -7 -12 -18 -27 -23 -21 -8 -10 -9 48 -5 47 4 83 2 95 -5 18 -11
+18 -11 -2 -12 -26 0 -48 -24 -41 -44 3 -8 24 -24 46 -35 l39 -21 7 30 c4 16 4
+34 0 39 -7 12 52 44 65 36 21 -13 10 -35 -17 -35 -20 0 -24 -3 -16 -11 7 -7
+23 -9 38 -5 23 6 26 11 20 33 -6 25 -5 25 32 19 21 -4 47 -9 58 -12 15 -4 13
+0 -10 20 -46 39 -150 50 -150 17 0 -8 -6 -16 -13 -19 -7 -2 -10 2 -6 11 3 8 1
+18 -5 21 -6 4 -5 19 5 41 18 44 18 55 -2 55 -8 0 -13 -4 -9 -9 9 -16 -28 -30
+-54 -20 -19 7 -21 12 -11 23 21 27 95 33 108 10z m-178 -33 c0 -5 8 -7 18 -4
+10 2 29 -5 43 -16 l24 -21 -33 16 c-41 20 -54 11 -15 -10 15 -8 24 -15 18 -16
+-5 0 -25 9 -43 20 -39 24 -49 25 -32 5 11 -13 10 -14 -4 -9 -19 7 -21 30 -3
+37 19 8 27 8 27 -2z m36 -69 c-4 -3 -14 2 -24 12 -16 18 -16 18 6 6 13 -6 21
+-14 18 -18z"/>
+<path d="M1045 690 c-3 -5 -1 -10 4 -10 6 0 11 5 11 10 0 6 -2 10 -4 10 -3 0
+-8 -4 -11 -10z"/>
+<path d="M42 947 l-33 -34 3 -94 3 -94 105 0 105 0 3 58 3 58 41 -3 41 -3 43
+-140 c24 -77 43 -143 44 -147 0 -5 -38 -8 -85 -8 l-84 0 -3 58 -3 57 -74 3
+-74 3 -34 -38 c-33 -38 -33 -39 -31 -128 l3 -90 105 0 105 0 3 53 3 52 85 0
+c46 0 84 -3 84 -7 0 -5 -18 -69 -40 -143 -22 -74 -40 -136 -40 -137 0 -2 -20
+-3 -45 -3 l-45 0 0 55 0 55 -78 0 c-75 0 -79 -1 -110 -33 l-33 -34 3 -94 3
+-94 105 0 105 0 3 53 3 52 48 0 c27 0 53 6 59 13 9 11 42 114 80 252 l17 60
+83 3 82 3 188 -97 187 -98 175 94 c96 51 210 112 253 135 l78 42 -45 27 c-24
+14 -51 26 -58 26 -13 -1 -219 -109 -207 -110 4 0 23 7 42 15 112 47 78 -26
+-44 -94 -57 -32 -109 -41 -109 -18 0 8 -2 9 -8 1 -13 -20 -68 -8 -151 34 -49
+25 -81 37 -81 29 0 -6 -10 0 -21 16 -27 35 -37 34 -31 -3 3 -18 0 -30 -7 -30
+-6 0 -11 7 -11 15 0 8 -9 15 -20 15 -11 0 -20 7 -20 15 0 9 -8 19 -17 22 -16
+6 -15 8 5 13 20 4 12 11 -53 46 l-76 41 -50 -26 c-27 -14 -49 -28 -49 -31 0
+-3 15 -15 33 -25 l32 -20 -44 -3 c-24 -2 -47 0 -51 5 -4 4 -27 71 -50 148 -24
+77 -47 148 -52 158 -6 13 -21 17 -58 17 l-50 0 0 55 0 55 -78 0 c-75 0 -79 -1
+-110 -33z m168 -92 l0 -115 -90 0 -90 0 0 80 0 80 30 0 c26 0 30 4 30 28 0 39
+5 42 67 42 l53 0 0 -115z m-130 75 c0 -5 -7 -10 -16 -10 -8 0 -12 5 -9 10 3 6
+10 10 16 10 5 0 9 -4 9 -10z m128 -402 l-3 -111 -85 0 -85 0 -3 82 -3 81 31 0
+c27 0 30 3 30 30 l0 30 60 0 61 0 -3 -112z m-128 77 c0 -8 -7 -15 -16 -15 -14
+0 -14 3 -4 15 7 8 14 15 16 15 2 0 4 -7 4 -15z m130 -400 l0 -115 -90 0 -90 0
+0 80 0 80 30 0 c26 0 30 4 30 28 0 39 5 42 67 42 l53 0 0 -115z m-130 80 c0
+-8 -7 -15 -16 -15 -14 0 -14 3 -4 15 7 8 14 15 16 15 2 0 4 -7 4 -15z"/>
+<path d="M130 904 c0 -22 4 -25 28 -22 19 2 28 9 30 26 3 19 -1 22 -27 22 -27
+0 -31 -4 -31 -26z"/>
+<path d="M60 850 c0 -6 29 -10 66 -10 41 0 63 4 59 10 -3 6 -33 10 -66 10 -33
+0 -59 -4 -59 -10z"/>
+<path d="M87 813 c18 -2 50 -2 70 0 21 2 7 4 -32 4 -38 0 -55 -2 -38 -4z"/>
+<path d="M60 779 c0 -5 30 -9 67 -9 36 0 64 2 62 4 -9 8 -129 13 -129 5z"/>
+<path d="M130 585 c0 -21 5 -25 30 -25 25 0 30 4 30 25 0 21 -5 25 -30 25 -25
+0 -30 -4 -30 -25z"/>
+<path d="M87 523 c18 -2 50 -2 70 0 21 2 7 4 -32 4 -38 0 -55 -2 -38 -4z"/>
+<path d="M60 490 c0 -6 29 -10 66 -10 41 0 63 4 59 10 -3 6 -33 10 -66 10 -33
+0 -59 -4 -59 -10z"/>
+<path d="M87 453 c18 -2 50 -2 70 0 21 2 7 4 -32 4 -38 0 -55 -2 -38 -4z"/>
+<path d="M130 255 c0 -21 5 -25 30 -25 25 0 30 4 30 25 0 21 -5 25 -30 25 -25
+0 -30 -4 -30 -25z"/>
+<path d="M60 199 c0 -5 28 -9 62 -9 34 0 59 2 57 4 -10 8 -119 14 -119 5z"/>
+<path d="M87 163 c18 -2 50 -2 70 0 21 2 7 4 -32 4 -38 0 -55 -2 -38 -4z"/>
+<path d="M87 123 c18 -2 50 -2 70 0 21 2 7 4 -32 4 -38 0 -55 -2 -38 -4z"/>
+<path d="M1315 470 c-39 -22 -51 -35 -56 -59 -25 -120 -278 -190 -436 -121
+-60 25 -123 89 -123 123 0 17 -13 28 -59 50 l-59 28 -58 -29 -57 -29 64 -35
+c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
+78 152 78 24 0 5 17 -48 46 l-58 31 -49 -27z"/>
+<path d="M995 440 c-3 -6 1 -7 9 -4 18 7 21 14 7 14 -6 0 -13 -4 -16 -10z"/>
+<path d="M753 378 c14 -18 32 -31 39 -29 19 5 30 4 53 -4 11 -3 -9 9 -45 29
+-35 20 -66 36 -68 36 -3 0 7 -15 21 -32z"/>
+<path d="M1168 389 c-21 -11 -38 -22 -38 -25 0 -3 4 -3 9 1 6 3 14 -2 19 -11
+9 -16 12 -15 36 9 25 25 34 48 19 46 -5 -1 -25 -10 -45 -20z"/>
+<path d="M540 319 c-19 -11 -43 -25 -53 -30 -16 -9 6 -24 140 -96 87 -47 201
+-110 253 -139 l95 -53 95 51 c52 28 118 64 145 80 28 15 98 54 157 86 59 31
+108 59 108 62 0 3 -25 18 -55 33 l-55 27 -45 -22 c-38 -19 -45 -26 -45 -52 0
+-41 -69 -105 -140 -131 -81 -29 -252 -27 -333 4 -70 28 -124 78 -133 125 -5
+28 -14 39 -45 56 -47 24 -45 24 -89 -1z"/>
+<path d="M870 330 c0 -5 7 -10 15 -10 8 0 12 -6 9 -14 -4 -11 6 -16 40 -21 25
+-4 54 -4 63 0 10 5 25 7 35 6 9 -1 19 3 23 8 4 7 0 8 -11 4 -12 -4 -15 -3 -10
+5 5 8 -6 6 -27 -4 -32 -15 -35 -15 -85 10 -29 15 -52 22 -52 16z"/>
+<path d="M1083 334 c9 -3 15 -10 12 -15 -4 -5 -1 -9 5 -9 19 0 5 25 -16 27
+-16 2 -16 1 -1 -3z"/>
+<path d="M703 266 c4 -10 7 -21 7 -25 0 -16 56 -64 95 -82 45 -21 83 -26 48
+-6 -16 9 -19 16 -12 28 6 12 5 19 -5 22 -10 4 -12 0 -9 -14 7 -24 -4 -24 -42
+1 -27 18 -23 27 9 21 19 -4 -14 26 -55 48 -36 21 -41 22 -36 7z"/>
+<path d="M1240 263 c-1 -38 -86 -109 -121 -100 -10 3 -17 1 -14 -3 3 -5 -3
+-11 -12 -13 -15 -4 -15 -5 3 -6 29 -1 123 47 138 73 21 32 29 66 17 66 -6 0
+-11 -8 -11 -17z"/>
+<path d="M1215 250 c3 -5 8 -10 11 -10 2 0 4 5 4 10 0 6 -5 10 -11 10 -5 0 -7
+-4 -4 -10z"/>
+<path d="M1188 223 c7 -3 16 -2 19 1 4 3 -2 6 -13 5 -11 0 -14 -3 -6 -6z"/>
+<path d="M898 133 c7 -3 16 -2 19 1 4 3 -2 6 -13 5 -11 0 -14 -3 -6 -6z"/>
+</g>
+</svg>
+  <div class="marchio">StructuRad × <b>ESGAR</b></div>
+</header>
+
+<main>
+  <!-- creazione della chiave -->
+  <section class="carta" id="vCrea" hidden>
+    <div class="kicker">Prima volta</div>
+    <h1>Crea la tua chiave</h1>
+    <p>Il tool sul PC ti chiamerà così e salverà i referti nella tua cartella. Sul telefono restano solo questi dati.</p>
+    <label><span>Nome</span><input type="text" id="cNome" autocomplete="given-name" maxlength="40"></label>
+    <label><span>Cognome</span><input type="text" id="cCognome" autocomplete="family-name" maxlength="40"></label>
+    <label><span>Titolo</span></label>
+    <div class="titoli" id="cTitolo" role="radiogroup">
+      <button type="button" data-t="Dr." role="radio">Dr.</button>
+      <button type="button" data-t="Dr.ssa" role="radio">Dr.ssa</button>
+      <button type="button" data-t="" role="radio">Nessuno</button>
+    </div>
+    <div class="azioni">
+      <button type="button" class="btn btn-pieno" id="cSalva">Crea la chiave</button>
+      <button type="button" class="btn btn-vuoto" id="cAnnulla" hidden>Annulla</button>
+    </div>
+    <div class="stato" id="cStato"></div>
+  </section>
+
+  <!-- conferma dell'accesso al PC -->
+  <section class="carta" id="vAccesso" hidden>
+    <div class="kicker">Accesso al PC</div>
+    <h1>Accedere a ESGAR su questo PC?</h1>
+    <p>Il PC riceverà il tuo nome e salverà i referti nella tua cartella. L'accesso dura 12 ore, o finché non esci dal PC.</p>
+    <div class="chiave"><div class="av" id="aAv"></div><div><div class="nome" id="aNome"></div><div class="det" id="aDet"></div></div></div>
+    <div class="azioni">
+      <button type="button" class="btn btn-pieno" id="aConferma">Accedi</button>
+      <button type="button" class="btn btn-vuoto" id="aRifiuta">Non sono io / annulla</button>
+    </div>
+    <div class="stato" id="aStato"></div>
+  </section>
+
+  <!-- fatto -->
+  <section class="carta" id="vFatto" hidden>
+    <svg class="spunta" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28"/><path d="M20 33l8 8 16-17"/></svg>
+    <div class="kicker">Fatto</div>
+    <h1 id="fTitolo">Accesso effettuato</h1>
+    <p id="fTesto">Puoi tornare al PC.</p>
+  </section>
+
+  <!-- la chiave, a riposo -->
+  <section class="carta" id="vChiave" hidden>
+    <div class="kicker">La tua chiave</div>
+    <div class="chiave"><div class="av" id="kAv"></div><div><div class="nome" id="kNome"></div><div class="det" id="kDet"></div></div></div>
+    <p style="margin-top:16px">Per accedere, sul PC apri <b>Accedi con il telefono</b> e inquadra il codice con la fotocamera.</p>
+    <div class="azioni"><button type="button" class="btn btn-vuoto" id="kModifica">Modifica i tuoi dati</button></div>
+  </section>
+
+  <p class="nota">Sul telefono restano solo nome, cognome e titolo. Il collegamento con il PC è cifrato e passa da un relay che vede solo testo illeggibile.</p>
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   CANALE CIFRATO PC ↔ TELEFONO (da Protocol Cards, ridotto all'accesso)
+
+   PC e telefono non si vedono in rete: entrambi si collegano IN USCITA a
+   un relay pubblico (ntfy.sh) e si scambiano messaggi su un argomento
+   segreto. Il relay vede solo testo cifrato.
+
+   L'abbinamento { t, k } (argomento del relay e chiave AES-GCM a 256 bit)
+   nasce sul PC e passa al telefono solo nel QR, nel frammento #… che non
+   arriva a nessun server. Serve solo per l'accesso: finito quello,
+   nessuno dei due lo conserva.
+
+   Busta: { v, da, iv, ct }. Il mittente è dato autenticato, così un
+   messaggio del PC non può essere rispedito al PC come se fosse del
+   telefono.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function (root) {
+  'use strict';
+
+  let RELAY = 'https://ntfy.sh';        // sostituibile solo dai test, con usaRelay
+
+  const b64u = {
+    da: bytes => {
+      let s = '';
+      const u = new Uint8Array(bytes);
+      for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+      return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    },
+    a: s => {
+      s = s.replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      return Uint8Array.from(atob(s), c => c.charCodeAt(0));
+    },
+  };
+
+  function casuale(n) {
+    const A = 'abcdefghijkmnpqrstuvwxyz23456789';     // niente caratteri ambigui
+    return Array.from(crypto.getRandomValues(new Uint8Array(n)), b => A[b % A.length]).join('');
+  }
+
+  const RE_ARG = /^esgar-[a-z0-9]{22}$/;
+  const valido = a => !!a && RE_ARG.test(a.t || '') && /^[A-Za-z0-9_-]{43}$/.test(a.k || '');
+
+  async function nuovoAbbinamento() {
+    const chiave = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    return { t: 'esgar-' + casuale(22), k: b64u.da(await crypto.subtle.exportKey('raw', chiave)) };
+  }
+
+  /* { t, k } dal frammento dell'indirizzo; null se non c'è o è incompleto */
+  function daFrammento(hash) {
+    const q = new URLSearchParams(String(hash || '').replace(/^#/, ''));
+    const a = { t: q.get('t'), k: q.get('k') };
+    return valido(a) ? a : null;
+  }
+  const frammento = a => `#t=${a.t}&k=${a.k}`;
+
+  async function apri(a) {
+    if (!valido(a)) throw new Error('abbinamento non valido');
+    const chiave = await crypto.subtle.importKey('raw', b64u.a(a.k), 'AES-GCM', false, ['encrypt', 'decrypt']);
+    return { argomento: a.t, chiave };
+  }
+
+  async function cifra(sess, da, oggetto) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: new TextEncoder().encode(da) },
+      sess.chiave, new TextEncoder().encode(JSON.stringify(oggetto)));
+    return JSON.stringify({ v: 1, da, iv: b64u.da(iv), ct: b64u.da(ct) });
+  }
+
+  async function decifra(sess, testo) {
+    const b = JSON.parse(testo);
+    if (b.v !== 1 || !b.da || !b.iv || !b.ct) throw new Error('busta sconosciuta');
+    const chiaro = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64u.a(b.iv), additionalData: new TextEncoder().encode(b.da) },
+      sess.chiave, b64u.a(b.ct));
+    return { da: b.da, msg: JSON.parse(new TextDecoder().decode(chiaro)) };
+  }
+
+  async function invia(sess, da, oggetto) {
+    const corpo = await cifra(sess, da, oggetto);
+    const r = await fetch(`${RELAY}/${sess.argomento}`, { method: 'POST', body: corpo, cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status === 429 ? 'troppi invii ravvicinati, riprova fra un minuto' : 'relay: HTTP ' + r.status);
+  }
+
+  /* ascolto con EventSource, che si riconnette da solo. since=all
+     consegna anche quanto arrivato prima dell'apertura; i doppioni della
+     riconnessione si scartano per identificativo, i propri messaggi e
+     quelli che non si decifrano si ignorano.                          */
+  function ascolta(sess, io, { messaggio, stato = () => {} }) {
+    const visti = new Set();
+    const es = new EventSource(`${RELAY}/${sess.argomento}/sse?since=all`);
+    es.onopen = () => stato('aperto');
+    es.onerror = () => stato(es.readyState === EventSource.CLOSED ? 'chiuso' : 'riconnessione');
+    es.onmessage = async ev => {
+      let e; try { e = JSON.parse(ev.data); } catch (_) { return; }
+      if (e.event !== 'message' || visti.has(e.id)) return;
+      visti.add(e.id);
+      let m;
+      try { m = await decifra(sess, e.message); } catch (_) { return; }
+      if (m.da !== io) messaggio(m.msg);
+    };
+    return () => es.close();
+  }
+
+  /* come il tool chiama chi ha fatto l'accesso: «Dr. Rossi».
+     Il titolo lo sceglie l'operatore, non si ricava dal nome.         */
+  const TITOLI = ['Dr.', 'Dr.ssa'];
+  function nomeCortese(p) {
+    if (!p) return '';
+    const n = (p.nome || '').trim(), c = (p.cognome || '').trim();
+    if (TITOLI.includes(p.titolo) && (c || n)) return `${p.titolo} ${c || n}`;
+    return [n, c].filter(Boolean).join(' ');
+  }
+  const iniziali = p => (((p.nome || '').trim()[0] || '') + ((p.cognome || '').trim()[0] || '')).toUpperCase();
+
+  /* il profilo che il telefono porta al PC: solo i dati d'accesso */
+  function profiloValido(p) {
+    return !!p && /^op-[a-z0-9]{12}$/.test(p.id || '')
+      && typeof p.nome === 'string' && typeof p.cognome === 'string'
+      && p.nome.trim().length > 0 && p.cognome.trim().length > 0
+      && p.nome.length <= 40 && p.cognome.length <= 40
+      && (p.titolo === '' || TITOLI.includes(p.titolo));
+  }
+
+  root.Canale = {
+    get RELAY() { return RELAY; }, usaRelay: u => { RELAY = u; },
+    nuovoAbbinamento, daFrammento, frammento, valido, apri, cifra, decifra, invia, ascolta,
+    casuale, TITOLI, nomeCortese, iniziali, profiloValido,
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function(){
+  'use strict';
+  const CHIAVE = 'structurad.esgar.chiave';
+  const $ = (id) => document.getElementById(id);
+  const viste = ['vCrea', 'vAccesso', 'vFatto', 'vChiave'];
+  const mostra = (v) => viste.forEach((x) => { $(x).hidden = x !== v; });
+  const stato = (id, t, tono) => { const e = $(id); e.textContent = t || ''; e.className = 'stato ' + (tono || ''); };
+
+  // l'abbinamento arriva dal QR nel frammento: si toglie subito dall'indirizzo
+  const abb = Canale.daFrammento(location.hash);
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+
+  function leggi(){ try { const p = JSON.parse(localStorage.getItem(CHIAVE) || 'null'); return Canale.profiloValido(p) ? p : null; } catch (_) { return null; } }
+  function scrivi(p){ localStorage.setItem(CHIAVE, JSON.stringify(p)); }
+  let profilo = leggi();
+  // il browser non deve cancellare la chiave per fare spazio
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+  function dispositivo(){
+    const ua = navigator.userAgent;
+    if (/iPhone/.test(ua)) return 'iPhone';
+    if (/iPad/.test(ua)) return 'iPad';
+    const m = ua.match(/Android[^;]*;\s*([^;)]+?)(?:\sBuild|\))/);
+    return m ? m[1].trim().slice(0, 40) : /Android/.test(ua) ? 'Android' : 'telefono';
+  }
+
+  /* ── creazione e modifica della chiave ── */
+  let titolo = '';
+  function scegliTitolo(t){
+    titolo = t;
+    $('cTitolo').querySelectorAll('button').forEach((b) => { const on = b.dataset.t === t; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+  }
+  $('cTitolo').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) scegliTitolo(b.dataset.t); });
+  function apriCrea(){
+    $('cNome').value = profilo ? profilo.nome : '';
+    $('cCognome').value = profilo ? profilo.cognome : '';
+    scegliTitolo(profilo ? profilo.titolo : 'Dr.');
+    $('cSalva').textContent = profilo ? 'Salva' : 'Crea la chiave';
+    $('cAnnulla').hidden = !profilo;
+    stato('cStato', '');
+    mostra('vCrea');
+  }
+  $('cSalva').addEventListener('click', () => {
+    const n = $('cNome').value.trim(), c = $('cCognome').value.trim();
+    if (!n || !c) { stato('cStato', 'Servono nome e cognome.', 'ko'); (n ? $('cCognome') : $('cNome')).focus(); return; }
+    const p = { id: profilo ? profilo.id : 'op-' + Canale.casuale(12), nome: n.slice(0, 40), cognome: c.slice(0, 40), titolo };
+    scrivi(p); profilo = p;
+    abb ? apriAccesso() : apriChiave();
+  });
+  $('cAnnulla').addEventListener('click', () => { abb ? apriAccesso() : apriChiave(); });
+
+  function riempi(av, nome, det){
+    $(av).textContent = Canale.iniziali(profilo);
+    $(nome).textContent = Canale.nomeCortese(profilo);
+    $(det).textContent = `${profilo.nome} ${profilo.cognome}`;
+  }
+  function apriChiave(){ riempi('kAv', 'kNome', 'kDet'); mostra('vChiave'); }
+  $('kModifica').addEventListener('click', apriCrea);
+
+  /* ── accesso al PC ── */
+  function apriAccesso(){ riempi('aAv', 'aNome', 'aDet'); stato('aStato', ''); mostra('vAccesso'); }
+  $('aRifiuta').addEventListener('click', () => {
+    $('fTitolo').textContent = 'Accesso annullato';
+    $('fTesto').textContent = 'Il PC non ha ricevuto niente.';
+    document.querySelector('#vFatto .spunta').style.display = 'none';
+    mostra('vFatto');
+  });
+  $('aConferma').addEventListener('click', async () => {
+    const b = $('aConferma'); b.disabled = true;
+    stato('aStato', 'Collegamento al PC…');
+    let chiudi = null, finito = false;
+    const fine = (ok, testo) => {
+      if (finito) return; finito = true;
+      clearTimeout(timer); chiudi && chiudi();
+      if (ok) {
+        $('fTitolo').textContent = 'Accesso effettuato';
+        $('fTesto').textContent = testo;
+        mostra('vFatto');
+      } else { stato('aStato', testo, 'ko'); b.disabled = false; }
+    };
+    const timer = setTimeout(() => fine(false, 'Il PC non risponde. Controlla che il codice sia ancora a schermo e riprova.'), 25000);
+    try {
+      const sess = await Canale.apri(abb);
+      chiudi = Canale.ascolta(sess, 'tel', {
+        messaggio: (m) => {
+          if (m && m.tipo === 'benvenuto') {
+            const ore = m.scade ? new Date(m.scade).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '';
+            fine(true, `${m.nome || Canale.nomeCortese(profilo)}, puoi tornare al PC.` + (ore ? ` L'accesso vale fino alle ${ore}.` : ''));
+          }
+        }
+      });
+      await Canale.invia(sess, 'tel', {
+        tipo: 'accesso', dispositivo: dispositivo(),
+        profilo: { id: profilo.id, nome: profilo.nome, cognome: profilo.cognome, titolo: profilo.titolo }
+      });
+      stato('aStato', 'In attesa di conferma dal PC…');
+    } catch (e) {
+      fine(false, 'Accesso non riuscito: ' + (e instanceof TypeError ? 'rete non raggiungibile' : e.message));
+    }
+  });
+
+  if (!profilo) apriCrea();
+  else if (abb) apriAccesso();
+  else apriChiave();
+
+  window.EsgarTelefono = { usaRelay: (u) => Canale.usaRelay(u) };
+})();
+</script>
+</body>
+</html>
