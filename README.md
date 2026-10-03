@@ -45,10 +45,12 @@ L'**amministratore** si riconosce dal codice dispositivo, non dal nome. Solo
 lui sceglie o cambia la cartella comune del PC.
 
 - I codici in `ADMIN_DISPOSITIVI`, in `index.html`, sono amministratori su ogni
-  PC.
-- Finché la lista è vuota, su un PC senza cartella comune il primo che entra
-  può configurarlo: sceglie la cartella comune e ne diventa l'amministratore
-  per quel PC.
+  PC. Oggi la lista contiene un solo codice, `9407-BEE0-7B5F-AED2`.
+- Se la lista fosse vuota, su un PC senza cartella comune il primo che entra
+  potrebbe configurarlo: sceglierebbe la cartella comune e ne diventerebbe
+  l'amministratore per quel PC. Con la lista piena questa regola non vale.
+- Per aggiungere o sostituire un amministratore (telefono nuovo, browser
+  ripulito) si aggiorna la lista con il codice mostrato dal nuovo telefono.
 
 ### Pubblicare la pagina del telefono
 
