@@ -45,39 +45,50 @@ scritto in `TEL_PUBBLICO` in `index.html`.
 
 ## Archivio dei referti
 
-Dal pannello del profilo, «Scegli cartella» collega una cartella del PC, anche
-dentro Google Drive o OneDrive per desktop. «Salva nell'archivio», nella scheda
-del referto, ci scrive il referto con numero d'accesso e data d'esame:
+Ogni profilo ha la **sua cartella** su questo PC, anche dentro Google Drive o
+OneDrive per desktop.
+
+- **Primo accesso:** appena entrati, il pannello del profilo chiede l'ultimo
+  passo, «Scegli la tua cartella». Il browser apre la finestra di scelta solo
+  dopo un clic, e l'accesso arriva dal telefono: per questo serve quel pulsante.
+  Se lo si salta, la scelta si apre al primo «Salva nell'archivio», e il referto
+  si salva subito dopo.
+- **Accessi successivi:** il tool ritrova da solo la cartella del profilo e la
+  nomina nel saluto. Un altro operatore sullo stesso PC ha la sua.
+- **Permesso:** Chrome può chiedere di nuovo il permesso di scrivere. Lo chiede
+  da solo al primo salvataggio, oppure si concede con «Riattiva» nel pannello.
+- «Cambia cartella» la sostituisce per quel profilo.
+
+«Salva nell'archivio», nella scheda del referto, ci scrive il referto con numero
+d'accesso e data d'esame:
 
 ```
-<cartella>/
-└── Bianchi Giulia/
-    ├── indice-referti.csv
-    ├── Stadiazione primaria/
-    │   └── 2026/
-    │       └── 2026-09/
-    │           └── 2026-09-28_1412_A123456_cT3c_cN+_MRF-_EMVI+.txt
-    └── Ristadiazione/
-        └── 2026/
-            └── 2026-10/
-                └── 2026-10-30_0930_A123456_near-cCR_ycT1-2_MRF-.txt
+<cartella del profilo>/
+├── indice-referti.csv
+├── Stadiazione primaria/
+│   └── 2026/
+│       └── 2026-09/
+│           └── 2026-09-28_1412_A123456_cT3c_cN+_MRF-_EMVI+.txt
+└── Ristadiazione/
+    └── 2026/
+        └── 2026-10/
+            └── 2026-10-30_0930_A123456_near-cCR_ycT1-2_MRF-.txt
 ```
 
-- **Operatore**, poi **tipo di esame**, poi **anno** e **mese** della data
-  d'esame.
+- **Tipo di esame**, poi **anno** e **mese** della data d'esame.
 - Nel nome del file ci sono data d'esame, ora di salvataggio, numero d'accesso
   e la sintesi della stadiazione: cT, cN, MRF ed EMVI per la primaria; risposta,
   ycT, ycN, MRF ed EMVI per la ristadiazione.
-- `indice-referti.csv` elenca tutti i referti dell'operatore, con le stesse
+- `indice-referti.csv` elenca tutti i referti del profilo, con le stesse
   informazioni in colonne. Si apre in Excel (separatore `;`) per cercare un
   numero d'accesso o ordinare per data o stadio.
 - Ogni file ha in testa tipo di esame, data, numero d'accesso, chi l'ha
   refertato e quando è stato salvato. Un salvataggio nello stesso minuto non
   sovrascrive: aggiunge `_2`, `_3`…
 
-Serve Chrome o Edge (File System Access). Il browser può chiedere di nuovo il
-permesso a ogni apertura: lo si concede con «Riattiva» nel pannello, oppure al
-primo salvataggio. Negli altri browser il referto si scarica come file, con lo
+L'associazione profilo → cartella resta nel browser di questo PC (IndexedDB),
+non sul telefono: il telefono resta solo la chiave. Serve Chrome o Edge (File
+System Access); negli altri browser il referto si scarica come file, con lo
 stesso nome.
 
 Per salvare serve l'accesso: senza, «Salva nell'archivio» apre il pannello del

@@ -410,7 +410,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
   const stato = (id, t, tono) => { const e = $(id); e.textContent = t || ''; e.className = 'stato ' + (tono || ''); };
 
   // l'abbinamento arriva dal QR nel frammento: si toglie subito dall'indirizzo
-  const abb = Canale.daFrammento(location.hash);
+  let abb = Canale.daFrammento(location.hash);
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 
   function leggi(){ try { const p = JSON.parse(localStorage.getItem(CHIAVE) || 'null'); return Canale.profiloValido(p) ? p : null; } catch (_) { return null; } }
@@ -505,6 +505,18 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
   if (!profilo) apriCrea();
   else if (abb) apriAccesso();
   else apriChiave();
+
+  // un nuovo QR inquadrato con la pagina già aperta cambia solo il
+  // frammento: la pagina non si ricarica, quindi si riparte da qui
+  window.addEventListener('hashchange', () => {
+    const nuovo = Canale.daFrammento(location.hash);
+    history.replaceState(null, '', location.pathname + location.search);
+    if (!nuovo) return;
+    abb = nuovo;
+    $('aConferma').disabled = false;
+    document.querySelector('#vFatto .spunta').style.display = '';
+    profilo ? apriAccesso() : apriCrea();
+  });
 
   window.EsgarTelefono = { usaRelay: (u) => Canale.usaRelay(u) };
 })();

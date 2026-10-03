@@ -559,8 +559,9 @@ nav.intro-in-corso .nav-right,
 .qr-box canvas{width:200px; height:200px; border-radius:10px; border:1px solid var(--border);
   animation:popSection .4s var(--molla) both;}
 .qr-box[hidden]{display:none;}
+.pp-sez.da-fare{background:var(--accent-bg); box-shadow:inset 4px 0 0 var(--accent); animation:popSection .4s var(--molla) both;}
 .pp-percorso{font-family:var(--mono); font-size:11px; color:var(--text); background:var(--surface2);
-  border:1px solid var(--border); border-radius:7px; padding:6px 9px; margin-top:6px; word-break:break-all;}
+  border:1px solid var(--border); border-radius:7px; padding:6px 9px; margin-top:6px; overflow-wrap:break-word;}
 
 /* dati di archiviazione nella scheda del referto */
 .archivio-row{
@@ -923,8 +924,8 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
           </div>
           <div class="pp-stato" id="ppAccessoStato"></div>
         </div>
-        <div class="pp-sez">
-          <div class="pp-tit">Cartella dei referti</div>
+        <div class="pp-sez" id="ppCartella">
+          <div class="pp-tit">La tua cartella dei referti</div>
           <div class="pp-testo" id="ppCartellaTesto"></div>
           <div class="pp-azioni" id="ppCartellaAzioni"></div>
         </div>
@@ -5441,7 +5442,7 @@ function scriviSessione(s){
 }
 /* la sessione scade da sola anche a tool aperto */
 function sessioneValida(){
-  if (sessione && !(sessione.scade > Date.now())) { scriviSessione(null); disegnaProfilo(); }
+  if (sessione && !(sessione.scade > Date.now())) { scriviSessione(null); cartella = null; disegnaProfilo(); }
   return sessione;
 }
 setInterval(sessioneValida, 60 * 1000);
@@ -5525,8 +5526,12 @@ $id('ppAccedi').addEventListener('click', async () => {
         try { await Canale.invia(sess, 'pc', { tipo: 'benvenuto', nome: Canale.nomeCortese(s.profilo), scade: s.scade }); } catch (_) {}
         chiudiAccesso();
         scriviSessione(s);
+        await caricaCartella();
         disegnaProfilo();
-        statoAccesso(`Accesso effettuato. I referti si salvano a nome di <b>${escH(Canale.nomeCortese(s.profilo))}</b>.`, 'ok');
+        statoAccesso(cartella || !supportaCartelle
+          ? `Accesso effettuato. I referti si salvano a nome di <b>${escH(Canale.nomeCortese(s.profilo))}</b>`
+            + (cartella ? ` nella sua cartella <b>${escH(cartella.name)}</b>.` : '.')
+          : 'Accesso effettuato.', 'ok');
       }
     });
     acc.timer = setTimeout(() => {
@@ -5543,8 +5548,9 @@ $id('ppAnnulla').addEventListener('click', () => { chiudiAccesso(); statoAccesso
 $id('ppEsci').addEventListener('click', () => {
   const nome = sessione ? Canale.nomeCortese(sessione.profilo) : '';
   scriviSessione(null);
-  statoAccesso(`${escH(nome)} è uscito da questo PC.`, 'ok');
-  disegnaProfilo();
+  cartella = null; permesso = 'prompt';
+  statoAccesso(`${escH(nome)} è uscito da questo PC. La sua cartella resta ricordata per il prossimo accesso.`, 'ok');
+  disegnaProfilo(); disegnaArchivioRow();
 });
 
 /* ═══ disegno del codice QR ═══ */
@@ -5568,23 +5574,25 @@ function disegnaQR(canvas, testo){
 // ============================================================
 // ARCHIVIO DEI REFERTI
 //
-// Una cartella del PC scelta una volta (File System Access, Chrome o
-// Edge; anche dentro Drive o OneDrive per desktop). Dentro:
+// Ogni profilo ha la sua cartella su questo PC (File System Access,
+// Chrome o Edge; anche dentro Drive o OneDrive per desktop). Si sceglie
+// al primo accesso; agli accessi successivi il tool la ritrova da solo.
+// Dentro:
 //
-//   <cartella>/Rossi Mario/Stadiazione primaria/2026/2026-10/
+//   <cartella>/Stadiazione primaria/2026/2026-10/
 //       2026-10-03_1412_A123456_cT3c_cN+_MRF+_EMVI-.txt
-//   <cartella>/Rossi Mario/indice-referti.csv
+//   <cartella>/indice-referti.csv
 //
-// Operatore, poi tipo di esame, poi anno e mese della data d'esame; nel
-// nome del file data, ora di salvataggio, numero d'accesso e sintesi
-// della stadiazione. L'indice CSV (si apre in Excel) elenca tutti i
-// referti dell'operatore con le stesse informazioni in colonne, per
-// cercarli e ordinarli.
+// Tipo di esame, poi anno e mese della data d'esame; nel nome del file
+// data, ora di salvataggio, numero d'accesso e sintesi della
+// stadiazione. L'indice CSV (si apre in Excel) elenca tutti i referti
+// del profilo con le stesse informazioni in colonne.
 // ============================================================
-const ARCH_DB = 'structurad-esgar', ARCH_STORE = 'cartella', ARCH_KEY = 'radice';
+const ARCH_DB = 'structurad-esgar', ARCH_STORE = 'cartella';
+const chiaveCartella = (p) => 'profilo:' + p.id;
 const INDICE = 'indice-referti.csv';
 const supportaCartelle = typeof window.showDirectoryPicker === 'function';
-let cartella = null;          // FileSystemDirectoryHandle
+let cartella = null;          // FileSystemDirectoryHandle del profilo entrato
 let permesso = 'prompt';      // granted | prompt | denied
 
 function idb(){
@@ -5595,20 +5603,40 @@ function idb(){
     r.onerror = () => ko(r.error);
   });
 }
-async function idbLeggi(){
+async function idbLeggi(k){
   const db = await idb();
   return new Promise((ok) => {
-    const r = db.transaction(ARCH_STORE).objectStore(ARCH_STORE).get(ARCH_KEY);
+    const r = db.transaction(ARCH_STORE).objectStore(ARCH_STORE).get(k);
     r.onsuccess = () => ok(r.result || null); r.onerror = () => ok(null);
   });
 }
-async function idbScrivi(v){
+async function idbScrivi(k, v){
   const db = await idb();
   return new Promise((ok) => {
     const t = db.transaction(ARCH_STORE, 'readwrite');
-    v ? t.objectStore(ARCH_STORE).put(v, ARCH_KEY) : t.objectStore(ARCH_STORE).delete(ARCH_KEY);
+    v ? t.objectStore(ARCH_STORE).put(v, k) : t.objectStore(ARCH_STORE).delete(k);
     t.oncomplete = () => ok(); t.onerror = () => ok();
   });
+}
+
+/* la cartella del profilo entrato; nessuna se non è entrato nessuno */
+async function caricaCartella(){
+  const p = sessione && sessione.profilo;
+  try { cartella = p ? await idbLeggi(chiaveCartella(p)) : null; } catch (_) { cartella = null; }
+  await aggiornaPermesso();
+  disegnaArchivioRow();
+}
+/* da chiamare dentro un clic: la finestra di scelta si apre solo così */
+async function scegliCartella(){
+  const p = sessione && sessione.profilo;
+  if (!p || !supportaCartelle) return false;
+  try {
+    const h = await window.showDirectoryPicker({ id: 'referti-esgar', mode: 'readwrite', startIn: cartella || 'documents' });
+    cartella = h; permesso = 'granted';
+    await idbScrivi(chiaveCartella(p), h);
+    disegnaCartella(); disegnaArchivioRow();
+    return true;
+  } catch (_) { return false; }        // scelta annullata
 }
 
 async function aggiornaPermesso(){
@@ -5627,37 +5655,39 @@ async function chiediPermesso(){
 }
 
 function disegnaCartella(){
-  const testo = $id('ppCartellaTesto'), azioni = $id('ppCartellaAzioni');
+  const testo = $id('ppCartellaTesto'), azioni = $id('ppCartellaAzioni'), sez = $id('ppCartella');
   if (!testo) return;
-  if (!supportaCartelle && !cartella) {
+  const p = sessione && sessione.profilo;
+  sez.classList.toggle('da-fare', !!(p && !cartella && supportaCartelle));
+  if (!p) {
+    testo.innerHTML = 'Ogni profilo ha la sua cartella: la scegli al primo accesso e da lì il tool la ricorda.';
+    azioni.innerHTML = '';
+    return;
+  }
+  if (!supportaCartelle) {
     testo.innerHTML = 'Questo browser non può scrivere in una cartella del PC: i referti si <b>scaricano</b> come file. Per l\'archivio ordinato usa Chrome o Edge.';
     azioni.innerHTML = '';
     return;
   }
   if (!cartella) {
-    testo.innerHTML = 'Scegli una volta la cartella dove salvare i referti, anche dentro Google Drive o OneDrive.';
-    azioni.innerHTML = '<button type="button" class="btn-primary" data-cartella="scegli">Scegli cartella</button>';
+    testo.innerHTML = `<b>Ultimo passo:</b> scegli la cartella dove salvare i referti di ${escH(Canale.nomeCortese(p))}, anche dentro Google Drive o OneDrive. Da qui in poi, a ogni accesso, il tool la ritrova da solo.`;
+    azioni.innerHTML = '<button type="button" class="btn-primary" data-cartella="scegli">Scegli la tua cartella</button>';
     return;
   }
-  const chi = sessione ? cartellaOperatore(sessione.profilo) : 'Cognome Nome';
-  testo.innerHTML = `<div class="pp-percorso">${escH(cartella.name)} / ${escH(chi)} / tipo di esame / anno / mese</div>`
-    + (permesso === 'granted' ? '' : '<div class="pp-stato ko">Il browser chiede di nuovo il permesso di scrivere: premi «Riattiva».</div>');
+  testo.innerHTML = `<div class="pp-percorso">${escH(cartella.name)} / tipo di esame / anno / mese</div>`
+    + (permesso === 'granted' ? '<div class="pp-stato ok">Cartella di questo profilo, ricordata su questo PC.</div>'
+      : '<div class="pp-stato">Il browser chiede di nuovo il permesso di scrivere: lo chiede da solo al primo salvataggio, o premi «Riattiva».</div>');
   azioni.innerHTML = (permesso === 'granted' ? '' : '<button type="button" class="btn-primary" data-cartella="riattiva">Riattiva</button>')
     + '<button type="button" class="btn-secondary" data-cartella="scegli">Cambia cartella</button>';
 }
 $id('ppCartellaAzioni').addEventListener('click', async (e) => {
   const b = e.target.closest('[data-cartella]'); if (!b) return;
   if (b.dataset.cartella === 'riattiva') { await chiediPermesso(); return; }
-  try {
-    const h = await window.showDirectoryPicker({ id: 'referti-esgar', mode: 'readwrite' });
-    cartella = h; await idbScrivi(h); permesso = 'granted';
-    disegnaCartella(); disegnaArchivioRow();
-  } catch (_) { /* scelta annullata */ }
+  if (await scegliCartella()) statoAccesso('');
 });
 
 /* ── nomi di cartelle e file ── */
 const pulisci = (s) => String(s || '').normalize('NFC').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 60);
-const cartellaOperatore = (p) => pulisci(`${p.cognome} ${p.nome}`) || 'Operatore';
 const due = (n) => String(n).padStart(2, '0');
 function dataIso(d){ return `${d.getFullYear()}-${due(d.getMonth() + 1)}-${due(d.getDate())}`; }
 
@@ -5702,7 +5732,7 @@ function disegnaArchivioRow(){
   const b = $id('btnSalva');
   if (!b) return;
   b.title = !sessione ? 'Accedi con il telefono per salvare i referti a tuo nome'
-    : !cartella && supportaCartelle ? 'Scegli la cartella dei referti' : 'Salva il referto nella cartella dell\'archivio';
+    : !cartella && supportaCartelle ? 'Scegli la tua cartella, poi il referto si salva' : 'Salva il referto nella tua cartella';
 }
 
 $id('btnSalva').addEventListener('click', async () => {
@@ -5740,9 +5770,9 @@ $id('btnSalva').addEventListener('click', async () => {
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
     return;
   }
-  if (!cartella) {
-    apriPannello(true);
-    statoArchivio('Scegli prima la <b>cartella dei referti</b> nel pannello del profilo.', 'ko');
+  // nessuna cartella ancora: la si sceglie adesso, e il referto si salva subito dopo
+  if (!cartella && !(await scegliCartella())) {
+    statoArchivio('Per salvare scegli la <b>tua cartella</b> dei referti: il tool la ricorderà per i prossimi accessi.', 'ko');
     return;
   }
   if (!(await chiediPermesso())) {
@@ -5752,15 +5782,14 @@ $id('btnSalva').addEventListener('click', async () => {
   }
   try {
     const anno = String(data.getFullYear()), mese = `${anno}-${due(data.getMonth() + 1)}`;
-    const dirOp = await cartella.getDirectoryHandle(cartellaOperatore(p), { create: true });
-    let dir = dirOp;
+    let dir = cartella;
     for (const parte of [s.tipo, anno, mese]) dir = await dir.getDirectoryHandle(parte, { create: true });
     let nome = base + '.txt', k = 2;
     while (await esiste(dir, nome)) nome = `${base}_${k++}.txt`;
     const w = await (await dir.getFileHandle(nome, { create: true })).createWritable();
     await w.write(contenuto); await w.close();
-    const percorso = [cartellaOperatore(p), s.tipo, anno, mese, nome].join('/');
-    await aggiungiIndice(dirOp, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
+    const percorso = [s.tipo, anno, mese, nome].join('/');
+    await aggiungiIndice(cartella, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
       Canale.nomeCortese(p), [s.tipo, anno, mese, nome].join('/')]);
     statoArchivio(`Salvato in <code>${escH(cartella.name)}/${escH(percorso)}</code>`, 'ok');
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
@@ -5771,14 +5800,14 @@ $id('btnSalva').addEventListener('click', async () => {
 
 (async function avviaArchivio(){
   EsgarUI.impostaData($id('arcData'), dataIso(new Date()));
-  try { cartella = await idbLeggi(); } catch (_) { cartella = null; }
-  await aggiornaPermesso();
+  await caricaCartella();
   disegnaProfilo();
 })();
 
 /* solo per i test: relay finto e cartella finta */
 window.EsgarTest = {
-  usaCartella: async (h) => { cartella = h; await idbScrivi(h); await aggiornaPermesso(); disegnaProfilo(); },
+  // associa una cartella al profilo entrato, come farebbe «Scegli la tua cartella»
+  usaCartella: async (h) => { cartella = h; await idbScrivi(chiaveCartella(sessione.profilo), h); await aggiornaPermesso(); disegnaProfilo(); },
   sessione: () => sessione
 };
 </script>

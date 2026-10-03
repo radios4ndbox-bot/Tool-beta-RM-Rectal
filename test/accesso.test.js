@@ -39,7 +39,6 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.evaluate(async () => {
     Canale.usaRelay('http://localhost:8124');
     const o = Canale.nuovoAbbinamento; Canale.nuovoAbbinamento = async () => (window.__abb = await o());
-    await EsgarTest.usaCartella(await navigator.storage.getDirectory());
   });
   // salvare senza accesso apre il pannello
   await pc.click('#btnSalva');
@@ -72,6 +71,9 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
 
   await pc.waitForFunction(() => document.getElementById('profiloNome').textContent === 'Dr.ssa Bianchi', null, { timeout: 5000 });
   check(true, 'il PC saluta Dr.ssa Bianchi');
+  check(await pc.isVisible('#ppCartella.da-fare [data-cartella=scegli]'), 'primo accesso: il pannello chiede la cartella del profilo');
+  await pc.evaluate(async () => EsgarTest.usaCartella(await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti Bianchi', { create: true })));
+  check(/Referti Bianchi/.test(await pc.textContent('#ppCartellaTesto')), 'cartella scelta: ' + (await pc.textContent('#ppCartellaTesto')).trim());
   await pc.screenshot({ path: SHOTS + '/acc_pc_dentro.png' });
   check(!(await pc.evaluate(() => JSON.stringify(localStorage)).then(s => /"k"|esgar-[a-z0-9]{22}/.test(s))), 'il PC non conserva la chiave di abbinamento');
 
@@ -90,14 +92,14 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.click('#btnModeRistad'); await pc.waitForTimeout(300);
   await pc.click('input[name=r_risposta][value=near-cCR]'); await pc.click('input[name=r_yct][value=ycT1-2]');
   await pc.click('#btnSalva'); await pc.waitForTimeout(400);
-  check(/Ristadiazione/.test(await pc.textContent('#archivioStato')), 'ristadiazione nella sua cartella');
+  check(/Referti Bianchi\/Ristadiazione\//.test(await pc.textContent('#archivioStato')), 'ristadiazione nella sua cartella');
   await pc.screenshot({ path: SHOTS + '/acc_pc_salvato.png' });
 
   const albero = await pc.evaluate(async () => {
     const out = [];
     async function giro(d, p) { for await (const [n, h] of d.entries()) { if (h.kind === 'directory') await giro(h, p + n + '/'); else out.push(p + n); } }
     const root = await navigator.storage.getDirectory(); await giro(root, '');
-    const op = await root.getDirectoryHandle('Bianchi Giulia');
+    const op = await root.getDirectoryHandle('Referti Bianchi');
     const idx = await (await (await op.getFileHandle('indice-referti.csv')).getFile()).text();
     const f = out.find(x => x.endsWith('.txt'));
     let d = root; const parti = f.split('/'); for (const x of parti.slice(0, -1)) d = await d.getDirectoryHandle(x);
@@ -109,8 +111,44 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   // la sessione resta alla ricarica, poi Esci
   await pc.reload(); await pc.waitForTimeout(500);
   check(await pc.textContent('#profiloNome') === 'Dr.ssa Bianchi', 'dopo la ricarica la sessione resta');
+  check(/Referti Bianchi/.test(await pc.textContent('#ppCartellaTesto')), 'e anche la sua cartella');
+  await pc.evaluate(() => {                      // la ricarica ha tolto il relay finto
+    Canale.usaRelay('http://localhost:8124');
+    const o = Canale.nuovoAbbinamento; Canale.nuovoAbbinamento = async () => (window.__abb = await o());
+  });
   await pc.click('#profiloBtn'); await pc.click('#ppEsci');
   check(await pc.textContent('#profiloNome') === 'Accedi', 'Esci chiude la sessione');
+  check(!/Referti Bianchi/.test(await pc.textContent('#ppCartellaTesto')), 'uscita: la cartella non resta a vista');
+
+  async function accedi(pagina){
+    await pc.click('#ppAccedi');
+    await pc.waitForSelector('#qrBox:not([hidden])', { timeout: 5000 });
+    const a = await pc.evaluate(() => window.__abb);
+    await pagina.goto(`http://localhost:8123/telefono.html#t=${a.t}&k=${a.k}`);
+    await pagina.evaluate(() => EsgarTelefono.usaRelay('http://localhost:8124'));
+    await pagina.click('#aConferma');
+    await pagina.waitForSelector('#vFatto:not([hidden])', { timeout: 8000 });
+    await pc.waitForFunction(() => document.getElementById('profiloNome').textContent !== 'Accedi', null, { timeout: 5000 });
+    await pc.waitForTimeout(300);
+  }
+  await accedi(tel);
+  check(/Referti Bianchi/.test(await pc.textContent('#ppCartellaTesto')) && !(await pc.isVisible('#ppCartella.da-fare')), 'nuovo accesso: la cartella del profilo torna da sola');
+  check(/cartella <b>Referti Bianchi<\/b>|Referti Bianchi/.test(await pc.innerHTML('#ppAccessoStato')), 'e il saluto la nomina: ' + (await pc.textContent('#ppAccessoStato')).trim());
+  await pc.screenshot({ path: SHOTS + '/acc_pc_ricorda.png' });
+  await pc.click('#ppEsci');
+  // un altro operatore, dallo stesso PC
+  const tel2 = await (await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true })).newPage();
+  await tel2.goto('http://localhost:8123/telefono.html');
+  await tel2.fill('#cNome', 'Marco'); await tel2.fill('#cCognome', 'Neri'); await tel2.click('#cSalva');
+  await pc.click('#ppAccedi'); await pc.waitForSelector('#qrBox:not([hidden])');
+  { const a = await pc.evaluate(() => window.__abb);
+    await tel2.goto(`http://localhost:8123/telefono.html#t=${a.t}&k=${a.k}`);
+    await tel2.evaluate(() => EsgarTelefono.usaRelay('http://localhost:8124'));
+    await tel2.click('#aConferma'); await tel2.waitForSelector('#vFatto:not([hidden])', { timeout: 8000 });
+    await pc.waitForFunction(() => document.getElementById('profiloNome').textContent === 'Dr. Neri', null, { timeout: 5000 }); }
+  check(await pc.isVisible('#ppCartella.da-fare'), 'un altro profilo non vede la cartella di Bianchi: deve scegliere la sua');
+  await pc.screenshot({ path: SHOTS + '/acc_pc_primo.png' });
+  await pc.click('#ppEsci');
   // sessione scaduta
   await pc.evaluate(() => { localStorage.setItem('structurad.esgar.sessione', JSON.stringify({ profilo: { id: 'op-abcdefghijkm', nome: 'A', cognome: 'B', titolo: '' }, scade: Date.now() - 1 })); });
   await pc.reload(); await pc.waitForTimeout(400);
