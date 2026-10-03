@@ -80,7 +80,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.click('text=Anteriore'); await pc.click('text=Posteriore');
   await pc.click('input[name=p_ct][value=cT3c]'); await pc.click('input[name=p_cn][value="cN+"]');
   await pc.selectOption('#p_emviGrade', '3');
-  await pc.fill('#arcAccesso', 'A 123/456'); await pc.fill('#arcData', '2026-09-28');
+  await pc.fill('#arcAccesso', 'A 123/456'); await pc.fill('#arcData', '28092026'); await pc.click('#arcAccesso');
   await pc.click('#btnSalva');
   await pc.waitForFunction(() => /Salvato/.test(document.getElementById('archivioStato').textContent), null, { timeout: 5000 });
   check(true, 'salvato: ' + await pc.textContent('#archivioStato'));

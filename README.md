@@ -9,6 +9,7 @@ modifica del form e conserva le correzioni manuali.
 | `index.html` | il tool, in un file unico: si apre in Chrome o Edge |
 | `telefono.html` | la pagina del telefono, che fa da chiave per l'accesso |
 | `test/accesso.test.js` | accesso e archivio, da capo a fondo |
+| `test/interfaccia.test.js` | menu a tendina, calendario e campi che imparano |
 
 ## Accesso con il telefono
 
@@ -82,6 +83,41 @@ stesso nome.
 Per salvare serve l'accesso: senza, «Salva nell'archivio» apre il pannello del
 profilo. Copia, «Scarica .txt» e Stampa funzionano anche senza accesso.
 
+## Campi che imparano
+
+Come il quesito PS di ER Oncology Archivist, tutti i campi di testo libero
+(sequenze, premedicazione, dettagli di MRF, cT4b, EMVI, linfonodi, depositi,
+noduli…) propongono le frasi già scritte nei referti precedenti. Il pannello si
+apre sul campo: frecce e Invio per scegliere, × per non proporre più una frase.
+
+Il tool impara quando un referto si **copia, scarica, stampa o salva
+nell'archivio**; lo stesso referto conta una volta sola. Per ogni frase ricorda
+quante volte è stata usata e quando, le varianti con cui è stata scritta e in
+quale **contesto**, cioè le scelte del form in quel momento (cT, organi
+infiltrati, EMVI, campo magnetico…). Il punteggio somma:
+
+- **somiglianza** con quanto si sta scrivendo, con più peso alle parole rare;
+- **frequenza** d'uso;
+- **contesto**: le scelte presenti ora nel form che compaiono più spesso con
+  quella frase. Con la prostata spuntata sale la nota sulla prostata, con
+  l'elevatore quella sull'elevatore;
+- **recenza**, per sei mesi;
+- **gradimento**: le frasi scelte salgono, quelle proposte in alto e scavalcate
+  scendono. Il tool corregge da solo l'ordine con l'uso.
+
+La memoria resta nel browser di questo PC (localStorage): solo le frasi dei
+campi liberi e le scelte del form, nessun dato del paziente.
+
+## Menu e date
+
+I menu a tendina hanno lo stile del tool, come in Archivist; il menu nativo
+resta nascosto e continua a dare il valore al referto. Le date si scrivono e si
+mostrano in **gg/mm/aaaa**, con il calendario: «Confronto con imaging
+precedente» (esame + data, per esempio «TC del 05/03/2026»), «RM basale di
+confronto» e «Data esame». Digitando bastano le cifre: le barre le mette il
+campo. Nei nomi di file e cartelle dell'archivio la data resta anno-mese-giorno,
+così l'ordine alfabetico è anche quello cronologico.
+
 ## Intro
 
 All'apertura: ESGAR gigante a contorno che scorre; stacco su ESGAR media sul
@@ -101,6 +137,7 @@ con «riduci movimento» attivo nel sistema né con `?nointro` nell'indirizzo.
 ```
 npm i playwright
 node test/accesso.test.js
+node test/interfaccia.test.js
 ```
 
 Il test avvia un relay finto in locale, fa l'accesso da un telefono simulato,

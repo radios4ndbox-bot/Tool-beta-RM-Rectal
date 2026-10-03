@@ -591,6 +591,127 @@ nav.intro-in-corso .nav-right,
 }
 .archivio-row input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(123,30,52,.09);}
 .archivio-row input#arcAccesso{font-family:var(--mono);}
+
+/* ══════════════════════════════════════════════════════════════════
+   MENU A TENDINA — come in ER Oncology Archivist
+   Il <select> nativo resta nel DOM, invisibile: è lui la fonte del valore.
+   ══════════════════════════════════════════════════════════════════ */
+.sel-wrap{position:relative; display:block; min-width:0;}
+.sel-wrap select{position:absolute; opacity:0; pointer-events:none; width:100%; height:100%; left:0; top:0; margin:0;}
+label.field > .sel-wrap{flex:1 1 100%;}
+label.field > .sel-wrap.sel-unit{flex:0 0 110px;}
+.dyn-row .sel-wrap{width:100%;}
+.sel-trigger{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  width:100%; cursor:pointer; text-align:left;
+  font-family:var(--sans); font-size:13.5px; color:var(--text);
+  padding:8px 11px; border:1.5px solid var(--border); border-radius:7px; background:var(--bg);
+  transition:border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+.sel-trigger:hover{border-color:var(--border2);}
+.sel-wrap.aperto .sel-trigger, .sel-trigger:focus-visible{border-color:var(--accent); background:#fff; outline:none; box-shadow:0 0 0 3px rgba(123,30,52,.09);}
+.sel-valore{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.sel-valore.vuoto{color:var(--faint);}
+.sel-freccia{width:15px; height:15px; flex-shrink:0; color:var(--accent); transition:transform 300ms cubic-bezier(.26,1.4,.46,.9);}
+.sel-wrap.aperto .sel-freccia{transform:rotate(180deg);}
+.sel-opzioni{
+  position:absolute; left:0; right:0; top:calc(100% + 5px); z-index:400; min-width:180px;
+  display:flex; flex-direction:column; gap:2px; padding:5px; border-radius:12px;
+  background:var(--surface); border:1px solid var(--border);
+  box-shadow:0 16px 34px -14px rgba(26,12,17,.4), 0 2px 5px rgba(26,12,17,.06);
+  max-height:300px; overflow-y:auto;
+  opacity:0; transform:translateY(-10px) scale(.97); transform-origin:top center; pointer-events:none; visibility:hidden;
+  transition:opacity 180ms ease, transform 300ms cubic-bezier(.26,1.3,.46,.9), visibility 0s linear 300ms;
+}
+.sel-wrap.aperto .sel-opzioni{opacity:1; transform:none; pointer-events:auto; visibility:visible;
+  transition:opacity 180ms ease, transform 300ms cubic-bezier(.26,1.3,.46,.9), visibility 0s;}
+.sel-wrap.verso-alto .sel-opzioni{top:auto; bottom:calc(100% + 5px); transform:translateY(10px) scale(.97); transform-origin:bottom center;}
+.sel-wrap.verso-alto.aperto .sel-opzioni{transform:none;}
+.sel-opzione{
+  padding:7px 10px; border:none; border-radius:8px; cursor:pointer; flex-shrink:0;
+  background:transparent; color:var(--text); font-family:var(--sans); font-size:13px; line-height:1.35; text-align:left;
+  transition:background-color .12s ease, color .12s ease;
+}
+.sel-opzione:hover, .sel-opzione.attiva{background:var(--accent-bg); color:var(--accent);}
+.sel-opzione.scelta{background:var(--accent); color:#fff; font-weight:500;}
+.sel-opzione.scelta:hover, .sel-opzione.scelta.attiva{background:var(--accent-hover); color:#fff;}
+/* le schede entrate con la molla restano su un livello proprio: quella
+   con il menu aperto deve stare sopra le successive */
+.pop-section:has(.sel-wrap.aperto), .dyn-row:has(.sel-wrap.aperto){position:relative; z-index:60;}
+
+/* ══════════════════════════════════════════════════════════════════
+   CALENDARIO — date in gg/mm/aaaa
+   ══════════════════════════════════════════════════════════════════ */
+.cal-panel{
+  position:fixed; z-index:600; width:272px; padding:10px;
+  background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:12px;
+  box-shadow:0 18px 38px -14px rgba(26,12,17,.42), 0 2px 6px rgba(26,12,17,.07);
+  opacity:0; transform:scale(.9); transform-origin:top left; pointer-events:none; visibility:hidden;
+}
+.cal-panel.open{pointer-events:auto; visibility:visible; animation:popSection .3s var(--molla) forwards;}
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+.cal-titolo{font-family:var(--mono); font-size:12px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; color:var(--accent);}
+.cal-nav{
+  width:28px; height:28px; border-radius:8px; cursor:pointer; border:1px solid var(--border); background:var(--surface2);
+  color:var(--muted); font-size:16px; line-height:1; display:flex; align-items:center; justify-content:center;
+  transition:background-color .12s, color .12s, border-color .12s;
+}
+.cal-nav:hover{background:var(--accent-bg); color:var(--accent); border-color:var(--accent);}
+.cal-settimana, .cal-griglia{display:grid; grid-template-columns:repeat(7, 1fr); gap:2px;}
+.cal-settimana span{text-align:center; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); padding-bottom:4px;}
+.cal-day{height:30px; border:none; border-radius:7px; cursor:pointer; background:transparent; color:var(--text);
+  font-family:var(--mono); font-size:12px; transition:background-color .12s, color .12s;}
+.cal-day:hover{background:var(--accent-bg); color:var(--accent);}
+.cal-day.fuori{color:var(--faint);}
+.cal-day.oggi{box-shadow:inset 0 0 0 1px var(--border2);}
+.cal-day.scelto{background:var(--accent); color:#fff; font-weight:600;}
+.cal-day.scelto:hover{background:var(--accent-hover); color:#fff;}
+.cal-piede{display:flex; gap:6px; margin-top:8px; padding-top:8px; border-top:1px solid var(--border);}
+.cal-azione{flex:1; padding:6px 8px; border-radius:8px; cursor:pointer; border:1px solid var(--border); background:var(--surface2);
+  color:var(--muted); font-family:var(--sans); font-size:11.5px; transition:background-color .12s, color .12s, border-color .12s;}
+.cal-azione:hover{background:var(--accent-bg); color:var(--accent); border-color:var(--accent);}
+input[data-date]{
+  font-family:var(--mono) !important; padding-right:34px !important;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237B1E34' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 10px center; background-size:15px 15px;
+}
+label.field > input[data-date]{flex:0 1 170px; width:170px;}
+label.field.confronto > .sel-wrap{flex:1 1 160px;}
+
+/* ══════════════════════════════════════════════════════════════════
+   MEMORIA DEI CAMPI LIBERI — i suggerimenti dai referti precedenti
+   ══════════════════════════════════════════════════════════════════ */
+.mem-pannello{
+  position:fixed; z-index:1500; display:flex; flex-direction:column; gap:2px;
+  padding:5px; border-radius:12px; background:var(--surface); border:1px solid var(--border);
+  box-shadow:0 16px 34px -14px rgba(26,12,17,.4), 0 2px 5px rgba(26,12,17,.06);
+  max-height:340px; overflow-y:auto;
+  opacity:0; transform:translateY(-10px) scale(.97); transform-origin:top center; pointer-events:none; visibility:hidden;
+  transition:opacity 180ms ease, transform 300ms cubic-bezier(.26,1.3,.46,.9), visibility 0s linear 300ms;
+}
+.mem-pannello.verso-alto{transform:translateY(10px) scale(.97); transform-origin:bottom center;}
+.mem-pannello.aperto{opacity:1; transform:none; pointer-events:auto; visibility:visible;
+  transition:opacity 180ms ease, transform 300ms cubic-bezier(.26,1.3,.46,.9), visibility 0s;}
+.mem-testa{display:flex; justify-content:space-between; align-items:center; padding:4px 8px 6px;
+  font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--accent);}
+.mem-n{font-family:var(--mono); font-weight:400; letter-spacing:0; text-transform:none; color:var(--faint);}
+.mem-voce{
+  display:flex; align-items:center; gap:8px; padding:7px 6px 7px 10px; border-radius:8px; cursor:pointer;
+  font-size:13px; line-height:1.35; color:var(--text); flex-shrink:0;
+  transition:background-color .12s ease, color .12s ease;
+}
+.mem-voce:hover, .mem-voce.attiva{background:var(--accent-bg); color:var(--accent-hover);}
+.mem-testo{flex:1; min-width:0;}
+.mem-testo b{font-weight:600; color:var(--accent);}
+.mem-perche{flex-shrink:0; font-size:10.5px; padding:2px 7px; border-radius:999px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); white-space:nowrap;}
+.mem-conta{flex-shrink:0; font-family:var(--mono); font-size:10.5px; color:var(--faint);}
+.mem-via{flex-shrink:0; width:22px; height:22px; border:none; border-radius:6px; background:transparent; color:var(--faint);
+  font-size:15px; line-height:1; cursor:pointer; opacity:0; transition:opacity .15s ease, background-color .12s ease, color .12s ease;}
+.mem-voce:hover .mem-via, .mem-voce.attiva .mem-via{opacity:1;}
+.mem-via:hover{background:#9A2A2A; color:#fff;}
+.mem-piede{padding:6px 8px 3px; font-size:10.5px; color:var(--faint); border-top:1px solid var(--border); margin-top:3px;}
+@media (hover:none){ .mem-via{opacity:1;} .mem-piede{display:none;} }
+@media print{ .sel-opzioni, .cal-panel, .mem-pannello{display:none !important;} }
 </style>
 </head>
 <body>
@@ -830,7 +951,19 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
         </label>
         <label class="field"><span class="lab">Sequenze</span><input type="text" id="p_tecnica" class="wide" value="TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist)"></label>
         <label class="field"><span class="lab">Premedicazione farmacologica</span><input type="text" id="p_premedicazione" class="wide" placeholder="es. Buscopan e.v."></label>
-        <label class="field"><span class="lab">Confronto con imaging precedente</span><input type="text" id="p_confronto" class="wide" placeholder="es. TC del ____"></label>
+        <label class="field confronto"><span class="lab">Confronto con imaging precedente</span>
+          <select id="p_confrontoTipo">
+            <option value="">— nessun confronto —</option>
+            <option value="TC">TC</option>
+            <option value="RM">RM</option>
+            <option value="PET-TC">PET-TC</option>
+            <option value="ecoendoscopia">Ecoendoscopia</option>
+            <option value="colonscopia">Colonscopia</option>
+            <option value="altro">Altro esame</option>
+          </select>
+          <input type="text" id="p_confrontoData" class="wide" data-date aria-label="Data dell'esame di confronto">
+          <input type="hidden" id="p_confronto">
+        </label>
       </div>
       </section>
 
@@ -1101,7 +1234,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
         </label>
         <label class="field"><span class="lab">Sequenze</span><input type="text" id="r_tecnica" class="wide" value="TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist)"></label>
         <label class="field"><span class="lab">Premedicazione farmacologica</span><input type="text" id="r_premedicazione" class="wide" placeholder="es. Buscopan e.v."></label>
-        <label class="field"><span class="lab">RM basale di confronto (data)</span><input type="text" id="r_confronto"></label>
+        <label class="field"><span class="lab">RM basale di confronto (data)</span><input type="text" id="r_confronto" data-date></label>
       </div>
       </section>
 
@@ -1283,7 +1416,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
       </div>
       <div class="archivio-row">
         <label class="f"><span>N. accesso</span><input type="text" id="arcAccesso" placeholder="es. A123456" autocomplete="off" spellcheck="false"></label>
-        <label class="f"><span>Data esame</span><input type="date" id="arcData"></label>
+        <label class="f"><span>Data esame</span><input type="text" id="arcData" data-date></label>
         <button type="button" class="btn-primary" id="btnSalva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M12 10v6"/><path d="m9 13 3 3 3-3"/></svg>Salva nell'archivio</button>
       </div>
       <div class="archivio-stato" id="archivioStato"></div>
@@ -2549,6 +2682,291 @@ window.addEventListener('resize', posizionaFondino);
 })();
 
 avviaIntro();
+</script>
+<script>
+// ============================================================
+// MENU A TENDINA E CALENDARIO — come in ER Oncology Archivist
+//
+// Il <select> nativo resta nel DOM, invisibile: continua a essere la
+// fonte del valore, quindi il referto lo legge come prima e gli eventi
+// change arrivano come prima. Le date si scrivono e si mostrano in
+// gg/mm/aaaa; il valore ISO resta in data-iso.
+// ============================================================
+(function(){
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const due = (n) => String(n).padStart(2, '0');
+
+  /* ── menu a tendina ── */
+  let selAperto = null;
+
+  function avvolgiSelect(nativo){
+    if (nativo.closest('.sel-wrap')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'sel-wrap' + (nativo.classList.contains('unit') ? ' sel-unit' : '');
+    nativo.parentNode.insertBefore(wrap, nativo);
+    wrap.appendChild(nativo);
+    nativo.tabIndex = -1;
+    nativo.setAttribute('aria-hidden', 'true');
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'sel-trigger';
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.innerHTML = '<span class="sel-valore"></span><svg class="sel-freccia" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+    const lista = document.createElement('div');
+    lista.className = 'sel-opzioni';
+    lista.setAttribute('role', 'listbox');
+    wrap.appendChild(trigger);
+    wrap.appendChild(lista);
+
+    trigger.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); toggleSelect(wrap, !wrap.classList.contains('aperto')); });
+    trigger.addEventListener('keydown', (ev) => {
+      const aperto = wrap.classList.contains('aperto');
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        if (!aperto) { toggleSelect(wrap, true); return; }
+        muovi(wrap, ev.key === 'ArrowDown' ? 1 : -1);
+      } else if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        const att = wrap.querySelector('.sel-opzione.attiva');
+        if (aperto && att) att.click(); else toggleSelect(wrap, !aperto);
+      } else if (ev.key === 'Escape' || ev.key === 'Tab') {
+        toggleSelect(wrap, false);
+      }
+    });
+    // un clic sull'etichetta del campo porterebbe il fuoco al select nascosto
+    nativo.addEventListener('focus', () => trigger.focus());
+    nativo.addEventListener('change', () => syncSelect(wrap));
+    syncSelect(wrap);
+  }
+
+  function syncSelect(wrap){
+    const nativo = wrap.querySelector('select');
+    const valore = wrap.querySelector('.sel-valore');
+    const lista = wrap.querySelector('.sel-opzioni');
+    const scelta = nativo.options[nativo.selectedIndex];
+    valore.textContent = scelta ? scelta.textContent : '';
+    valore.classList.toggle('vuoto', !scelta || scelta.value === '');
+    wrap.querySelector('.sel-trigger').title = scelta ? scelta.textContent : '';
+    lista.textContent = '';
+    Array.prototype.forEach.call(nativo.options, (opt, i) => {
+      const voce = document.createElement('button');
+      voce.type = 'button';
+      voce.tabIndex = -1;
+      voce.className = 'sel-opzione' + (i === nativo.selectedIndex ? ' scelta' : '');
+      voce.setAttribute('role', 'option');
+      voce.setAttribute('aria-selected', i === nativo.selectedIndex ? 'true' : 'false');
+      voce.textContent = opt.textContent;
+      voce.addEventListener('click', (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        if (nativo.selectedIndex !== i) {
+          nativo.selectedIndex = i;
+          nativo.dispatchEvent(new Event('change', { bubbles: true }));
+        } else syncSelect(wrap);
+        toggleSelect(wrap, false);
+        wrap.querySelector('.sel-trigger').focus();
+      });
+      lista.appendChild(voce);
+    });
+  }
+
+  function muovi(wrap, passo){
+    const voci = Array.prototype.slice.call(wrap.querySelectorAll('.sel-opzione'));
+    if (!voci.length) return;
+    let i = voci.findIndex((v) => v.classList.contains('attiva'));
+    if (i < 0) i = voci.findIndex((v) => v.classList.contains('scelta'));
+    i = (i + passo + voci.length) % voci.length;
+    voci.forEach((v, k) => v.classList.toggle('attiva', k === i));
+    voci[i].scrollIntoView({ block: 'nearest' });
+  }
+
+  function toggleSelect(wrap, apri){
+    if (selAperto && selAperto !== wrap) {
+      selAperto.classList.remove('aperto');
+      selAperto.querySelector('.sel-trigger').setAttribute('aria-expanded', 'false');
+      selAperto = null;
+    }
+    if (!wrap) return;
+    if (apri) orienta(wrap);
+    wrap.classList.toggle('aperto', !!apri);
+    wrap.querySelector('.sel-trigger').setAttribute('aria-expanded', apri ? 'true' : 'false');
+    wrap.querySelectorAll('.sel-opzione.attiva').forEach((v) => v.classList.remove('attiva'));
+    if (apri) { const s = wrap.querySelector('.sel-opzione.scelta'); if (s) s.scrollIntoView({ block: 'nearest' }); }
+    selAperto = apri ? wrap : null;
+  }
+
+  /* sotto se c'è spazio nella finestra, altrimenti sopra; mai più alto
+     dello spazio che c'è davvero */
+  function orienta(wrap){
+    const lista = wrap.querySelector('.sel-opzioni');
+    const r = wrap.querySelector('.sel-trigger').getBoundingClientRect();
+    const margine = 16;
+    const sotto = window.innerHeight - r.bottom - margine;
+    const sopra = r.top - margine - 60;
+    const voluto = Math.min(300, lista.scrollHeight || 300);
+    const inAlto = sotto < voluto && sopra > sotto;
+    wrap.classList.toggle('verso-alto', inAlto);
+    lista.style.maxHeight = Math.max(120, Math.min(300, inAlto ? sopra : sotto)) + 'px';
+  }
+
+  document.addEventListener('click', () => toggleSelect(null, false));
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') toggleSelect(null, false); });
+
+  /* ── date in gg/mm/aaaa ── */
+  const GIORNI = ['lu', 'ma', 'me', 'gi', 've', 'sa', 'do'];
+  const MESI = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+  const isoDi = (d) => `${d.getFullYear()}-${due(d.getMonth() + 1)}-${due(d.getDate())}`;
+  const fmt = (iso) => { const p = String(iso || '').split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : ''; };
+
+  /* gg/mm/aaaa scritto a mano → ISO; accetta anche gg-mm-aaaa, gg.mm.aa */
+  function leggiData(testo){
+    const m = String(testo || '').trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/);
+    if (!m) return '';
+    let a = +m[3]; if (a < 100) a += a > 40 ? 1900 : 2000;
+    const mm = +m[2], g = +m[1];
+    const d = new Date(a, mm - 1, g);
+    if (d.getFullYear() !== a || d.getMonth() !== mm - 1 || d.getDate() !== g) return '';
+    return isoDi(d);
+  }
+  function impostaData(campo, iso){
+    const ok = /^\d{4}-\d{2}-\d{2}$/.test(iso || '') ? iso : '';
+    campo.setAttribute('data-iso', ok);
+    campo.value = ok ? fmt(ok) : '';
+  }
+
+  let calCampo = null, calMese = null;
+  function pannello(){
+    let p = $('calPanel');
+    if (p) return p;
+    p = document.createElement('div');
+    p.id = 'calPanel'; p.className = 'cal-panel';
+    p.addEventListener('mousedown', (ev) => ev.preventDefault());
+    p.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const b = ev.target.closest('button'); if (!b) return;
+      if (b.dataset.act === 'mese') { calMese.setMonth(calMese.getMonth() + (+b.dataset.delta)); disegna(); }
+      else if (b.dataset.act === 'giorno') scegli(b.dataset.iso);
+      else if (b.dataset.act === 'oggi') scegli(isoDi(new Date()));
+      else if (b.dataset.act === 'vuota') scegli('');
+    });
+    document.body.appendChild(p);
+    return p;
+  }
+  function apriCal(campo){
+    const p = pannello();
+    calCampo = campo;
+    const iso = campo.getAttribute('data-iso');
+    const base = iso ? new Date(iso + 'T00:00:00') : new Date();
+    calMese = new Date(base.getFullYear(), base.getMonth(), 1);
+    disegna();
+    p.classList.add('open');
+    const r = campo.getBoundingClientRect();
+    const w = p.offsetWidth || 272, h = p.offsetHeight || 320;
+    let x = r.left, y = r.bottom + 6;
+    if (x + w > window.innerWidth - 12) x = window.innerWidth - w - 12;
+    if (y + h > window.innerHeight - 12) y = Math.max(12, r.top - h - 6);
+    p.style.left = Math.max(12, x) + 'px'; p.style.top = y + 'px';
+  }
+  function chiudiCal(){ const p = $('calPanel'); if (p) p.classList.remove('open'); calCampo = null; }
+  function disegna(){
+    const p = pannello();
+    const anno = calMese.getFullYear(), mese = calMese.getMonth();
+    const scelto = calCampo ? calCampo.getAttribute('data-iso') : '';
+    const oggi = isoDi(new Date());
+    let scarto = new Date(anno, mese, 1).getDay() - 1; if (scarto < 0) scarto = 6;
+    const nGiorni = new Date(anno, mese + 1, 0).getDate();
+    let celle = '';
+    const settimane = Math.ceil((scarto + nGiorni) / 7);
+    for (let i = 0; i < settimane * 7; i++) {
+      const d = new Date(anno, mese, i - scarto + 1);
+      const iso = isoDi(d);
+      const cl = ['cal-day'];
+      if (d.getMonth() !== mese) cl.push('fuori');
+      if (iso === scelto) cl.push('scelto');
+      if (iso === oggi) cl.push('oggi');
+      celle += `<button type="button" class="${cl.join(' ')}" data-act="giorno" data-iso="${iso}" aria-label="${fmt(iso)}">${d.getDate()}</button>`;
+    }
+    p.innerHTML =
+      `<div class="cal-head"><button type="button" class="cal-nav" data-act="mese" data-delta="-1" aria-label="Mese precedente">&#8249;</button>` +
+      `<div class="cal-titolo">${esc(MESI[mese])} ${anno}</div>` +
+      `<button type="button" class="cal-nav" data-act="mese" data-delta="1" aria-label="Mese successivo">&#8250;</button></div>` +
+      `<div class="cal-settimana">${GIORNI.map((g) => '<span>' + g + '</span>').join('')}</div>` +
+      `<div class="cal-griglia">${celle}</div>` +
+      `<div class="cal-piede"><button type="button" class="cal-azione" data-act="oggi">Oggi</button><button type="button" class="cal-azione" data-act="vuota">Cancella</button></div>`;
+  }
+  function scegli(iso){
+    if (!calCampo) return;
+    const c = calCampo;
+    impostaData(c, iso);
+    chiudiCal();
+    c.dispatchEvent(new Event('input', { bubbles: true }));
+    c.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function preparaData(campo){
+    if (campo.dataset.pronto) return;
+    campo.dataset.pronto = '1';
+    campo.type = 'text';
+    campo.autocomplete = 'off';
+    campo.placeholder = 'gg/mm/aaaa';
+    campo.inputMode = 'numeric';
+    if (!campo.hasAttribute('data-iso')) campo.setAttribute('data-iso', '');
+    campo.addEventListener('focus', () => apriCal(campo));
+    campo.addEventListener('click', () => { if (calCampo !== campo) apriCal(campo); });
+    // si scrivono solo le cifre: le barre le mette il campo
+    campo.addEventListener('input', (ev) => {
+      if (!ev.isTrusted) return;
+      const cifre = campo.value.replace(/[^0-9]/g, '').slice(0, 8);
+      campo.value = cifre.length > 4 ? `${cifre.slice(0, 2)}/${cifre.slice(2, 4)}/${cifre.slice(4)}`
+        : cifre.length > 2 ? `${cifre.slice(0, 2)}/${cifre.slice(2)}` : cifre;
+      const iso = cifre.length === 8 ? leggiData(campo.value) : '';
+      campo.setAttribute('data-iso', iso);
+      if (iso && calCampo === campo) { calMese = new Date(iso + 'T00:00:00'); calMese.setDate(1); disegna(); }
+    });
+    campo.addEventListener('blur', () => {
+      const iso = leggiData(campo.value);
+      if (campo.value.trim() && !iso) impostaData(campo, campo.getAttribute('data-iso'));
+      else impostaData(campo, iso);
+      chiudiCal();
+      campo.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    campo.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === 'Tab') chiudiCal(); });
+  }
+  document.addEventListener('mousedown', (ev) => {
+    if (ev.target.closest('#calPanel') || ev.target === calCampo) return;
+    chiudiCal();
+  });
+  window.addEventListener('resize', chiudiCal);
+
+  /* ── confronto con imaging precedente: esame + data ──
+     Il referto legge p_confronto come prima: qui lo si compone. */
+  function componiConfronto(){
+    const tipo = $('p_confrontoTipo'), data = $('p_confrontoData'), out = $('p_confronto');
+    if (!tipo || !data || !out) return;
+    const nome = tipo.value === 'altro' ? 'esame' : tipo.value;
+    const quando = data.value && data.getAttribute('data-iso') ? data.value : '';
+    out.value = nome && quando ? `${nome} del ${quando}` : nome || (quando ? `esame del ${quando}` : '');
+  }
+  ['p_confrontoTipo', 'p_confrontoData'].forEach((id) => {
+    const e = $(id);
+    if (e) { e.addEventListener('change', componiConfronto); e.addEventListener('input', componiConfronto); }
+  });
+
+  /* ── avvio ── */
+  document.querySelectorAll('#form-pane select').forEach(avvolgiSelect);
+  document.querySelectorAll('input[data-date]').forEach(preparaData);
+  // le righe aggiunte (linfonodi, depositi) portano i loro menu
+  new MutationObserver((mut) => mut.forEach((m) => m.addedNodes.forEach((n) => {
+    if (n.nodeType !== 1) return;
+    if (n.matches('select')) avvolgiSelect(n);
+    n.querySelectorAll && n.querySelectorAll('select').forEach(avvolgiSelect);
+  }))).observe($('form-pane'), { childList: true, subtree: true });
+
+  window.EsgarUI = { impostaData, leggiData, fmt, isoDi, avvolgiSelect, syncSelect: (s) => { const w = s.closest('.sel-wrap'); if (w) syncSelect(w); } };
+})();
 </script>
 <script>
 /* ═══════════════════════════════════════════════════════════════════════
@@ -5298,7 +5716,7 @@ $id('btnSalva').addEventListener('click', async () => {
   // il numero d'accesso resta com'è scritto nel referto e nell'indice; nel nome del file solo caratteri ammessi
   const accessoTesto = $id('arcAccesso').value.trim().slice(0, 40);
   const accessoN = pulisci(accessoTesto).replace(/ /g, '');
-  const dataVal = $id('arcData').value;
+  const dataVal = $id('arcData').getAttribute('data-iso');
   const data = dataVal ? new Date(dataVal + 'T12:00:00') : new Date();
   const adesso = new Date();
   const s = sintesiReferto();
@@ -5319,6 +5737,7 @@ $id('btnSalva').addEventListener('click', async () => {
     a.href = URL.createObjectURL(new Blob([contenuto], { type: 'text/plain;charset=utf-8' }));
     a.download = base + '.txt'; a.click();
     statoArchivio(`Scaricato <code>${escH(base)}.txt</code>. Con Chrome o Edge si salva direttamente nell'archivio ordinato.`, 'ok');
+    document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
     return;
   }
   if (!cartella) {
@@ -5344,13 +5763,14 @@ $id('btnSalva').addEventListener('click', async () => {
     await aggiungiIndice(dirOp, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
       Canale.nomeCortese(p), [s.tipo, anno, mese, nome].join('/')]);
     statoArchivio(`Salvato in <code>${escH(cartella.name)}/${escH(percorso)}</code>`, 'ok');
+    document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
   } catch (e) {
     statoArchivio('Salvataggio non riuscito: ' + escH(e && e.message || e), 'ko');
   }
 });
 
 (async function avviaArchivio(){
-  $id('arcData').value = dataIso(new Date());
+  EsgarUI.impostaData($id('arcData'), dataIso(new Date()));
   try { cartella = await idbLeggi(); } catch (_) { cartella = null; }
   await aggiornaPermesso();
   disegnaProfilo();
@@ -5361,6 +5781,346 @@ window.EsgarTest = {
   usaCartella: async (h) => { cartella = h; await idbScrivi(h); await aggiornaPermesso(); disegnaProfilo(); },
   sessione: () => sessione
 };
+</script>
+<script>
+// ============================================================
+// MEMORIA DEI CAMPI DI TESTO LIBERO
+//
+// Sulla falsariga del quesito PS di ER Oncology Archivist: il tool
+// impara dai referti conclusi e, campo per campo, propone le frasi già
+// scritte, ordinate da un punteggio che si corregge da solo con l'uso.
+//
+// Quando impara: quando un referto si copia, si scarica, si stampa o si
+// salva nell'archivio. Lo stesso referto conta una volta sola.
+//
+// Cosa ricorda, per ogni frase di ogni campo:
+//   · quante volte è stata usata e quando, l'ultima volta;
+//   · le varianti con cui è stata scritta (si propone la più usata);
+//   · il contesto in cui compare: le scelte fatte nel form in quel
+//     momento (cT, EMVI, MRF, campo magnetico…);
+//   · quante volte, proposta, è stata scelta o scavalcata.
+//
+// Il punteggio di una frase somma:
+//   · somiglianza con quanto si sta scrivendo: parole in comune pesate
+//     per rarità (le parole rare dicono di più), più l'inizio della
+//     parola che si sta ancora scrivendo;
+//   · frequenza d'uso, in scala logaritmica;
+//   · contesto: per ogni scelta presente ora nel form, quanto è più
+//     tipica di questa frase che della media (rapporto di frequenze
+//     levigato). Con più referti la stima diventa più precisa;
+//   · recenza: fino a sei mesi pesa, poi non conta più;
+//   · gradimento: le frasi scelte salgono, quelle proposte in alto e
+//     scavalcate scendono.
+//
+// Tutto resta nel browser di questo PC (localStorage): nessun dato del
+// paziente, solo le frasi dei campi liberi e le scelte del form.
+// ============================================================
+(function(){
+  'use strict';
+  const KEY = 'structurad.esgar.memoria.v1';
+  const MAX_VOCI = 150;          // frasi per campo
+  const MAX_MOSTRATE = 8;
+  const SEI_MESI = 180 * 86400000;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* ── quali campi ── */
+  // tutti i campi di testo libero; non le misure (narrow), non le date,
+  // non i campi composti dal tool
+  function chiave(el){
+    if (!el || el.tagName !== 'INPUT' || el.type !== 'text' || el.hasAttribute('data-date') || el.classList.contains('narrow')) return null;
+    if (!el.closest('#form-pane')) return null;
+    if (el.closest('#p_td_container') && el.dataset.f === 'sede') return 'td.sede';
+    if (el.closest('[data-row]')) return null;
+    return el.id || null;
+  }
+  const campiMemoria = () => Array.prototype.filter.call(document.querySelectorAll('#form-pane input[type=text]'), (e) => chiave(e));
+
+  /* ── testo normalizzato e parole ── */
+  const PAROLE_VUOTE = new Set('il lo la i gli le un uno una di a da in con su per tra fra e o ed del dello della dei degli delle al allo alla ai agli alle dal dallo dalla dai dagli dalle nel nello nella nei negli nelle sul sullo sulla sui sugli sulle che si non'.split(' '));
+  const norm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const radice = (p) => p.length > 4 ? p.replace(/(zioni|zione|i|e|o|a)$/, '') : p;
+  const parole = (t) => norm(t).split(' ').filter((p) => p && !PAROLE_VUOTE.has(p)).map(radice);
+
+  /* ── memoria ── */
+  let mem = carica();
+  function carica(){
+    try {
+      const m = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (m && m.v === 1 && m.campi) return m;
+    } catch (_) {}
+    return { v: 1, campi: {}, visti: [] };
+  }
+  function salva(){ try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (_) { /* spazio esaurito: si sfoltisce */ sfoltisci(true); } }
+  function campoMem(k){ return mem.campi[k] || (mem.campi[k] = { n: 0, ctx: {}, voci: [] }); }
+
+  /* il contesto: le scelte fatte nel pannello del campo (radio, caselle,
+     menu), esclusi i menu delle sole unità di misura */
+  function contesto(el){
+    const pan = el.closest('.panel') || $('form-pane');
+    const f = [];
+    pan.querySelectorAll('input[type=radio]:checked').forEach((r) => f.push(r.name + '=' + r.value));
+    pan.querySelectorAll('input[type=checkbox]:checked').forEach((c) => f.push('x:' + (c.id || c.className + '=' + c.value)));
+    pan.querySelectorAll('select:not(.unit)').forEach((s) => { if (s.value && !s.closest('[data-row]')) f.push(s.id + '=' + s.value); });
+    return f;
+  }
+  /* come si chiama una scelta del form, per spiegare un suggerimento */
+  function nomeScelta(feat){
+    try {
+      if (feat.startsWith('x:')) {
+        const id = feat.slice(2);
+        const c = id.includes('=') ? document.querySelector('input.' + id.split('=')[0] + '[value="' + id.split('=')[1] + '"]') : $(id);
+        return c ? c.closest('label').textContent.trim() : '';
+      }
+      const [k, v] = feat.split('=');
+      const r = document.querySelector('input[type=radio][name="' + k + '"][value="' + v + '"]');
+      if (r) return r.closest('label').textContent.trim().split(' — ')[0];
+      const s = $(k);
+      if (s && s.tagName === 'SELECT') { const o = Array.prototype.find.call(s.options, (x) => x.value === v); return o ? o.textContent.split(' — ')[0] : ''; }
+    } catch (_) {}
+    return '';
+  }
+
+  /* ── apprendimento ── */
+  function impara(k, testo, feats, quando){
+    const t = String(testo || '').trim();
+    const nk = norm(t);
+    if (nk.length < 2) return;
+    const cm = campoMem(k);
+    cm.n++;
+    feats.forEach((f) => { cm.ctx[f] = (cm.ctx[f] || 0) + 1; });
+    let v = cm.voci.find((x) => x.k === nk);
+    if (!v) { v = { k: nk, t: {}, n: 0, u: 0, s: 0, x: 0, c: {} }; cm.voci.push(v); }
+    v.n++; v.u = quando;
+    v.t[t] = (v.t[t] || 0) + 1;
+    feats.forEach((f) => { v.c[f] = (v.c[f] || 0) + 1; });
+  }
+
+  /* un referto concluso: tutti i campi liberi con qualcosa scritto */
+  function imparaDalReferto(){
+    const out = $('output');
+    const firma = hash(String(out ? out.value : '') + '|' + (typeof mode !== 'undefined' ? mode : ''));
+    if (mem.visti.includes(firma)) return 0;
+    mem.visti.push(firma);
+    if (mem.visti.length > 300) mem.visti = mem.visti.slice(-300);
+    const ora = Date.now();
+    let n = 0;
+    campiMemoria().forEach((el) => {
+      if (!el.offsetParent && !el.closest('.panel.active')) return;    // solo la modalità a schermo
+      if (!el.value.trim()) return;
+      impara(chiave(el), el.value, contesto(el), ora); n++;
+    });
+    sfoltisci(false);
+    salva();
+    return n;
+  }
+  function hash(s){ let h = 5381; for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; return h.toString(36); }
+
+  /* le frasi meno utili lasciano il posto: poco usate, vecchie, scartate */
+  function sfoltisci(forte){
+    const ora = Date.now();
+    Object.keys(mem.campi).forEach((k) => {
+      const cm = mem.campi[k];
+      const lim = forte ? Math.floor(MAX_VOCI / 2) : MAX_VOCI;
+      if (cm.voci.length <= lim) return;
+      cm.voci.sort((a, b) => valore(b, ora) - valore(a, ora));
+      cm.voci = cm.voci.slice(0, lim);
+    });
+    if (forte) try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (_) {}
+  }
+  const valore = (v, ora) => Math.log(1 + v.n) + gradimento(v) + 0.5 * Math.max(0, 1 - (ora - v.u) / SEI_MESI);
+  /* scelte e scavalcamenti, con una stima prudente all'inizio */
+  const gradimento = (v) => 0.9 * Math.log((v.s + 1) / (v.s + v.x + 2)) + 0.62;
+
+  /* ── punteggio ── */
+  function suggerimenti(el){
+    const k = chiave(el);
+    const cm = mem.campi[k];
+    if (!cm || !cm.voci.length) return [];
+    const ora = Date.now();
+    const q = parole(el.value);
+    const qn = norm(el.value);
+    const parziale = /[a-z0-9]$/i.test(el.value) && q.length ? q[q.length - 1] : '';
+    const feats = contesto(el);
+    // rarità delle parole fra le frasi del campo
+    const df = new Map();
+    cm.voci.forEach((v) => new Set(parole(v.k)).forEach((p) => df.set(p, (df.get(p) || 0) + 1)));
+    const idf = (p) => Math.log(1 + cm.voci.length / (1 + (df.get(p) || 0)));
+
+    const voci = [];
+    cm.voci.forEach((v) => {
+      if (qn && v.k === qn) return;                     // è già quello che c'è scritto
+      let sim = 0;
+      if (qn) {
+        const pv = parole(v.k);
+        q.forEach((p) => {
+          if (pv.includes(p)) sim += idf(p);
+          else if (p === parziale && p.length >= 2 && pv.some((x) => x.startsWith(p))) sim += 0.7 * idf(p);
+        });
+        if (v.k.startsWith(qn)) sim += 1.2;
+        if (sim <= 0) return;
+      }
+      // contesto: rapporto fra la frequenza della scelta con questa frase
+      // e la sua frequenza media nel campo, levigato
+      let ctx = 0, motivo = null, mlift = 0;
+      feats.forEach((f) => {
+        const pf = ((v.c[f] || 0) + 0.5) / (v.n + 1);
+        const pg = ((cm.ctx[f] || 0) + 0.5) / (cm.n + 1);
+        const lift = Math.log(pf / pg);
+        ctx += Math.max(-1, Math.min(1.5, lift));
+        if (lift > mlift && (v.c[f] || 0) >= 2) { mlift = lift; motivo = f; }
+      });
+      const punti = (qn ? 2.2 * sim : 0)
+        + 0.8 * Math.log(1 + v.n)
+        + 0.6 * ctx
+        + 0.4 * Math.max(0, 1 - (ora - v.u) / SEI_MESI)
+        + gradimento(v);
+      let testo = '', m = 0;
+      Object.keys(v.t).forEach((t) => { if (v.t[t] > m) { m = v.t[t]; testo = t; } });
+      voci.push({ v, testo, punti, motivo: mlift > Math.log(1.6) ? motivo : null });
+    });
+    voci.sort((a, b) => b.punti - a.punti || b.v.n - a.v.n);
+    return voci.slice(0, MAX_MOSTRATE);
+  }
+
+  /* ── pannello dei suggerimenti ── */
+  let stato = { campo: null, voci: [], attiva: -1 };
+  let inScelta = false;
+  function pannello(){
+    let p = $('memPannello');
+    if (p) return p;
+    p = document.createElement('div');
+    p.id = 'memPannello'; p.className = 'mem-pannello'; p.setAttribute('role', 'listbox');
+    p.addEventListener('mousedown', (ev) => ev.preventDefault());
+    p.addEventListener('click', (ev) => {
+      const via = ev.target.closest('[data-dimentica]');
+      if (via) { dimentica(+via.dataset.dimentica); return; }
+      const b = ev.target.closest('.mem-voce');
+      if (b) scegli(+b.dataset.i);
+    });
+    document.body.appendChild(p);
+    return p;
+  }
+  function evidenzia(testo, q){
+    const ps = parole(q);
+    if (!ps.length) return esc(testo);
+    return testo.split(/(\s+)/).map((w) => {
+      const r = radice(norm(w));
+      return r && ps.some((p) => r.startsWith(p) || p.startsWith(r) && r.length >= 3) ? '<b>' + esc(w) + '</b>' : esc(w);
+    }).join('');
+  }
+  function apri(el){
+    const voci = suggerimenti(el);
+    if (!voci.length) { chiudi(); return; }
+    const p = pannello();
+    stato = { campo: el, voci, attiva: -1 };
+    const cm = mem.campi[chiave(el)];
+    p.innerHTML = `<div class="mem-testa"><span>Dai tuoi referti</span><span class="mem-n">${cm.n} ${cm.n === 1 ? 'referto' : 'referti'}</span></div>`
+      + voci.map((x, i) => {
+        const perche = x.motivo ? nomeScelta(x.motivo) : '';
+        return `<div class="mem-voce" role="option" id="mem-${i}" data-i="${i}">`
+          + `<span class="mem-testo">${evidenzia(x.testo, el.value)}</span>`
+          + (perche ? `<span class="mem-perche" title="Scritta spesso con questa scelta">${esc(perche.slice(0, 28))}</span>` : '')
+          + (x.v.n > 1 ? `<span class="mem-conta">×${x.v.n}</span>` : '')
+          + `<button type="button" class="mem-via" data-dimentica="${i}" title="Non proporre più questa frase" aria-label="Dimentica">×</button>`
+          + `</div>`;
+      }).join('')
+      + `<div class="mem-piede">↑↓ per scegliere · Invio per usare · Esc per chiudere</div>`;
+    posiziona();
+    p.classList.add('aperto');
+    el.setAttribute('aria-expanded', 'true');
+  }
+  function posiziona(){
+    const p = $('memPannello');
+    if (!p || !stato.campo) return;
+    const r = stato.campo.getBoundingClientRect();
+    if (!r.width || r.bottom < 0 || r.top > window.innerHeight) { chiudi(); return; }
+    const sotto = window.innerHeight - r.bottom - 12, sopra = r.top - 12 - 52;
+    const alto = Math.min(340, p.scrollHeight || 340);
+    const inAlto = sotto < alto && sopra > sotto;
+    p.classList.toggle('verso-alto', inAlto);
+    p.style.left = Math.round(r.left) + 'px';
+    p.style.width = Math.round(Math.max(r.width, 260)) + 'px';
+    p.style.maxHeight = Math.max(120, Math.min(340, inAlto ? sopra : sotto)) + 'px';
+    if (inAlto) { p.style.top = 'auto'; p.style.bottom = Math.round(window.innerHeight - r.top + 5) + 'px'; }
+    else { p.style.bottom = 'auto'; p.style.top = Math.round(r.bottom + 5) + 'px'; }
+  }
+  function chiudi(){
+    const p = $('memPannello');
+    if (p) p.classList.remove('aperto');
+    if (stato.campo) stato.campo.setAttribute('aria-expanded', 'false');
+    stato = { campo: null, voci: [], attiva: -1 };
+  }
+  function scegli(i){
+    const x = stato.voci[i], el = stato.campo;
+    if (!x || !el) return;
+    // gradimento: la scelta sale, quelle mostrate sopra e scavalcate scendono
+    x.v.s++;
+    stato.voci.slice(0, i).forEach((y) => { y.v.x++; });
+    salva();
+    el.value = x.testo;
+    chiudi();
+    inScelta = true;
+    try {
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    } finally { inScelta = false; }
+  }
+  function dimentica(i){
+    const x = stato.voci[i], el = stato.campo;
+    if (!x || !el) return;
+    const cm = mem.campi[chiave(el)];
+    cm.voci = cm.voci.filter((v) => v !== x.v);
+    salva();
+    apri(el);
+  }
+  function muovi(passo){
+    const p = $('memPannello');
+    if (!p || !stato.voci.length) return;
+    stato.attiva = (stato.attiva + passo + stato.voci.length) % stato.voci.length;
+    p.querySelectorAll('.mem-voce').forEach((v, i) => {
+      v.classList.toggle('attiva', i === stato.attiva);
+      if (i === stato.attiva) v.scrollIntoView({ block: 'nearest' });
+    });
+    stato.campo.setAttribute('aria-activedescendant', 'mem-' + stato.attiva);
+  }
+
+  document.addEventListener('focusin', (ev) => { if (chiave(ev.target)) { ev.target.setAttribute('autocomplete', 'off'); apri(ev.target); } });
+  document.addEventListener('focusout', (ev) => { if (ev.target === stato.campo) chiudi(); });
+  document.addEventListener('input', (ev) => {
+    if (inScelta || !chiave(ev.target) || document.activeElement !== ev.target) return;
+    apri(ev.target);
+  });
+  // le scelte del form cambiano il contesto: il pannello aperto si riordina
+  document.addEventListener('change', (ev) => { if (stato.campo && ev.target !== stato.campo) apri(stato.campo); });
+  document.addEventListener('keydown', (ev) => {
+    const c = ev.target;
+    if (!chiave(c)) return;
+    const aperto = stato.campo === c;
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      if (!aperto) apri(c); else muovi(ev.key === 'ArrowDown' ? 1 : -1);
+    } else if (ev.key === 'Enter' && aperto && stato.attiva >= 0) {
+      ev.preventDefault(); scegli(stato.attiva);
+    } else if (ev.key === 'Escape' && aperto) {
+      ev.preventDefault(); ev.stopPropagation(); chiudi();
+    } else if (ev.key === 'Tab' && aperto) chiudi();
+  }, true);
+  window.addEventListener('resize', () => { if (stato.campo) posiziona(); });
+  document.addEventListener('scroll', () => { if (stato.campo) posiziona(); }, true);
+
+  // un referto concluso insegna
+  ['btnCopy', 'btnDownload', 'btnPrint'].forEach((id) => {
+    const b = $(id); if (b) b.addEventListener('click', imparaDalReferto);
+  });
+  // dall'archivio solo a salvataggio riuscito
+  document.addEventListener('esgar:referto-salvato', imparaDalReferto);
+
+  window.EsgarMemoria = {
+    impara: imparaDalReferto, suggerimenti: (el) => suggerimenti(el).map((x) => ({ testo: x.testo, punti: +x.punti.toFixed(3), n: x.v.n, motivo: x.motivo })),
+    stato: () => mem, azzera: () => { mem = { v: 1, campi: {}, visti: [] }; salva(); }
+  };
+})();
 </script>
 </body>
 </html>
