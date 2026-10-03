@@ -577,6 +577,38 @@ nav.intro-in-corso .nav-right,
 .archivio-row .f span{font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.07em; color:var(--accent);}
 .archivio-row input{width:100%; background:#fff;}
 .archivio-row .btn-primary{flex:0 0 auto;}
+.archivio-caso{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:8px 16px 0;}
+.caso-chip{flex:1 1 220px; min-width:0; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  font-size:11.5px; color:var(--muted); padding:6px 10px; border-radius:8px; border:1px dashed var(--border2); background:var(--surface2);}
+.caso-chip.attivo{border-style:solid; border-color:var(--accent-line); background:#fff; color:var(--text);}
+.caso-cod{font-family:var(--mono); font-size:11.5px; font-weight:500; color:#fff; padding:2px 8px; border-radius:6px;
+  background:linear-gradient(135deg, var(--rose), var(--accent)); letter-spacing:.03em;}
+.archivio-caso .btn-secondary, .archivio-caso .btn-ghost{padding:6px 12px; font-size:11.5px;}
+.cerca-pannello{
+  position:fixed; z-index:1500; width:min(440px, calc(100vw - 24px)); max-height:min(560px, calc(100vh - 80px));
+  display:flex; flex-direction:column; border-radius:12px; overflow:hidden;
+  background:var(--surface); border:1px solid var(--border); box-shadow:0 22px 46px -16px rgba(26,12,17,.5);
+  visibility:hidden; opacity:0; pointer-events:none; transform-origin:top left;
+}
+.cerca-pannello.aperto{visibility:visible; pointer-events:auto; animation:popSection .32s var(--molla) forwards;}
+.cerca-testa{display:flex; justify-content:space-between; align-items:center; padding:10px 8px 10px 14px; background:var(--ink); color:#fff;
+  font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;}
+.cerca-x{width:26px; height:26px; border:none; border-radius:7px; background:transparent; color:#C9B5BB; font-size:18px; cursor:pointer;}
+.cerca-x:hover{background:rgba(255,255,255,.1); color:#fff;}
+#cercaQ{margin:10px 12px 6px; font-family:var(--mono); text-transform:uppercase;}
+.cerca-lista{overflow-y:auto; padding:2px 12px 12px; display:flex; flex-direction:column; gap:8px;}
+.cerca-nota, .cerca-vuota{font-size:11.5px; color:var(--faint); padding:4px 2px;}
+.cerca-caso{border:1px solid var(--border); border-radius:10px; padding:9px 10px; background:var(--surface2);}
+.cerca-riga{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.cerca-data{font-family:var(--mono); font-size:11.5px; color:var(--text);}
+.cerca-med{font-size:11.5px; color:var(--muted);}
+.cerca-caso ul{margin:6px 0 0; padding:0 0 0 16px; font-size:11.5px; color:var(--muted); line-height:1.5;}
+.cerca-caso ul b{color:var(--accent-hover); font-weight:600;}
+.cerca-azioni{display:flex; gap:6px; margin-top:8px;}
+.cerca-azioni .btn-primary, .cerca-azioni .btn-ghost{padding:5px 12px; font-size:11.5px;}
+.cerca-anteprima{margin:8px 0 0; padding:8px 10px; max-height:180px; overflow:auto; white-space:pre-wrap; font-family:var(--mono); font-size:10.5px; line-height:1.5;
+  background:#fff; border:1px solid var(--border); border-radius:8px; color:var(--text);}
+@media print{ .archivio-caso, .cerca-pannello{display:none !important;} }
 .archivio-stato{margin:6px 18px 0; font-size:11.5px; line-height:1.45; color:var(--muted);}
 .archivio-stato.ok{color:var(--green);}
 .archivio-stato.ko{color:#9A2A2A;}
@@ -1574,6 +1606,11 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
         <label class="f"><span>N. accesso</span><input type="text" id="arcAccesso" placeholder="es. A123456" autocomplete="off" spellcheck="false"></label>
         <label class="f"><span>Data esame</span><input type="text" id="arcData" data-date></label>
         <button type="button" class="btn-primary" id="btnSalva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M12 10v6"/><path d="m9 13 3 3 3-3"/></svg>Salva nell'archivio</button>
+      </div>
+      <div class="archivio-caso" id="archivioCaso">
+        <span class="caso-chip" id="casoChip"></span>
+        <button type="button" class="btn-secondary" id="btnCerca" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Ricerca precedente</button>
+        <button type="button" class="btn-ghost" id="btnNuovoCaso" hidden title="Il prossimo salvataggio apre un caso nuovo">Nuovo paziente</button>
       </div>
       <div class="archivio-stato" id="archivioStato"></div>
       <div class="report-hint">Il referto si aggiorna a ogni modifica del form. Le correzioni manuali restano intatte nelle sezioni che non dipendono dai campi appena cambiati; &laquo;Rigenera tutto&raquo; riscrive tutto da zero.</div>
@@ -5722,7 +5759,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-03 · ESGAR 2026';
+const VERSIONE = '2026-10-03 · casi';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -5865,6 +5902,7 @@ $id('ppAnnulla').addEventListener('click', () => { chiudiAccesso(); statoAccesso
 $id('ppEsci').addEventListener('click', () => {
   const nome = sessione ? Canale.nomeCortese(sessione.profilo) : '';
   scriviSessione(null);
+  nuovoPaziente();                 // il caso aperto era di chi è uscito
   statoAccesso(`${escH(nome)} è uscito da questo PC.`, 'ok');
   disegnaProfilo(); disegnaArchivioRow();
 });
@@ -5967,6 +6005,7 @@ async function dirMedico(crea){
 /* dopo l'accesso: la cartella del medico si crea subito se il browser
    ha già il permesso; altrimenti al primo salvataggio */
 async function dopoAccesso(){
+  nuovoPaziente();
   await aggiornaPermesso();
   const nome = Canale.nomeCortese(sessione.profilo);
   let msg = `Accesso effettuato, ${escH(nome)}.`;
@@ -6078,18 +6117,24 @@ function sintesiReferto(){
   return { tipo: 'Ristadiazione', risposta: risp, t: r('r_yct'), n: ycn, mrf: mrf(r('r_mrf')), emvi: emvi(sel('r_emviGrade')) };
 }
 function nomeFile(data, adesso, accessoN, s){
-  const pezzi = [dataIso(data), due(adesso.getHours()) + due(adesso.getMinutes()), accessoN || 'senza-accesso',
-    s.risposta, s.t, s.n, s.mrf, s.emvi].filter(Boolean).map((x) => pulisci(x).replace(/ /g, '-'));
+  const pezzi = [dataIso(data), due(adesso.getHours()) + due(adesso.getMinutes()), s.tipo === 'Ristadiazione' ? 'Ristadiazione' : 'Stadiazione',
+    accessoN || 'senza-accesso', s.risposta, s.t, s.n, s.mrf, s.emvi].filter(Boolean).map((x) => pulisci(x).replace(/ /g, '-'));
   return pezzi.join('_');
 }
 
 /* ── CSV dell'indice: separatore ; come lo vuole Excel in italiano ── */
-const COLONNE = ['Data esame', 'Ora salvataggio', 'Tipo', 'N. accesso', 'Risposta', 'T', 'N', 'MRF', 'EMVI', 'Refertato da', 'File'];
+const COLONNE = ['Data esame', 'Ora salvataggio', 'Tipo', 'Codice caso', 'N. accesso', 'Risposta', 'T', 'N', 'MRF', 'EMVI', 'Refertato da', 'File'];
 const csvCampo = (v) => /[;"\n\r]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
 async function aggiungiIndice(dirOp, riga){
   let testo = '';
   try { testo = await (await (await dirOp.getFileHandle(INDICE)).getFile()).text(); } catch (_) {}
-  if (!testo.trim()) testo = '﻿' + COLONNE.join(';') + '\r\n';
+  // un indice con le colonne di prima resta accanto, con un altro nome
+  if (testo.trim() && testo.replace(/^\ufeff/, '').split(/\r?\n/)[0] !== COLONNE.join(';')) {
+    const w0 = await (await dirOp.getFileHandle('indice-referti-precedente.csv', { create: true })).createWritable();
+    await w0.write(testo); await w0.close();
+    testo = '';
+  }
+  if (!testo.trim()) testo = '\ufeff' + COLONNE.join(';') + '\r\n';
   else if (!/\r?\n$/.test(testo)) testo += '\r\n';
   testo += riga.map(csvCampo).join(';') + '\r\n';
   const w = await (await dirOp.getFileHandle(INDICE, { create: true })).createWritable();
@@ -6107,6 +6152,171 @@ function disegnaArchivioRow(){
     : !radice ? 'La cartella comune non è ancora scelta: il referto si scarica' : 'Salva il referto nella tua cartella';
 }
 
+// ============================================================
+// CASI — stadiazione e ristadiazione dello stesso paziente vicine
+//
+// Al primo salvataggio il tool crea un codice univoco per il paziente
+// (RT26-7K4M: anno e quattro caratteri senza ambiguità) e una cartella
+// del caso, che porta data e codice. La ristadiazione si associa al
+// caso con «Ricerca precedente», che scorre tutta la cartella comune
+// (le cartelle di tutti i medici) cercando il codice, o un numero
+// d'accesso; poi si salva nella stessa cartella:
+//
+//   <comune>/Bianchi Giulia/2026/2026-03-10_RT26-7K4M/
+//       2026-03-10_1412_Stadiazione_A123456_cT3c_cN+_MRF-_EMVI+.txt
+//       2026-06-20_0930_Ristadiazione_A178902_near-cCR_ycT1-2_MRF-.txt
+//
+// Il caso resta nella cartella del medico che ha fatto la stadiazione;
+// chi salva la ristadiazione la ritrova nel proprio indice, con il
+// percorso dalla cartella comune.
+// ============================================================
+const ALFABETO_CASO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const RE_DIR_CASO = /^(\d{4}-\d{2}-\d{2})_(RT\d{2}-[A-Z2-9]{4})$/;
+let caso = null;   // { codice, dir, percorso, data, medico, associato, accesso }
+
+function nuovoCodice(){
+  const yy = String(new Date().getFullYear()).slice(2);
+  return 'RT' + yy + '-' + Array.from(crypto.getRandomValues(new Uint8Array(4)), (x) => ALFABETO_CASO[x % ALFABETO_CASO.length]).join('');
+}
+/* tutti i casi della cartella comune: medico / anno / data_codice */
+async function scansionaCasi(){
+  const out = [];
+  if (!radice) return out;
+  for await (const [nMed, hMed] of radice.entries()) {
+    if (hMed.kind !== 'directory') continue;
+    for await (const [nAnno, hAnno] of hMed.entries()) {
+      if (hAnno.kind !== 'directory' || !/^\d{4}$/.test(nAnno)) continue;
+      for await (const [nCaso, hCaso] of hAnno.entries()) {
+        const m = hCaso.kind === 'directory' && nCaso.match(RE_DIR_CASO);
+        if (!m) continue;
+        const referti = [];
+        for await (const [nf, hf] of hCaso.entries()) if (hf.kind === 'file' && /\.txt$/.test(nf)) referti.push(nf);
+        referti.sort();
+        out.push({ codice: m[2], data: m[1], medico: nMed, anno: nAnno, nome: nCaso, dir: hCaso, referti });
+      }
+    }
+  }
+  out.sort((x, y) => y.data.localeCompare(x.data) || x.codice.localeCompare(y.codice));
+  return out;
+}
+/* da «2026-03-10_1412_Stadiazione_A123456_cT3c_cN+.txt» a voce leggibile */
+function leggiNomeReferto(n){
+  const p = n.replace(/\.txt$/, '').split('_');
+  if (p.length > 4 && /^\d+$/.test(p[p.length - 1])) p.pop();      // «_2» di un secondo salvataggio
+  return { data: p[0] || '', tipo: p[2] || '', accesso: p[3] || '', sintesi: p.slice(4).join(' · ') };
+}
+const dataIt = (iso) => { const q = String(iso || '').split('-'); return q.length === 3 ? `${q[2]}/${q[1]}/${q[0]}` : ''; };
+
+function disegnaCaso(){
+  const chip = $id('casoChip');
+  if (!chip) return;
+  const ristad = typeof mode !== 'undefined' && mode === 'ristad';
+  if (caso) {
+    chip.className = 'caso-chip attivo';
+    chip.innerHTML = `<span class="caso-cod">${escH(caso.codice)}</span>`
+      + (caso.associato ? `<span>stadiazione del ${escH(dataIt(caso.data))} · ${escH(caso.medico)}</span>` : `<span>caso aperto il ${escH(dataIt(caso.data))}</span>`);
+  } else {
+    chip.className = 'caso-chip';
+    chip.innerHTML = ristad
+      ? '<span>Nessuna stadiazione associata: cercala con «Ricerca precedente»</span>'
+      : '<span>Nuovo paziente: il codice del caso si crea al salvataggio</span>';
+  }
+  $id('btnCerca').hidden = !ristad;
+  $id('btnNuovoCaso').hidden = !caso;
+}
+function nuovoPaziente(){
+  caso = null;
+  disegnaCaso();
+}
+$id('btnNuovoCaso').addEventListener('click', () => { nuovoPaziente(); statoArchivio('Il prossimo salvataggio apre un caso nuovo.', 'ok'); });
+// un altro numero d'accesso dopo un salvataggio è un altro paziente
+$id('arcAccesso').addEventListener('input', () => {
+  if (caso && !caso.associato && caso.accesso !== undefined && $id('arcAccesso').value.trim() !== caso.accesso) nuovoPaziente();
+});
+['btnModePrimaria', 'btnModeRistad'].forEach((id) => $id(id).addEventListener('click', () => setTimeout(disegnaCaso, 0)));
+
+/* ── Ricerca precedente ── */
+let casiTrovati = [], casiTutti = [];
+function pannelloCerca(){
+  let p = $id('cercaPannello');
+  if (p) return p;
+  p = document.createElement('div');
+  p.id = 'cercaPannello'; p.className = 'cerca-pannello'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', 'Ricerca precedente');
+  p.innerHTML = '<div class="cerca-testa"><span>Ricerca precedente</span><button type="button" class="cerca-x" aria-label="Chiudi">×</button></div>'
+    + '<input type="text" id="cercaQ" placeholder="Codice caso (RT26-…) o N. accesso" autocomplete="off" spellcheck="false">'
+    + '<div class="cerca-lista" id="cercaLista"></div>';
+  p.addEventListener('click', async (ev) => {
+    if (ev.target.closest('.cerca-x')) { chiudiCerca(); return; }
+    const a = ev.target.closest('[data-associa]');
+    if (a) { associa(casiTrovati[+a.dataset.associa]); return; }
+    const v = ev.target.closest('[data-vedi]');
+    if (v) await anteprima(+v.dataset.vedi, v);
+  });
+  p.addEventListener('input', (ev) => { if (ev.target.id === 'cercaQ') elencaCasi(ev.target.value); });
+  document.body.appendChild(p);
+  return p;
+}
+function chiudiCerca(){ const p = $id('cercaPannello'); if (p) p.classList.remove('aperto'); }
+function elencaCasi(q){
+  const lista = $id('cercaLista');
+  const t = String(q || '').trim().toUpperCase().replace(/\s+/g, '');
+  casiTrovati = (t ? casiTutti.filter((c) => c.codice.includes(t) || c.referti.some((r) => leggiNomeReferto(r).accesso.toUpperCase().includes(t)))
+    : casiTutti).slice(0, t ? 30 : 10);
+  if (!casiTutti.length) { lista.innerHTML = '<div class="cerca-vuota">Nella cartella comune non ci sono ancora casi.</div>'; return; }
+  if (!casiTrovati.length) { lista.innerHTML = '<div class="cerca-vuota">Nessun caso con questo codice o numero d\'accesso.</div>'; return; }
+  lista.innerHTML = (t ? '' : '<div class="cerca-nota">I casi più recenti; scrivi un codice o un numero d\'accesso per cercare.</div>')
+    + casiTrovati.map((c, i) => `<div class="cerca-caso">
+        <div class="cerca-riga"><span class="caso-cod">${escH(c.codice)}</span><span class="cerca-data">${escH(dataIt(c.data))}</span><span class="cerca-med">${escH(c.medico)}</span></div>
+        <ul>${c.referti.map((r) => { const x = leggiNomeReferto(r); return `<li><b>${escH(x.tipo)}</b> ${escH(dataIt(x.data))} · ${escH(x.accesso)}${x.sintesi ? ' · ' + escH(x.sintesi) : ''}</li>`; }).join('') || '<li>nessun referto</li>'}</ul>
+        <div class="cerca-azioni"><button type="button" class="btn-primary" data-associa="${i}">Associa</button>${c.referti.length ? `<button type="button" class="btn-ghost" data-vedi="${i}">Anteprima</button>` : ''}</div>
+        <pre class="cerca-anteprima" hidden></pre>
+      </div>`).join('');
+}
+async function anteprima(i, btn){
+  const c = casiTrovati[i]; const box = btn.closest('.cerca-caso').querySelector('.cerca-anteprima');
+  if (!box.hidden) { box.hidden = true; return; }
+  try {
+    const f = await (await c.dir.getFileHandle(c.referti[0])).getFile();
+    box.textContent = (await f.text()).split(/\r?\n/).slice(0, 24).join('\n');
+  } catch (e) { box.textContent = 'Anteprima non disponibile.'; }
+  box.hidden = false;
+}
+function associa(c){
+  if (!c) return;
+  caso = { codice: c.codice, dir: c.dir, percorso: [c.medico, c.anno, c.nome], data: c.data, medico: c.medico, associato: true };
+  // la RM basale di confronto è la stadiazione del caso
+  const rc = $id('r_confronto');
+  if (rc && !rc.getAttribute('data-iso')) {
+    EsgarUI.impostaData(rc, c.data);
+    rc.dispatchEvent(new Event('input', { bubbles: true }));
+    rc.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  chiudiCerca(); disegnaCaso();
+  statoArchivio(`Associata al caso <b>${escH(c.codice)}</b>: la ristadiazione si salverà nella sua cartella, accanto alla stadiazione.`, 'ok');
+}
+$id('btnCerca').addEventListener('click', async (ev) => {
+  ev.stopPropagation();
+  if (!sessioneValida()) { apriPannello(true); statoArchivio('Per cercare nell\'archivio <b>accedi con il telefono</b>.', 'ko'); return; }
+  if (!radice) { statoArchivio('La cartella comune di questo PC non è ancora scelta: non c\'è un archivio in cui cercare.', 'ko'); return; }
+  if (!(await chiediPermesso())) { statoArchivio('Il browser non ha dato il permesso di leggere la cartella: premi «Riattiva» nel pannello del profilo.', 'ko'); return; }
+  const p = pannelloCerca();
+  p.classList.add('aperto');
+  const r = $id('btnCerca').getBoundingClientRect();
+  const w = p.offsetWidth;
+  p.style.left = Math.max(12, Math.min(r.left, window.innerWidth - w - 12)) + 'px';
+  p.style.top = Math.max(12, Math.min(r.bottom + 8, window.innerHeight - 320)) + 'px';
+  $id('cercaLista').innerHTML = '<div class="cerca-vuota">Ricerca nella cartella comune…</div>';
+  $id('cercaQ').value = '';
+  $id('cercaQ').focus();
+  try { casiTutti = await scansionaCasi(); } catch (e) { casiTutti = []; }
+  elencaCasi($id('cercaQ').value);
+});
+document.addEventListener('mousedown', (ev) => {
+  const p = $id('cercaPannello');
+  if (p && p.classList.contains('aperto') && !p.contains(ev.target) && !ev.target.closest('#btnCerca')) chiudiCerca();
+});
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') chiudiCerca(); });
+
 $id('btnSalva').addEventListener('click', async () => {
   if (!sessioneValida()) {
     apriPannello(true);
@@ -6115,55 +6325,78 @@ $id('btnSalva').addEventListener('click', async () => {
   }
   const testo = $id('output').value.trim();
   if (!testo) { statoArchivio('Il referto è vuoto.', 'ko'); return; }
+  const s = sintesiReferto();
+  // una ristadiazione senza stadiazione associata apre un caso nuovo solo se lo si vuole
+  if (s.tipo === 'Ristadiazione' && !caso && !confirm('Questa ristadiazione non è associata a una stadiazione.\n\nOK: salvala in un caso nuovo.\nAnnulla: cerca prima la stadiazione con «Ricerca precedente».')) {
+    statoArchivio('Usa <b>Ricerca precedente</b> per associare la ristadiazione alla sua stadiazione.', 'ko');
+    return;
+  }
   // il numero d'accesso resta com'è scritto nel referto e nell'indice; nel nome del file solo caratteri ammessi
   const accessoTesto = $id('arcAccesso').value.trim().slice(0, 40);
   const accessoN = pulisci(accessoTesto).replace(/ /g, '');
   const dataVal = $id('arcData').getAttribute('data-iso');
   const data = dataVal ? new Date(dataVal + 'T12:00:00') : new Date();
   const adesso = new Date();
-  const s = sintesiReferto();
   const p = sessione.profilo;
+  const base = nomeFile(data, adesso, accessoN, s);
+
+  // l'amministratore che salva su un PC senza cartella comune la sceglie adesso
+  if (!radice && supportaCartelle && (eAdmin() || puoConfigurare())) await scegliRadice();
+  const archivio = !!(supportaCartelle && radice && await chiediPermesso());
+
+  // codice del caso: quello in corso, o uno nuovo che nell'archivio non c'è
+  let codice = caso ? caso.codice : '';
+  if (!codice) {
+    let gia = [];
+    if (archivio) try { gia = (await scansionaCasi()).map((c) => c.codice); } catch (_) {}
+    do { codice = nuovoCodice(); } while (gia.includes(codice));
+  }
   const intest = [
     `StructuRad × ESGAR — RM Retto · ${s.tipo}`,
+    `Codice caso: ${codice}`,
     `Data esame: ${data.toLocaleDateString('it-IT')}` + (accessoTesto ? `    N. accesso: ${accessoTesto}` : ''),
     `Refertato da: ${Canale.nomeCortese(p)} (${p.nome} ${p.cognome})`,
     `Salvato: ${adesso.toLocaleDateString('it-IT')} ${ora(adesso)}`,
     '─'.repeat(48), ''
   ].join('\r\n');
   const contenuto = intest + '\r\n' + testo.replace(/\r?\n/g, '\r\n') + '\r\n';
-  const base = nomeFile(data, adesso, accessoN, s);
 
-  // l'amministratore che salva su un PC senza cartella comune la sceglie adesso
-  if (!radice && supportaCartelle && (eAdmin() || puoConfigurare())) await scegliRadice();
   // senza cartella comune, o senza accesso alle cartelle (Firefox, Safari), il referto si scarica
-  if (!supportaCartelle || !radice) {
+  if (!archivio) {
+    if (supportaCartelle && radice) {
+      apriPannello(true);
+      statoArchivio('Il browser non ha dato il permesso di scrivere nella cartella: premi «Riattiva».', 'ko');
+      return;
+    }
+    const nomeDl = `${codice}_${base}.txt`;
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([contenuto], { type: 'text/plain;charset=utf-8' }));
-    a.download = base + '.txt'; a.click();
-    statoArchivio(`Scaricato <code>${escH(base)}.txt</code>. ` + (supportaCartelle
+    a.download = nomeDl; a.click();
+    if (!caso) caso = { codice, data: dataIso(data), medico: cartellaMedico(p), accesso: accessoTesto };
+    disegnaCaso();
+    statoArchivio(`Scaricato <code>${escH(nomeDl)}</code>. ` + (supportaCartelle
       ? 'La cartella comune di questo PC non è ancora scelta: la sceglie l\'amministratore.'
       : 'Con Chrome o Edge si salva direttamente nell\'archivio ordinato.'), 'ok');
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
     return;
   }
-  if (!(await chiediPermesso())) {
-    apriPannello(true);
-    statoArchivio('Il browser non ha dato il permesso di scrivere nella cartella: premi «Riattiva».', 'ko');
-    return;
-  }
   try {
-    const anno = String(data.getFullYear()), mese = `${anno}-${due(data.getMonth() + 1)}`;
     const dirMed = await dirMedico(true);
-    let dir = dirMed;
-    for (const parte of [s.tipo, anno, mese]) dir = await dir.getDirectoryHandle(parte, { create: true });
+    if (!caso || !caso.dir) {
+      const anno = String(data.getFullYear());
+      const nomeCaso = `${dataIso(data)}_${codice}`;
+      const dirCaso = await (await dirMed.getDirectoryHandle(anno, { create: true })).getDirectoryHandle(nomeCaso, { create: true });
+      caso = { codice, dir: dirCaso, percorso: [cartellaMedico(p), anno, nomeCaso], data: dataIso(data), medico: cartellaMedico(p), associato: false, accesso: accessoTesto };
+    }
     let nome = base + '.txt', k = 2;
-    while (await esiste(dir, nome)) nome = `${base}_${k++}.txt`;
-    const w = await (await dir.getFileHandle(nome, { create: true })).createWritable();
+    while (await esiste(caso.dir, nome)) nome = `${base}_${k++}.txt`;
+    const w = await (await caso.dir.getFileHandle(nome, { create: true })).createWritable();
     await w.write(contenuto); await w.close();
-    const percorso = [cartellaMedico(p), s.tipo, anno, mese, nome].join('/');
-    await aggiungiIndice(dirMed, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
-      Canale.nomeCortese(p), [s.tipo, anno, mese, nome].join('/')]);
-    statoArchivio(`Salvato in <code>${escH(radice.name)}/${escH(percorso)}</code>`, 'ok');
+    const percorso = caso.percorso.concat(nome).join('/');
+    await aggiungiIndice(dirMed, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, codice, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
+      Canale.nomeCortese(p), percorso]);
+    disegnaCaso();
+    statoArchivio(`Salvato nel caso <b>${escH(codice)}</b>: <code>${escH(radice.name)}/${escH(percorso)}</code>`, 'ok');
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
   } catch (e) {
     statoArchivio('Salvataggio non riuscito: ' + escH(e && e.message || e), 'ko');
@@ -6175,6 +6408,7 @@ $id('btnSalva').addEventListener('click', async () => {
   try { radice = await idbLeggi(K_RADICE); adminPc = (await idbLeggi(K_ADMIN)) || ''; } catch (_) { radice = null; }
   await aggiornaPermesso();
   disegnaProfilo();
+  disegnaCaso();
 })();
 
 /* solo per i test: relay finto e cartella finta */
@@ -6182,6 +6416,8 @@ window.EsgarTest = {
   // sceglie la cartella comune come farebbe l'amministratore dalla finestra del browser
   usaRadice: async (h) => { if (!(eAdmin() || puoConfigurare())) return false; await impostaRadice(h); return true; },
   eAdmin: () => eAdmin(),
+  caso: () => caso && { codice: caso.codice, percorso: caso.percorso, data: caso.data, associato: caso.associato },
+  scansiona: async () => (await scansionaCasi()).map((c) => ({ codice: c.codice, data: c.data, medico: c.medico, referti: c.referti })),
   amministratori: ADMIN_DISPOSITIVI,
   sessione: () => sessione
 };

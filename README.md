@@ -70,37 +70,49 @@ OneDrive per desktop. La sceglie l'amministratore dal pannello del profilo,
 «Amministrazione di questo PC».
 
 A ogni accesso il tool crea, se manca, la **cartella del medico** («Cognome
-Nome») dentro la cartella comune: è la sua directory. «Salva nell'archivio»,
-nella scheda del referto, ci scrive il referto con numero d'accesso e data
-d'esame:
+Nome») dentro la cartella comune: è la sua directory.
+
+### Casi: stadiazione e ristadiazione vicine
+
+Al primo salvataggio di un paziente il tool crea un **codice del caso** univoco,
+per esempio `RT26-7K4M` (anno e quattro caratteri senza ambiguità). Il codice
+va nel referto, nel nome della cartella del caso e nell'indice. Stadiazione e
+ristadiazione dello stesso paziente stanno nella **stessa cartella**, una
+accanto all'altra in ordine di data:
 
 ```
 <cartella comune>/
 ├── Bianchi Giulia/
 │   ├── indice-referti.csv
-│   ├── Stadiazione primaria/
-│   │   └── 2026/
-│   │       └── 2026-09/
-│   │           └── 2026-09-28_1412_A123456_cT3c_cN+_MRF-_EMVI+.txt
-│   └── Ristadiazione/
-│       └── 2026/
-│           └── 2026-10/
-│               └── 2026-10-30_0930_A123456_near-cCR_ycT1-2_MRF-.txt
+│   └── 2026/
+│       └── 2026-03-10_RT26-7K4M/
+│           ├── 2026-03-10_1412_Stadiazione_A123456_cT3c_cN+_MRF-_EMVI+.txt
+│           └── 2026-06-20_0930_Ristadiazione_A178902_near-cCR_ycT1-2_MRF-.txt
 └── Neri Marco/
     └── …
 ```
 
-- **Medico**, poi **tipo di esame**, poi **anno** e **mese** della data
-  d'esame.
-- Nel nome del file ci sono data d'esame, ora di salvataggio, numero d'accesso
-  e la sintesi della stadiazione: cT, cN, MRF ed EMVI per la primaria; risposta,
-  ycT, ycN, MRF ed EMVI per la ristadiazione.
-- `indice-referti.csv` elenca tutti i referti del medico, con le stesse
-  informazioni in colonne. Si apre in Excel (separatore `;`) per cercare un
-  numero d'accesso o ordinare per data o stadio.
-- Ogni file ha in testa tipo di esame, data, numero d'accesso, chi l'ha
-  refertato e quando è stato salvato. Un salvataggio nello stesso minuto non
-  sovrascrive: aggiunge `_2`, `_3`…
+- **Ricerca precedente** (in ristadiazione) scorre tutta la cartella comune, le
+  cartelle di tutti i medici, e trova il caso dal codice o dal numero d'accesso
+  della stadiazione, con anteprima del referto. «Associa» collega la
+  ristadiazione al caso e compila la data della RM basale di confronto.
+- La ristadiazione si salva nella cartella del caso, anche se la stadiazione
+  l'ha fatta un altro medico; chi la salva la ritrova nel proprio indice, con il
+  percorso dalla cartella comune.
+- Una ristadiazione senza stadiazione associata chiede conferma prima di aprire
+  un caso nuovo.
+- Il caso resta aperto per i salvataggi successivi dello stesso paziente. Si
+  chiude con «Nuovo paziente», cambiando il numero d'accesso dopo un salvataggio,
+  o quando il medico esce.
+- Nel nome del file ci sono data d'esame, ora di salvataggio, tipo, numero
+  d'accesso e sintesi della stadiazione: cT, cN, MRF ed EMVI per la primaria;
+  risposta, ycT, ycN, MRF ed EMVI per la ristadiazione. Ogni file ha in testa
+  tipo di esame, codice del caso, data, numero d'accesso, chi l'ha refertato e
+  quando è stato salvato. Un salvataggio nello stesso minuto non sovrascrive:
+  aggiunge `_2`, `_3`…
+- `indice-referti.csv` elenca i referti salvati dal medico, con codice del caso
+  e percorso; si apre in Excel (separatore `;`). Un indice con le colonne di una
+  versione precedente viene conservato come `indice-referti-precedente.csv`.
 
 Chrome può chiedere di nuovo il permesso di scrivere nella cartella comune: lo
 chiede da solo al primo salvataggio, o lo si concede con «Riattiva». Finché
