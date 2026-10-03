@@ -5624,7 +5624,9 @@ function disegnaQR(canvas, testo){
 // un PC senza cartella comune il primo che la sceglie ne diventa
 // l'amministratore, e lo resta per quel PC.
 // ============================================================
-const ADMIN_DISPOSITIVI = [];
+const ADMIN_DISPOSITIVI = [
+  '9407-BEE0-7B5F-AED2'    // amministratore StructuRad
+];
 const ARCH_DB = 'structurad-esgar', ARCH_STORE = 'cartella';
 const K_RADICE = 'radice', K_ADMIN = 'admin-pc';
 const INDICE = 'indice-referti.csv';
@@ -5887,6 +5889,7 @@ window.EsgarTest = {
   // sceglie la cartella comune come farebbe l'amministratore dalla finestra del browser
   usaRadice: async (h) => { if (!(eAdmin() || puoConfigurare())) return false; await impostaRadice(h); return true; },
   eAdmin: () => eAdmin(),
+  amministratori: ADMIN_DISPOSITIVI,
   sessione: () => sessione
 };
 </script>

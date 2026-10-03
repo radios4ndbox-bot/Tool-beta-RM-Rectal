@@ -86,7 +86,17 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   check(/^[0-9A-F]{4}(-[0-9A-F]{4}){3}$/.test(codiceTel) && ses.codice === codiceTel, 'il PC riconosce il codice dispositivo firmato: ' + codiceTel);
   check(await pc.textContent('#profiloNome') === 'Dr.ssa Bianchi', 'il PC saluta Dr.ssa Bianchi');
   check(!(await pc.evaluate(() => JSON.stringify(localStorage))).match(/esgar-[a-z0-9]{22}/), 'il PC non conserva la chiave di abbinamento');
-  check(await pc.isVisible('#ppAdmin.da-fare') && /non ha ancora un amministratore/.test(await pc.textContent('#ppAdminTesto')), 'PC nuovo: propone di configurarlo, con il codice del telefono');
+  check(await pc.isHidden('#ppAdmin') && !(await pc.evaluate(() => EsgarTest.eAdmin())), 'un telefono fuori dalla lista non è amministratore, nemmeno su un PC nuovo');
+  check(!(await pc.evaluate(async () => EsgarTest.usaRadice(await navigator.storage.getDirectory()))), 'e non può scegliere la cartella comune');
+  // regola provvisoria, a lista vuota: il primo che configura il PC ne diventa amministratore
+  const lista = await pc.evaluate(() => EsgarTest.amministratori.splice(0));
+  await pc.click('#ppEsci'); await accedi(tel);
+  check(await pc.isVisible('#ppAdmin.da-fare') && /non ha ancora un amministratore/.test(await pc.textContent('#ppAdminTesto')), 'lista vuota, PC nuovo: propone di configurarlo, con il codice del telefono');
+  await pc.evaluate((l) => EsgarTest.amministratori.push(...l), lista);
+  // il telefono di Bianchi entra nella lista: è amministratore su ogni PC
+  await pc.evaluate((c) => EsgarTest.amministratori.push(c), codiceTel);
+  await pc.click('#ppEsci'); await accedi(tel);
+  check(await pc.isVisible('#ppAdmin.da-fare') && /Sei l'amministratore/.test(await pc.textContent('#ppAdminTesto')), 'codice nella lista: amministratore, e il PC chiede la cartella comune');
   await pc.screenshot({ path: SHOTS + '/acc_pc_configura.png' });
   check(await pc.evaluate(async () => EsgarTest.usaRadice(await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto', { create: true }))), 'sceglie la cartella comune');
   check(await pc.evaluate(() => EsgarTest.eAdmin()) && /Sei l'amministratore/.test(await pc.textContent('#ppAdminTesto')), 'ed è l\'amministratore di questo PC');
@@ -113,6 +123,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
 
   // la sessione resta alla ricarica; uscita e nuovo accesso: di nuovo amministratore
   await pc.reload(); await pc.waitForTimeout(500); await preparaPc();
+  await pc.evaluate((c) => EsgarTest.amministratori.push(c), codiceTel);   // la lista del test vive in memoria
   check(await pc.textContent('#profiloNome') === 'Dr.ssa Bianchi' && await pc.evaluate(() => EsgarTest.eAdmin()), 'dopo la ricarica: stessa sessione, ancora amministratore');
   await pc.click('#profiloBtn'); await pc.click('#ppEsci');
   check(await pc.textContent('#profiloNome') === 'Accedi' && await pc.isHidden('#ppAdmin'), 'Esci chiude la sessione e l\'amministrazione');
