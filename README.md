@@ -148,6 +148,26 @@ infiltrati, EMVI, campo magnetico…). Il punteggio somma:
 La memoria resta nel browser di questo PC (localStorage): solo le frasi dei
 campi liberi e le scelte del form, nessun dato del paziente.
 
+### Memoria del tool
+
+Come la «Personalizzazione del reparto» di ER Oncology Archivist, la pagina
+**Memoria** (icona nella colonna delle impostazioni, o «Gestisci la memoria» nel
+pannello Archivio) mostra cosa ha imparato il tool e permette di gestirlo.
+
+- **Panoramica**: quante frasi, campi, referti letti e preferite; come il tool
+  ordina le proposte; i campi con più frasi.
+- **Campo per campo**, divisi fra stadiazione primaria e ristadiazione:
+  - **Prova**: si scrive come nel campo e si vede cosa proporrebbe il tool, con
+    o senza le scelte del form attuale, con il punteggio;
+  - **Insegna**: si aggiunge a mano una frase, che entra già come preferita;
+  - per ogni frase: usi, ultima data, quante volte è stata scelta o scavalcata,
+    varianti e scelte del form con cui è tipica; ★ la fissa in cima alle proposte
+    e la protegge dallo sfoltimento; la matita la corregge (se diventa uguale a
+    un'altra frase, le due si uniscono sommando gli usi); il cestino la dimentica;
+  - ordinamento per punteggio, uso, recenza o alfabetico.
+- **Esporta / Importa**: la memoria va in un file JSON e si importa su un altro
+  PC; le frasi uguali si uniscono. **Azzera tutto** la cancella.
+
 ## Menu e date
 
 I menu a tendina hanno lo stile del tool, come in Archivist; il menu nativo
