@@ -369,7 +369,7 @@ nav.intro-in-corso .nav-right,
    Atto III — il fondo si spegne, ESGAR diventa piccolo e si accende
               del gradiente
    Atto IV  — a sinistra si disegna il logo StructuRad, si compone
-              "StructuRad ×", entra il sottotitolo
+              sotto ESGAR la firma "A StructuRad product", poi il sottotitolo
    Uscita   — il logo vola sulla barra e si porta su la pagina
    ══════════════════════════════════════════════════════════════════ */
 #splashScreen{
@@ -429,10 +429,17 @@ nav.intro-in-corso .nav-right,
 .splash-logo.flying .splash-logo-wrap{filter:none;}
 .splash-logo.atterrato{visibility:hidden;}
 
-.splash-title{position:absolute; left:0; top:0; overflow:visible;}
-.splash-glyph{fill:url(#splashGradText); opacity:0;}
-.splash-stage.title-on .splash-glyph{animation:splashGlifo 340ms ease-out var(--d, 0ms) forwards;}
-@keyframes splashGlifo{to{opacity:1;}}
+.splash-tag{
+  position:absolute; left:0; top:0; white-space:nowrap;
+  font-family:var(--sans); font-weight:300; letter-spacing:.06em; line-height:1.2;
+  color:#B38C96; opacity:0;
+}
+.splash-tag b{font-weight:500; color:var(--champagne);}
+.splash-stage.tag-on .splash-tag{animation:splashFirma 650ms cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes splashFirma{
+  from{opacity:0; clip-path:inset(0 100% 0 0);}
+  to{opacity:1; clip-path:inset(0 0 0 0);}
+}
 
 .splash-sub{
   position:absolute; left:0; right:0; text-align:center;
@@ -449,7 +456,7 @@ nav.intro-in-corso .nav-right,
 .splash-stage.playing .splash-skip{opacity:1;}
 
 #splashScreen.exiting .esgar-svg,
-#splashScreen.exiting .splash-title,
+#splashScreen.exiting .splash-tag,
 #splashScreen.exiting .splash-blob-bg,
 #splashScreen.exiting .splash-skip{opacity:0 !important; transition:opacity .35s ease;}
 #splashScreen.exiting .splash-sub{animation:splashSottoVia .35s ease forwards;}
@@ -524,9 +531,6 @@ nav.intro-in-corso .nav-right,
           <stop offset="0" stop-color="#9E2B45"/>
           <stop offset=".55" stop-color="#D0627A"/>
           <stop offset="1" stop-color="#F3CDBB"/>
-        </linearGradient>
-        <linearGradient id="splashGradText" x1="0" y1="1" x2="1" y2="0">
-          <stop stop-color="#C9566E"/><stop offset="1" stop-color="#F1C9B7"/>
         </linearGradient>
       </defs>
       <rect id="esgFondo" fill="url(#esgFondoGrad)" opacity="0"/>
@@ -656,24 +660,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
 </svg>
       </div>
     </div>
-    <svg class="splash-title" id="splashTitle" viewBox="4.78 100.5 75.4 11" preserveAspectRatio="xMinYMid meet">
-<path class="splash-glyph" d="m 14.634678,376.71678 q -3.88267,0 -6.6133387,-1.28 -2.7306687,-1.28 -4.1813364,-3.54133 -1.4506678,-2.26134 -1.4506678,-5.12001 h 4.1813365 q 0,1.408 0.7253338,2.816 0.7680006,1.40801 2.5173352,2.34667 1.7920014,0.93867 4.8213374,0.93867 2.816002,0 4.608003,-0.81067 1.792001,-0.85333 2.645335,-2.176 0.853334,-1.36533 0.853334,-2.944 0,-1.92 -1.664001,-3.15734 -1.664001,-1.28 -4.864004,-1.57866 l -3.456002,-0.29867 q -4.1386699,-0.34133 -6.6133384,-2.56 -2.4746685,-2.21867 -2.4746685,-5.84534 0,-2.85867 1.3653343,-4.992 1.4080011,-2.13334 3.8826696,-3.32801 2.474668,-1.23733 5.760004,-1.23733 3.242669,0 5.717338,1.19467 2.474668,1.19466 3.840003,3.37067 1.408001,2.13333 1.408001,5.12 h -4.181337 q 0,-1.49333 -0.725334,-2.816 -0.682667,-1.32267 -2.176001,-2.176 -1.493335,-0.85334 -3.88267,-0.85334 -2.304001,0 -3.840003,0.81067 -1.493334,0.81067 -2.2613346,2.13333 -0.7253339,1.28001 -0.7253339,2.77334 0,1.70667 1.3226677,3.02934 1.3226678,1.32266 3.9253358,1.536 l 3.456003,0.29866 q 3.200002,0.256 5.504004,1.36534 2.346669,1.06667 3.584003,2.90133 1.280001,1.792 1.280001,4.30934 0,2.85867 -1.536001,5.07734 -1.536002,2.21867 -4.309337,3.456 -2.773335,1.23733 -6.442671,1.23733 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 42.197329,376.20478 q -2.560002,0 -4.437336,-0.72533 -1.834668,-0.72533 -2.858669,-2.47467 -0.981334,-1.792 -0.981334,-4.82134 v -21.93068 h 3.925336 v 22.44268 q 0,1.83467 0.981334,2.85867 1.024001,0.98134 2.858669,0.98134 h 4.01067 v 3.66933 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 29.994654,356.23677 v -3.072 h 15.701345 v 3.072 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 51.498693,375.94878 v -22.78401 h 3.242669 v 9.38667 h -0.170667 q 0,-4.992 2.176002,-7.29601 2.218668,-2.34666 6.613338,-2.34666 h 0.768001 v 3.66933 h -1.450668 q -3.413336,0 -5.248004,1.83467 -1.834668,1.792 -1.834668,5.20534 v 12.33067 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 76.885372,376.63145 q -4.053337,0 -6.229338,-2.64534 -2.176002,-2.64533 -2.176002,-7.63733 V 353.1221 h 4.096003 v 14.03734 q 0,2.68801 1.450668,4.22401 1.450668,1.49333 3.925336,1.49333 2.560002,0 4.181337,-1.62133 1.621334,-1.66401 1.621334,-4.52267 V 353.1221 h 4.096003 v 22.82668 h -3.242669 v -9.77067 h 0.512 q 0,3.37067 -0.896,5.71734 -0.896001,2.304 -2.688002,3.54133 -1.749335,1.19467 -4.480004,1.19467 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 105.55741,376.71675 q -2.94401,0 -5.12001,-1.024 -2.133332,-1.024 -3.541333,-2.73067 -1.408001,-1.74933 -2.133335,-3.84 -0.682667,-2.09067 -0.682667,-4.18134 v -0.768 q 0,-2.176 0.682667,-4.26667 0.725334,-2.09066 2.133335,-3.75467 1.450668,-1.70666 3.584003,-2.73066 2.13333,-1.024 4.992,-1.024 2.85867,0 5.12001,1.06666 2.304,1.06667 3.66933,3.02934 1.408,1.92 1.57867,4.56534 h -3.92533 q -0.29867,-2.13334 -1.96267,-3.54134 -1.664,-1.45067 -4.48001,-1.45067 -2.432,0 -4.05333,1.10934 -1.621337,1.10933 -2.432005,3.02933 -0.810667,1.92 -0.810667,4.352 0,2.34667 0.810667,4.30934 0.810668,1.92 2.432005,3.072 1.664,1.10934 4.13867,1.10934 1.92,0 3.328,-0.68267 1.408,-0.68267 2.26133,-1.83467 0.85334,-1.152 1.02401,-2.60267 h 3.92533 q -0.128,2.68801 -1.57867,4.65067 -1.408,1.96267 -3.75467,3.07201 -2.304,1.06666 -5.20533,1.06666 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 130.51746,376.20475 q -2.56,0 -4.43733,-0.72533 -1.83467,-0.72533 -2.85867,-2.47467 -0.98134,-1.792 -0.98134,-4.82134 v -21.93068 h 3.92534 v 22.44268 q 0,1.83467 0.98133,2.85867 1.024,0.98134 2.85867,0.98134 h 4.01067 v 3.66933 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 118.31479,356.23674 v -3.072 h 15.70134 v 3.072 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 147.71217,376.63142 q -4.05334,0 -6.22934,-2.64534 -2.176,-2.64533 -2.176,-7.63733 V 353.1221 h 4.096 v 14.03734 q 0,2.68801 1.45067,4.22401 1.45067,1.49333 3.92534,1.49333 2.56,0 4.18133,-1.62133 1.62134,-1.66401 1.62134,-4.52267 V 353.1221 h 4.096 v 22.82668 h -3.24267 v -9.77067 h 0.512 q 0,3.37067 -0.896,5.71734 -0.896,2.304 -2.688,3.54133 -1.74934,1.19467 -4.48,1.19467 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="M 167.21086,375.94875 V 344.6314 h 4.18133 v 31.31735 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="M 186.45354,375.94875 176.1282,362.08208 h 4.90667 l 10.496,13.86667 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 169.81353,364.68474 v -3.712 h 8.36267 q 1.96267,0 3.37067,-0.81067 1.408,-0.81066 2.176,-2.21866 0.768,-1.45067 0.768,-3.28534 0,-1.83467 -0.768,-3.24267 -0.768,-1.45067 -2.176,-2.26133 -1.408,-0.85334 -3.37067,-0.85334 h -8.36267 v -3.66933 h 7.59467 q 3.41333,0 5.97334,1.024 2.56,1.024 3.968,3.15733 1.408,2.13334 1.408,5.50401 v 0.68266 q 0,3.37067 -1.45067,5.50401 -1.408,2.13333 -3.968,3.15733 -2.51734,1.024 -5.93067,1.024 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 210.2616,375.94875 v -6.82667 h -0.68267 v -7.89334 q 0,-2.34667 -1.23734,-3.54133 -1.19466,-1.19467 -3.54133,-1.19467 -1.32267,0 -2.73067,0.0427 -1.408,0.0427 -2.688,0.0853 -1.28,0.0427 -2.21867,0.128 v -3.584 q 0.93867,-0.0853 1.96267,-0.128 1.06667,-0.0853 2.176,-0.0853 1.10933,-0.0427 2.13333,-0.0427 3.49867,0 5.71734,0.85333 2.21867,0.81067 3.28534,2.688 1.06667,1.87734 1.06667,5.07734 v 14.42134 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="m 202.79492,376.54609 q -2.56,0 -4.43733,-0.85334 -1.83467,-0.896 -2.85867,-2.56 -0.98134,-1.664 -0.98134,-4.01067 0,-2.432 1.06667,-4.05334 1.10934,-1.62133 3.2,-2.432 2.09067,-0.85333 5.03467,-0.85333 h 6.18668 v 3.072 h -6.35734 q -2.47467,0 -3.79734,1.19467 -1.32267,1.19467 -1.32267,3.072 0,1.87734 1.32267,3.02934 1.32267,1.152 3.79734,1.152 1.45067,0 2.77333,-0.512 1.32267,-0.55467 2.17601,-1.792 0.896,-1.28001 0.98133,-3.49867 l 1.10933,1.62133 q -0.21333,2.432 -1.19466,4.096 -0.93867,1.62134 -2.64534,2.47467 -1.664,0.85334 -4.05334,0.85334 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-<path class="splash-glyph" d="M 238.46416 344.80136 L 238.46416 356.59823 C 237.58034 355.20417 236.47088 354.17386 235.13603 353.50644 C 233.71381 352.76688 232.13482 352.39706 230.3997 352.39706 C 228.74992 352.39706 227.24355 352.70879 225.87822 353.33456 C 224.54133 353.9319 223.37377 354.77125 222.37822 355.85214 C 221.41111 356.93303 220.6589 358.18577 220.11845 359.608 C 219.57801 361.03022 219.30791 362.55112 219.30791 364.17245 L 219.30791 364.94003 C 219.30791 366.58981 219.57801 368.12718 220.11845 369.54941 C 220.68735 370.97163 221.4686 372.22242 222.46416 373.30331 C 223.48816 374.3842 224.68281 375.22356 226.04814 375.82089 C 227.41348 376.41822 228.90728 376.71738 230.52861 376.71738 C 232.20683 376.71738 233.7713 376.36208 235.22197 375.65097 C 236.70108 374.91141 237.92478 373.74386 238.89189 372.15097 C 239.04478 371.89466 239.18611 371.62676 239.31767 371.34628 L 239.31767 375.94784 L 242.55986 375.94784 L 242.55986 344.80136 L 238.46416 344.80136 z M 231.04033 355.98105 C 232.40566 355.98105 233.65646 356.2802 234.79424 356.87753 C 235.96046 357.44642 236.88501 358.28382 237.56767 359.39316 C 238.27879 360.47405 238.63408 361.79746 238.63408 363.36191 L 238.63408 365.3248 C 238.63408 366.91768 238.29331 368.31177 237.61064 369.50644 C 236.92797 370.67266 236.01795 371.56816 234.88017 372.19394 C 233.74239 372.81972 232.47708 373.13339 231.0833 373.13339 C 229.60419 373.13339 228.28077 372.79067 227.11455 372.108 C 225.94833 371.39689 225.03831 370.40167 224.38408 369.12167 C 223.72986 367.81323 223.40361 366.29233 223.40361 364.55722 C 223.40361 362.82211 223.71533 361.31379 224.34111 360.03378 C 224.99533 358.75378 225.89278 357.75856 227.03056 357.04745 C 228.19678 356.33634 229.53277 355.98105 231.04033 355.98105 z " transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)" fill-rule="evenodd"/>
-<path class="splash-glyph" d="m 257.40832,375.94875 8.14934,-11.98934 -0.128,0.85333 -7.63734,-11.648 h 4.52267 l 5.50401,8.576 h 0.59733 l 5.20534,-8.576 h 4.224 l -7.21067,11.34934 0.128,-0.768 8.53334,12.20267 h -4.52267 l -6.40001,-9.25867 h -0.59733 l -6.14401,9.25867 z" transform="matrix(0.26458333,0,0,0.26458333,4.7843866,9.5687732)"/>
-    </svg>
+    <div class="splash-tag" id="splashTag">A <b>StructuRad</b> product</div>
     <div class="splash-sub" id="splashSub">RM Retto &middot; Stadiazione &amp; Ristadiazione</div>
     <div class="splash-skip">clic o invio per saltare</div>
   </div>
@@ -2065,7 +2052,7 @@ liveUpdate();
 // La parola ESGAR vive in un SVG a tutto schermo: la "camera"
 // (centro cx, cy e zoom z) si muove fotogramma per fotogramma
 // riscrivendo il viewBox, così le lettere restano nitide a
-// qualunque scala. Logo, titolo e sottotitolo sono animati in CSS,
+// qualunque scala. Logo, firma e sottotitolo sono animati in CSS,
 // accesi da classi sulla scena al momento giusto.
 // Tutti i tempi stanno in INTRO: unica fonte.
 // ============================================================
@@ -2080,8 +2067,7 @@ const INTRO = {
   logo: 3000,         // il logo si disegna a sinistra
   scivola: 3050,      // ESGAR scivola a destra per fare posto
   scivolaA: 3750,
-  titolo: 3250,       // "StructuRad ×" si compone
-  glifoPasso: 22,
+  firma: 3550,        // sotto ESGAR: "A StructuRad product"
   sotto: 3950,        // sottotitolo
   attesa: 5300,       // quando parte l'uscita
   volo: 800,
@@ -2117,26 +2103,28 @@ function misuraIntro(){
   const lettere = { x0: sx, x1: ex, w: ex - sx, y0: -asc, y1: desc, h: asc + desc,
                     cx: (sx + ex) / 2, cy: (desc - asc) / 2 };
 
-  // riga finale, in pixel di schermo
+  // riga finale, in pixel di schermo: logo a sinistra, a destra ESGAR
+  // con sotto "A StructuRad product", allineati a sinistra
   const f = Math.min(1, W / 820);
   const logoW = 118 * f, logoH = logoW * 192 / 340;
-  const titH = 26 * f, titW = titH * TITOLO_VB.w / TITOLO_VB.h;
-  const esgH = 34 * f, zFin = esgH / lettere.h, esgW = lettere.w * zFin;
-  const g1 = 8 * f, g2 = 9 * f;
-  const riga = logoW + g1 + titW + g2 + esgW;
+  const esgH = 40 * f, zFin = esgH / lettere.h, esgW = lettere.w * zFin;
+  const tag = document.getElementById('splashTag');
+  tag.style.fontSize = (13 * f) + 'px';
+  const tagW = tag.offsetWidth, tagH = tag.offsetHeight;
+  const g1 = 14 * f, g2 = 7 * f;
+  const blocco = esgH + g2 + tagH;
+  const riga = logoW + g1 + Math.max(esgW, tagW);
   const x0 = (W - riga) / 2, yc = H / 2 - 18 * f;
-  // le maiuscole del titolo stanno ~1.2 unita' sopra il centro del suo riquadro
-  const capOffset = 1.2 * titH / TITOLO_VB.h;
+  const testoX = x0 + logoW + g1;
   return {
     W, H, lettere, f,
     logo: { x: x0, y: yc - logoH / 2, w: logoW, h: logoH },
-    titolo: { x: x0 + logoW + g1, y: yc - titH / 2, w: titW, h: titH },
-    esgCentroX: x0 + logoW + g1 + titW + g2 + esgW / 2,
-    esgCentroY: yc - capOffset,
+    tag: { x: testoX, y: yc - blocco / 2 + esgH + g2 },
+    esgCentroX: testoX + esgW / 2,
+    esgCentroY: yc - blocco / 2 + esgH / 2,
     zFin, sub: yc + logoH / 2 + 34 * f
   };
 }
-const TITOLO_VB = { x: 4.78, y: 100.5, w: 75.4, h: 11 };
 
 /** La camera nel tempo: [cx, cy, z] in unita' del testo. */
 function camera(t, g){
@@ -2196,22 +2184,9 @@ function posizionaRiga(){
   logo.style.width = g.logo.w + 'px';
   logo.style.transform = 'translate(' + g.logo.x + 'px,' + g.logo.y + 'px)';
   logo.dataset.x = g.logo.x; logo.dataset.y = g.logo.y;
-  const tit = document.getElementById('splashTitle');
-  tit.style.width = g.titolo.w + 'px'; tit.style.height = g.titolo.h + 'px';
-  tit.style.transform = 'translate(' + g.titolo.x + 'px,' + g.titolo.y + 'px)';
+  const tag = document.getElementById('splashTag');
+  tag.style.transform = 'translate(' + g.tag.x + 'px,' + g.tag.y + 'px)';
   document.getElementById('splashSub').style.top = g.sub + 'px';
-}
-
-function preparaGlifi(){
-  const glifi = Array.prototype.slice.call(document.querySelectorAll('.splash-glyph'));
-  const voci = glifi.map((gl, i) => { let x = i; try { x = gl.getBBox().x; } catch (_) {} return { gl, x, i }; });
-  voci.sort((a, b) => (a.x - b.x) || (a.i - b.i));
-  let passo = -1, prec = null;
-  voci.forEach((v) => {
-    if (prec === null || Math.abs(v.x - prec) > 0.01) passo++;
-    prec = v.x;
-    v.gl.style.setProperty('--d', (passo * INTRO.glifoPasso) + 'ms');
-  });
 }
 
 function segnaIntro(attiva){
@@ -2245,7 +2220,6 @@ function avviaIntro(){
     partito = true;
     introState.geo = misuraIntro();
     posizionaRiga();
-    preparaGlifi();
     disegnaESGAR(0);
     document.getElementById('esgarSvg').style.visibility = 'visible';
     stage.classList.add('playing');
@@ -2253,7 +2227,7 @@ function avviaIntro(){
     requestAnimationFrame((now) => { introState.start = now; introState.raf = requestAnimationFrame(introFrame); });
     const dopo = (ms, fn) => introState.timers.push(setTimeout(fn, ms));
     dopo(INTRO.logo, () => { introState.logoOn = true; stage.classList.add('logo-on'); });
-    dopo(INTRO.titolo, () => stage.classList.add('title-on'));
+    dopo(INTRO.firma, () => stage.classList.add('tag-on'));
     dopo(INTRO.sotto, () => stage.classList.add('sub-on'));
     dopo(INTRO.attesa, chiudiIntro);
   };
