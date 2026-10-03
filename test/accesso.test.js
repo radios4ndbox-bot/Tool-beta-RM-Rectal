@@ -92,16 +92,16 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   // regola provvisoria, a lista vuota: il primo che configura il PC ne diventa amministratore
   const lista = await pc.evaluate(() => EsgarTest.amministratori.splice(0));
   await pc.click('#ppEsci'); await accedi(tel);
-  check(await pc.isVisible('#ppAdmin.da-fare') && /non ha ancora un amministratore/.test(await pc.textContent('#ppAdminTesto')), 'lista vuota, PC nuovo: propone di configurarlo');
+  check(await pc.isVisible('#ppAdmin.da-fare') && /Scegli la cartella comune/.test(await pc.textContent('#ppAdminAzioni')), 'lista vuota, PC nuovo: propone di configurarlo');
   await pc.evaluate((l) => EsgarTest.amministratori.push(...l), lista);
   // il telefono di Bianchi entra nella lista: è amministratore su ogni PC
   await pc.evaluate((c) => EsgarTest.amministratori.push(c), codiceTel);
   await pc.click('#ppEsci'); await accedi(tel);
-  check(await pc.isVisible('#ppAdmin.da-fare') && /Sei l'amministratore/.test(await pc.textContent('#ppAdminTesto')), 'codice nella lista: amministratore, e il PC chiede la cartella comune');
+  check(await pc.isVisible('#ppAdmin.da-fare') && /Cartella comune/.test(await pc.textContent('#ppAdminTesto')), 'codice nella lista: amministratore, e il PC chiede la cartella comune');
   check(!(await pc.evaluate(() => document.body.innerText)).includes(codiceTel), 'il codice dispositivo non compare da nessuna parte nel tool');
   await pc.screenshot({ path: SHOTS + '/acc_pc_configura.png' });
   check(await pc.evaluate(async () => EsgarTest.usaRadice(await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto', { create: true }))), 'sceglie la cartella comune');
-  check(await pc.evaluate(() => EsgarTest.eAdmin()) && /Sei l'amministratore/.test(await pc.textContent('#ppAdminTesto')), 'ed è l\'amministratore di questo PC');
+  check(await pc.evaluate(() => EsgarTest.eAdmin()) && /Cartella comune/.test(await pc.textContent('#ppAdminTesto')), 'ed è l\'amministratore di questo PC');
   check((await albero()).length === 0 && await pc.evaluate(async () => { const r = await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto'); for await (const [n] of r.entries()) return n; }) === 'Bianchi Giulia', 'il tool crea la cartella del medico: Referti RM Retto/Bianchi Giulia');
   check(/Referti RM Retto \/ Bianchi Giulia/.test(await pc.textContent('#ppCartellaTesto')), 'il pannello mostra la sua cartella');
 

@@ -223,7 +223,6 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
   <section class="carta" id="vCrea" hidden>
     <div class="kicker">Prima volta</div>
     <h1>Crea la tua chiave</h1>
-    <p>Il tool sul PC ti chiamerà così e salverà i referti nella tua cartella. Sul telefono restano solo questi dati.</p>
     <label><span>Nome</span><input type="text" id="cNome" autocomplete="given-name" maxlength="40"></label>
     <label><span>Cognome</span><input type="text" id="cCognome" autocomplete="family-name" maxlength="40"></label>
     <label><span>Titolo</span></label>
@@ -243,7 +242,6 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
   <section class="carta" id="vAccesso" hidden>
     <div class="kicker">Accesso al PC</div>
     <h1>Accedere a ESGAR su questo PC?</h1>
-    <p>Il PC riceverà il tuo nome e salverà i referti nella tua cartella. L'accesso dura 12 ore, o finché non esci dal PC.</p>
     <div class="chiave"><div class="av" id="aAv"></div><div><div class="nome" id="aNome"></div><div class="det" id="aDet"></div></div></div>
     <div class="azioni">
       <button type="button" class="btn btn-pieno" id="aConferma">Accedi</button>
@@ -264,12 +262,11 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
   <section class="carta" id="vChiave" hidden>
     <div class="kicker">La tua chiave</div>
     <div class="chiave"><div class="av" id="kAv"></div><div><div class="nome" id="kNome"></div><div class="det" id="kDet"></div></div></div>
-    <p style="margin-top:16px">Per accedere, sul PC apri <b>Accedi con il telefono</b> e inquadra il codice con la fotocamera.</p>
+    <p style="margin-top:16px">Inquadra il QR sul PC.</p>
     <div class="codice"><span>Codice dispositivo</span><b data-codice>…</b></div>
     <div class="azioni"><button type="button" class="btn btn-vuoto" id="kModifica">Modifica i tuoi dati</button></div>
   </section>
 
-  <p class="nota">Sul telefono restano solo nome, cognome, titolo e la chiave di firma di questo dispositivo, che non lo lascia mai. Il collegamento con il PC è cifrato e passa da un relay che vede solo testo illeggibile.</p>
 </main>
 
 <script>
@@ -540,7 +537,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
         mostra('vFatto');
       } else { stato('aStato', testo, 'ko'); b.disabled = false; }
     };
-    const timer = setTimeout(() => fine(false, 'Il PC non risponde. Controlla che il codice sia ancora a schermo e riprova.'), 25000);
+    const timer = setTimeout(() => fine(false, 'Il PC non risponde: riprova.'), 25000);
     try {
       const sess = await Canale.apri(abb);
       chiudi = Canale.ascolta(sess, 'tel', {

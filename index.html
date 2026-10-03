@@ -298,7 +298,6 @@ button{font-family:var(--sans);}
 .report-mode strong{display:block; font-size:12px; font-weight:500; color:var(--red-light); letter-spacing:.06em; text-transform:uppercase;}
 .action-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding:12px 16px 4px;}
 .action-row .spacer{flex:1;}
-.report-hint{padding:4px 18px 0; font-size:11.5px; color:var(--faint); line-height:1.5;}
 .status{
   min-height:18px; margin:6px 18px 0; font-family:var(--mono); font-size:11px; color:var(--green);
   transition:opacity .3s ease;
@@ -500,7 +499,7 @@ nav.intro-in-corso .nav-right,
 
 /* ══════════════ STAMPA ══════════════ */
 @media print{
-  nav, #splashScreen, #hexReveal, .form-pane, .action-row, .status, .report-hint, .report-head, .app-footer{display:none !important;}
+  nav, #splashScreen, #hexReveal, .form-pane, .action-row, .status, .report-head, .app-footer{display:none !important;}
   html, body{background:#fff;}
   .layout{display:block;}
   .output-pane{position:static; height:auto; padding:0;}
@@ -599,7 +598,6 @@ nav.intro-in-corso .nav-right,
 .cerca-x:hover{background:rgba(255,255,255,.1); color:#fff;}
 #cercaQ{margin:10px 12px 6px; font-family:var(--mono); text-transform:uppercase;}
 .cerca-lista{overflow-y:auto; padding:2px 12px 12px; display:flex; flex-direction:column; gap:8px;}
-.cerca-nota, .cerca-vuota{font-size:11.5px; color:var(--faint); padding:4px 2px;}
 .cerca-caso{border:1px solid var(--border); border-radius:10px; padding:9px 10px; background:var(--surface2);}
 .cerca-riga{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
 .cerca-data{font-family:var(--mono); font-size:11.5px; color:var(--text);}
@@ -946,8 +944,6 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 .pg-tab-desc{grid-column:1 / -1; font-size:10.5px; line-height:1.35; color:var(--muted);}
 .pg-conta{align-self:center; padding:1px 8px; border-radius:999px; font-family:var(--mono); font-size:10.5px; font-weight:600; color:var(--accent); background:var(--accent-bg);}
 .pg-tab.vuoto .pg-conta{color:var(--faint); background:transparent;}
-.pg-nav-nota{margin-top:auto; padding:12px 4px 0; font-size:10.5px; line-height:1.5; color:var(--faint);}
-.pg-nav-nota kbd{font-family:var(--mono); font-size:10px; padding:0 5px; border-radius:4px; border:1px solid var(--border2); background:var(--surface);}
 .pg-sezione{min-height:0; overflow-y:auto; padding:18px 22px 22px; display:flex; flex-direction:column; gap:14px;}
 .pg-entra{animation:panVoce .4s cubic-bezier(.22,1,.36,1) both;}
 .pg-sez-testa h3{margin:0 0 3px; font-size:15px; font-weight:600;}
@@ -1008,7 +1004,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
   .mg-pagina{width:calc(100vw - 20px); height:calc(100vh - 20px);}
   .pg-corpo{grid-template-columns:1fr; grid-template-rows:auto 1fr;}
   .pg-nav{flex-direction:row; overflow-x:auto; border-right:none; border-bottom:1px solid var(--border);}
-  .pg-tab{min-width:160px;} .mg-gruppo, .pg-nav-nota{display:none;}
+  .pg-tab{min-width:160px;} .mg-gruppo{display:none;}
   .mg-kpi{grid-template-columns:repeat(2, 1fr);}
 }
 @media print{ .mg-overlay{display:none !important;} }
@@ -1210,7 +1206,6 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
         </div>
         <div class="pp-sez">
           <div id="ppFuori">
-            <div class="pp-testo">Inquadra il codice con il telefono. La prima volta il telefono chiede nome, cognome e titolo e diventa la tua <b>chiave</b>: conserva solo questi dati, i referti restano su questo PC.</div>
             <div class="qr-box" id="qrBox" hidden><canvas id="qrAbb" width="400" height="400" aria-label="Codice QR per l'accesso"></canvas></div>
             <div class="pp-azioni">
               <button type="button" class="btn-primary" id="ppAccedi">Accedi con il telefono</button>
@@ -1218,9 +1213,8 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
             </div>
           </div>
           <div id="ppDentro" hidden>
-            <div class="pp-testo">I referti che salvi finiscono nella tua cartella dell'archivio. L'accesso dura 12 ore: su un PC condiviso esci quando hai finito.</div>
             <div class="pp-azioni"><button type="button" class="btn-secondary" id="ppEsci">Esci</button></div>
-            <div class="pp-avviso" id="ppSenzaCodice" hidden>Questo accesso non porta il <b>codice dispositivo</b>: è stato fatto prima dell'aggiornamento, o la pagina del telefono non era aggiornata. Premi «Esci» e accedi di nuovo con il QR: senza codice il tool non può riconoscere l'amministratore.</div>
+            <div class="pp-avviso" id="ppSenzaCodice" hidden>Accesso senza codice dispositivo: esci e accedi di nuovo con il QR.</div>
           </div>
           <div class="pp-stato" id="ppAccessoStato"></div>
         </div>
@@ -1732,7 +1726,6 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
         <button type="button" class="btn-ghost" id="btnNuovoCaso" hidden title="Il prossimo salvataggio apre un caso nuovo">Nuovo paziente</button>
       </div>
       <div class="archivio-stato" id="archivioStato"></div>
-      <div class="report-hint">Il referto si aggiorna a ogni modifica del form. Le correzioni manuali restano intatte nelle sezioni che non dipendono dai campi appena cambiati; &laquo;Rigenera tutto&raquo; riscrive tutto da zero.</div>
       <div class="proposte-ref" id="proposteRef" hidden></div>
       <div class="status" id="status"></div>
       <textarea id="output" spellcheck="false" aria-label="Testo del referto"></textarea>
@@ -2652,25 +2645,24 @@ liveUpdate();
       <p class="pan-desc" id="impArchivio"></p>
       <button type="button" class="pan-voce" data-imp="profilo">
         <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="20" x="6" y="2" rx="2"/><path d="M11 18h2"/></svg>
-        <span><strong>Accesso e cartella</strong><em>Apre il pannello del profilo: accesso con il telefono, cartella dei referti</em></span>
+        <span><strong>Accesso e cartella</strong><em>Pannello del profilo</em></span>
       </button>
       <h3 class="pan-tit" style="margin-top:18px">Campi che imparano</h3>
       <p class="pan-desc" id="impMemoria"></p>
       <button type="button" class="pan-voce" data-imp="gestisci">
         <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg>
-        <span><strong>Gestisci la memoria</strong><em>Prova, insegna, correggi o dimentica le frasi, campo per campo; esporta e importa</em></span>
+        <span><strong>Gestisci la memoria</strong><em>Frasi imparate, campo per campo</em></span>
       </button>
       <button type="button" class="pan-voce" data-imp="azzera">
         <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        <span><strong>Azzera la memoria</strong><em>Cancella le frasi imparate su questo PC; i referti salvati non si toccano</em></span>
+        <span><strong>Azzera la memoria</strong><em>I referti salvati restano</em></span>
       </button>
     </section>
 
     <section class="pan" data-pan="aspetto">
       <h3 class="pan-tit">Aspetto</h3>
-      <p class="pan-desc">Scelte di questa postazione. Non contengono dati clinici.</p>
       <button type="button" class="pan-voce pan-toggle" data-pref="dense" role="switch" aria-checked="false">
-        <span><strong>Form compatto</strong><em>Schede e campi più fitti, più voci a schermo</em></span>
+        <span><strong>Form compatto</strong><em>Più voci a schermo</em></span>
         <span class="pan-pill" aria-hidden="true"></span>
       </button>
       <button type="button" class="pan-voce pan-toggle" data-pref="reduceMotion" role="switch" aria-checked="false">
@@ -2739,14 +2731,6 @@ liveUpdate();
         </ul>
       </div>
       <div class="info-sez">
-        <h4>Come lavora il tool</h4>
-        <ul class="info-lista">
-          <li>Il referto si riscrive a ogni modifica del form; le correzioni fatte a mano restano, nelle sezioni che non dipendono dai campi cambiati.</li>
-          <li>I campi di testo libero propongono le frasi dei referti precedenti, ordinate anche in base alle scelte del form.</li>
-          <li>Con l'accesso dal telefono i referti si salvano nella cartella del medico, dentro la cartella comune del PC.</li>
-        </ul>
-      </div>
-      <div class="info-sez">
         <p class="info-avviso">Riassunto delle raccomandazioni ESGAR 2026; le percentuali sono il consenso del panel. Per i casi dubbi fanno fede le pubblicazioni, e il referto resta responsabilità del radiologo che lo firma.</p>
       </div>
       <div class="info-sez">
@@ -2767,7 +2751,7 @@ liveUpdate();
       <div class="pg-icona" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg></div>
       <div>
         <div class="pg-titolo" id="mgTitolo">Memoria del tool</div>
-        <div class="pg-sub">Le frasi che i campi liberi hanno imparato dai referti &middot; su questo PC</div>
+        <div class="pg-sub">Frasi imparate &middot; su questo PC</div>
       </div>
       <button type="button" class="pg-x" data-mg-chiudi aria-label="Chiudi">&times;</button>
     </div>
@@ -5906,7 +5890,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-03 · struttura';
+const VERSIONE = '2026-10-03 · essenziale';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -6012,7 +5996,7 @@ $id('ppAccedi').addEventListener('click', async () => {
           acc.pronto = true;
           disegnaQR($id('qrAbb'), TEL_URL + Canale.frammento(a));
           disegnaProfilo();
-          statoAccesso('Inquadra il codice con la fotocamera del telefono e conferma l\'accesso.');
+          statoAccesso('Inquadra il codice con il telefono.');
         }
         if (st === 'riconnessione' && !acc.pronto) statoAccesso('Relay non raggiungibile, riprovo…', 'ko');
       },
@@ -6158,7 +6142,7 @@ async function dopoAccesso(){
   let msg = `Accesso effettuato, ${escH(nome)}.`;
   if (radice && permesso === 'granted') {
     try { await dirMedico(true); msg += ` La tua cartella: <b>${escH(radice.name)}/${escH(cartellaMedico(sessione.profilo))}</b>.`; } catch (_) {}
-  } else if (radice) msg += ' La tua cartella si crea al primo salvataggio.';
+  }
   disegnaProfilo();
   statoAccesso(msg, 'ok');
 }
@@ -6204,17 +6188,16 @@ function disegnaCartella(){
 
   // la cartella di chi è entrato
   sez.classList.remove('da-fare');
+  sez.hidden = !p;
   if (!p) {
-    testo.innerHTML = 'Ogni medico ha la sua cartella dentro la cartella comune di questo PC: il tool la crea al primo accesso.';
+    testo.innerHTML = '';
   } else if (!supportaCartelle) {
-    testo.innerHTML = 'Questo browser non può scrivere in una cartella del PC: i referti si <b>scaricano</b> come file. Per l\'archivio usa Chrome o Edge.';
+    testo.innerHTML = 'Browser senza accesso alle cartelle: i referti si <b>scaricano</b>.';
   } else if (!radice) {
-    testo.innerHTML = admin || config
-      ? 'Scegli qui sotto la cartella comune: dentro il tool crea la tua.'
-      : 'La cartella comune di questo PC non è ancora stata scelta dall\'amministratore: per ora i referti si <b>scaricano</b>.';
+    testo.innerHTML = admin || config ? '' : 'Cartella comune non impostata: i referti si <b>scaricano</b>.';
   } else {
     testo.innerHTML = `<div class="pp-percorso">${escH(radice.name)} / <b>${escH(cartellaMedico(p))}</b> / tipo di esame / anno / mese</div>`
-      + (permesso === 'granted' ? '' : '<div class="pp-stato">Chrome chiede di nuovo il permesso di scrivere: lo chiede da solo al primo salvataggio, o premi «Riattiva».</div>');
+      + (permesso === 'granted' ? '' : '<div class="pp-stato">Permesso di scrittura da riattivare.</div>');
   }
   azioni.innerHTML = p && radice && permesso !== 'granted' ? '<button type="button" class="btn-primary" data-cartella="riattiva">Riattiva</button>' : '';
 
@@ -6223,14 +6206,11 @@ function disegnaCartella(){
   aSez.classList.toggle('da-fare', !!(p && supportaCartelle && !radice && (admin || config)));
   if (aSez.hidden) return;
   if (!supportaCartelle) {
-    aTesto.innerHTML = 'Sei l\'amministratore, ma questo browser non può scrivere nelle cartelle del PC: per scegliere la cartella comune apri il tool in <b>Chrome</b> o <b>Edge</b>.';
+    aTesto.innerHTML = 'Per la cartella comune usa <b>Chrome</b> o <b>Edge</b>.';
     aAzioni.innerHTML = '';
     return;
   }
-  aTesto.innerHTML = (config
-      ? 'Questo PC non ha ancora un amministratore. Scegliendo la cartella comune lo diventi tu, con questo telefono.'
-      : 'Sei l\'amministratore: scegli tu la cartella comune, in cui il tool crea le cartelle dei medici.')
-    + (radice ? `<div class="pp-percorso">Cartella comune: <b>${escH(radice.name)}</b></div>`
+  aTesto.innerHTML = (radice ? `<div class="pp-percorso">Cartella comune: <b>${escH(radice.name)}</b></div>`
       : '<div class="pp-percorso">Cartella comune: nessuna</div>');
   aAzioni.innerHTML = `<button type="button" class="${radice ? 'btn-secondary' : 'btn-primary'}" data-cartella="radice">${radice ? 'Cambia cartella comune' : 'Scegli la cartella comune'}</button>`;
 }
@@ -6240,7 +6220,7 @@ $id('ppCartellaAzioni').addEventListener('click', async (e) => {
 });
 $id('ppAdminAzioni').addEventListener('click', async (e) => {
   const b = e.target.closest('[data-cartella="radice"]'); if (!b) return;
-  if (radice && !confirm('Cambiare la cartella comune di questo PC? I referti già salvati restano dove sono; i prossimi andranno nella nuova cartella.')) return;
+  if (radice && !confirm('Cambiare la cartella comune? I referti già salvati restano dove sono.')) return;
   if (await scegliRadice()) statoAccesso(`Cartella comune impostata: <b>${escH(radice.name)}</b>.`, 'ok');
 });
 
@@ -6411,7 +6391,7 @@ function elencaCasi(q){
     : casiTutti).slice(0, t ? 30 : 10);
   if (!casiTutti.length) { lista.innerHTML = '<div class="cerca-vuota">Nella cartella comune non ci sono ancora casi.</div>'; return; }
   if (!casiTrovati.length) { lista.innerHTML = '<div class="cerca-vuota">Nessun caso con questo codice o numero d\'accesso.</div>'; return; }
-  lista.innerHTML = (t ? '' : '<div class="cerca-nota">I casi più recenti; scrivi un codice o un numero d\'accesso per cercare.</div>')
+  lista.innerHTML = ''
     + casiTrovati.map((c, i) => `<div class="cerca-caso">
         <div class="cerca-riga"><span class="caso-cod">${escH(c.codice)}</span><span class="cerca-data">${escH(dataIt(c.data))}</span><span class="cerca-med">${escH(c.medico)}</span></div>
         <ul>${c.referti.map((r) => { const x = leggiNomeReferto(r); return `<li><b>${escH(x.tipo)}</b> ${escH(dataIt(x.data))} · ${escH(x.accesso)}${x.sintesi ? ' · ' + escH(x.sintesi) : ''}</li>`; }).join('') || '<li>nessun referto</li>'}</ul>
@@ -6439,13 +6419,13 @@ function associa(c){
     rc.dispatchEvent(new Event('change', { bubbles: true }));
   }
   chiudiCerca(); disegnaCaso();
-  statoArchivio(`Associata al caso <b>${escH(c.codice)}</b>: la ristadiazione si salverà nella sua cartella, accanto alla stadiazione.`, 'ok');
+  statoArchivio(`Associata al caso <b>${escH(c.codice)}</b>.`, 'ok');
 }
 $id('btnCerca').addEventListener('click', async (ev) => {
   ev.stopPropagation();
-  if (!sessioneValida()) { apriPannello(true); statoArchivio('Per cercare nell\'archivio <b>accedi con il telefono</b>.', 'ko'); return; }
-  if (!radice) { statoArchivio('La cartella comune di questo PC non è ancora scelta: non c\'è un archivio in cui cercare.', 'ko'); return; }
-  if (!(await chiediPermesso())) { statoArchivio('Il browser non ha dato il permesso di leggere la cartella: premi «Riattiva» nel pannello del profilo.', 'ko'); return; }
+  if (!sessioneValida()) { apriPannello(true); statoArchivio('<b>Accedi con il telefono</b>.', 'ko'); return; }
+  if (!radice) { statoArchivio('Cartella comune non impostata.', 'ko'); return; }
+  if (!(await chiediPermesso())) { statoArchivio('Permesso negato: premi «Riattiva» nel profilo.', 'ko'); return; }
   const p = pannelloCerca();
   p.classList.add('aperto');
   const r = $id('btnCerca').getBoundingClientRect();
@@ -6467,7 +6447,7 @@ document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') chiudiCe
 $id('btnSalva').addEventListener('click', async () => {
   if (!sessioneValida()) {
     apriPannello(true);
-    statoArchivio('Per salvare il referto <b>accedi con il telefono</b>: i referti si archiviano a nome di chi li firma.', 'ko');
+    statoArchivio('Per salvare <b>accedi con il telefono</b>.', 'ko');
     return;
   }
   const testo = $id('output').value.trim();
@@ -6512,7 +6492,7 @@ $id('btnSalva').addEventListener('click', async () => {
   if (!archivio) {
     if (supportaCartelle && radice) {
       apriPannello(true);
-      statoArchivio('Il browser non ha dato il permesso di scrivere nella cartella: premi «Riattiva».', 'ko');
+      statoArchivio('Permesso negato: premi «Riattiva» nel profilo.', 'ko');
       return;
     }
     const nomeDl = `${codice}_${base}.txt`;
@@ -6521,9 +6501,7 @@ $id('btnSalva').addEventListener('click', async () => {
     a.download = nomeDl; a.click();
     if (!caso) caso = { codice, data: dataIso(data), medico: cartellaMedico(p), accesso: accessoTesto };
     disegnaCaso();
-    statoArchivio(`Scaricato <code>${escH(nomeDl)}</code>. ` + (supportaCartelle
-      ? 'La cartella comune di questo PC non è ancora scelta: la sceglie l\'amministratore.'
-      : 'Con Chrome o Edge si salva direttamente nell\'archivio ordinato.'), 'ok');
+    statoArchivio(`Scaricato <code>${escH(nomeDl)}</code>.`, 'ok');
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
     return;
   }
@@ -7058,12 +7036,10 @@ window.EsgarTest = {
     const e = $('impArchivio'); if (!e) return;
     const p = sessione && sessione.profilo;
     let h;
-    if (typeof supportaCartelle !== 'undefined' && !supportaCartelle) h = 'Questo browser non scrive nelle cartelle del PC: i referti si scaricano come file. Per l\'archivio usa Chrome o Edge.';
-    else if (!radice) h = 'La cartella comune di questo PC non è ancora stata scelta dall\'amministratore: finché manca, i referti si scaricano come file.';
-    else h = `Cartella comune: <b>${esc(radice.name)}</b>.`
-      + (p ? ` I tuoi referti vanno in <b>${esc(radice.name)}/${esc(cartellaMedico(p))}</b>, per tipo di esame, anno e mese.` : ' Ogni medico ha la sua cartella, creata al primo accesso.')
-      + (permesso === 'granted' ? '' : ' Chrome chiederà di nuovo il permesso di scrivere al primo salvataggio.');
-    if (p && eAdmin()) h += ' Sei l\'amministratore: la cartella comune si sceglie dal pannello del profilo.';
+    if (typeof supportaCartelle !== 'undefined' && !supportaCartelle) h = 'Browser senza accesso alle cartelle: i referti si scaricano.';
+    else if (!radice) h = 'Cartella comune non impostata: i referti si scaricano.';
+    else h = `Cartella comune: <b>${esc(radice.name)}</b>`
+      + (p ? `<br>La tua: <b>${esc(radice.name)}/${esc(cartellaMedico(p))}</b>` : '');
     e.innerHTML = h;
   }
   function disegnaMemoria(){
@@ -7073,8 +7049,8 @@ window.EsgarTest = {
     const frasi = campi.reduce((n, k) => n + m.campi[k].voci.length, 0);
     const referti = (m.visti || []).length;
     e.innerHTML = frasi
-      ? `Su questo PC il tool ricorda <b>${frasi} ${frasi === 1 ? 'frase' : 'frasi'}</b> in ${campi.length} ${campi.length === 1 ? 'campo' : 'campi'}, imparate da ${referti} ${referti === 1 ? 'referto' : 'referti'}. Le propone ordinate per somiglianza, frequenza, scelte del form, recenza e gradimento.`
-      : 'Il tool non ha ancora imparato niente su questo PC: comincia a proporre frasi dopo i primi referti copiati, scaricati, stampati o salvati.';
+      ? `<b>${frasi} ${frasi === 1 ? 'frase' : 'frasi'}</b> in ${campi.length} ${campi.length === 1 ? 'campo' : 'campi'}, da ${referti} ${referti === 1 ? 'referto' : 'referti'}.`
+      : 'Ancora nessuna frase imparata.';
   }
   function disegnaVersione(){
     const e = $('impVersione'); if (!e) return;
@@ -7335,10 +7311,9 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     }).join('');
     $('mgNav').innerHTML = `<button type="button" class="pg-tab" role="tab" data-campo="" aria-selected="${campo === null}">
         <span class="pg-tab-nome">Panoramica</span><span class="pg-conta">${G().campi().reduce((a, c) => a + c.voci, 0)}</span>
-        <span class="pg-tab-desc">Come impara, esporta e importa</span></button>`
+        <span class="pg-tab-desc">Esporta e importa</span></button>`
       + gruppo('primaria', 'Stadiazione primaria') + gruppo('ristad', 'Ristadiazione')
-      + (campi.some((c) => c.modo === 'struttura') ? gruppo('struttura', 'Struttura del referto') : '')
-      + '<div class="pg-nav-nota">Le modifiche si salvano da sole, nel browser di questo PC. Si chiude con <kbd>Esc</kbd>.</div>';
+      + (campi.some((c) => c.modo === 'struttura') ? gruppo('struttura', 'Struttura del referto') : '');
   }
 
   function disegnaPanoramica(){
@@ -7349,28 +7324,18 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     const nomi = new Map(campiForm().map((c) => [c.k, c]));
     const top = campi.slice().sort((a, b) => b.voci - a.voci).slice(0, 6);
     $('mgCorpo').innerHTML = `
-      <div class="pg-sez-testa"><h3>Cosa ha imparato il tool</h3>
-        <p>I campi di testo libero propongono le frasi dei referti precedenti. Il tool impara quando un referto si copia, si scarica, si stampa o si salva nell'archivio; lo stesso referto conta una volta sola.</p></div>
+      <div class="pg-sez-testa"><h3>Cosa ha imparato il tool</h3></div>
       <div class="mg-kpi">
         <div><b>${frasi}</b><span>frasi</span></div>
         <div><b>${campi.length}</b><span>campi</span></div>
         <div><b>${(m.visti || []).length}</b><span>referti letti</span></div>
         <div><b>${pref}</b><span>preferite</span></div>
       </div>
-      <div class="mg-blocco"><h4>Come ordina le proposte</h4>
-        <ul class="info-lista">
-          <li><b>Somiglianza</b> con quanto si sta scrivendo; le parole rare pesano di più.</li>
-          <li><b>Frequenza</b> d'uso e <b>recenza</b>, per sei mesi.</li>
-          <li><b>Contesto</b>: le scelte del form che compaiono spesso con quella frase, per esempio cT4b o un organo infiltrato.</li>
-          <li><b>Gradimento</b>: le frasi scelte salgono, quelle proposte in alto e scavalcate scendono.</li>
-          <li><b>Preferite</b> ★: stanno in cima e non si perdono mai, nemmeno quando il tool sfoltisce le frasi poco usate.</li>
-        </ul></div>
       ${top.length ? `<div class="mg-blocco"><h4>Campi con più frasi</h4><div class="mg-top">${top.map((c) => {
         const n = nomi.get(c.k);
         return `<button type="button" class="mg-top-voce" data-campo="${esc(c.k)}"><span>${esc(n ? n.nome : c.k)}<em>${esc(n ? n.scheda : '')}</em></span><b>${c.voci}</b></button>`;
       }).join('')}</div></div>` : ''}
       <div class="mg-blocco"><h4>Su un altro PC</h4>
-        <p class="mg-nota">La memoria resta nel browser di questo PC. Per portarla altrove si esporta in un file e si importa sull'altro PC: le frasi uguali si uniscono e sommano gli usi.</p>
         <div class="mg-azioni">
           <button type="button" class="btn-secondary" data-mg="esporta">Esporta la memoria</button>
           <label class="btn-secondary mg-file">Importa da file<input type="file" id="mgImporta" accept="application/json,.json" hidden></label>
@@ -7384,17 +7349,15 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     const c = campiForm().find((x) => x.k === campo) || { k: campo, nome: campo, scheda: '' };
     $('mgCorpo').innerHTML = `
       <div class="pg-sez-testa"><h3>${esc(c.nome)}</h3>
-        <p>${c.modo === 'struttura'
-          ? `${esc(c.scheda)}. Frasi che il medico aggiunge di suo in questa sezione: il tool le impara dal referto finito, a ogni «Scarica .txt», e le propone sopra il referto. ★ le fissa in cima.`
-          : `${esc(c.scheda)} · ${c.modo === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}. Le frasi qui sotto sono quelle che il campo propone; ★ le fissa in cima.`}</p></div>
+        <p>${esc(c.scheda)}${c.modo === 'struttura' ? '' : ` · ${c.modo === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}`}</p></div>
       <div class="pg-prova">
-        <label for="mgProva">Prova: cosa proporrebbe il tool</label>
-        <input id="mgProva" type="text" autocomplete="off" placeholder="Scrivi come nel campo, o lascia vuoto per le proposte all'apertura">
+        <label for="mgProva">Prova</label>
+        <input id="mgProva" type="text" autocomplete="off" placeholder="Scrivi come nel campo">
         <label class="mg-ctx"><input type="checkbox" id="mgCtx" checked> con le scelte del form attuale</label>
         <div class="pg-prova-esito" id="mgProvaEsito"></div>
       </div>
       <div class="mg-insegna">
-        <input id="mgNuova" type="text" autocomplete="off" maxlength="300" placeholder="Insegna una frase nuova per questo campo">
+        <input id="mgNuova" type="text" autocomplete="off" maxlength="300" placeholder="Frase nuova">
         <button type="button" class="btn-primary" data-mg="aggiungi">Insegna</button>
       </div>
       <div class="mg-lista-testa">
@@ -7405,7 +7368,7 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
         </select></div>
       </div>
       <div class="mg-lista" id="mgLista"></div>
-      ${c.modo === 'struttura' ? '<div class="mg-blocco"><h4>Riformulazioni</h4><p class="mg-nota">Frasi generate dal form che il medico riscrive a modo suo: sopra il referto il tool propone di sostituirle.</p><div class="mg-lista" id="mgSost"></div></div>' : ''}`;
+      ${c.modo === 'struttura' ? '<div class="mg-blocco"><h4>Riformulazioni</h4><div class="mg-lista" id="mgSost"></div></div>' : ''}`;
     $('mgOrdine').value = ordine;
     window.EsgarUI && EsgarUI.avvolgiSelect($('mgOrdine'));
     disegnaLista();
