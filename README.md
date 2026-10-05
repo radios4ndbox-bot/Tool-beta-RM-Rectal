@@ -238,7 +238,7 @@ con «riduci movimento» attivo nel sistema né con `?nointro` nell'indirizzo.
 
 ## Icona e app sul desktop
 
-L'icona è il simbolo StructuRad (SD) su fondo rosso-nero, in `icone/`. Favicon SVG e PNG sono incorporati nella pagina, così l'icona resta anche in una copia salvata sul PC. `manifest.webmanifest` permette a Chrome ed Edge di installare il tool come app (⋮ → Trasmetti, salva e condividi → Installa pagina come app, o «Crea scorciatoia»), con icona sul desktop e finestra propria.
+L'icona è il simbolo StructuRad (SD) in bianco metallico su fondo rosso-nero, in `icone/`. Favicon SVG e PNG sono incorporati nella pagina, così l'icona resta anche in una copia salvata sul PC. `manifest.webmanifest` permette a Chrome ed Edge di installare il tool come app (⋮ → Trasmetti, salva e condividi → Installa pagina come app, o «Crea scorciatoia»), con icona sul desktop e finestra propria.
 
 ## Licenze incluse
 
