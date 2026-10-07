@@ -267,3 +267,11 @@ node test/struttura.test.js
 Il test avvia un relay finto in locale, fa l'accesso da un telefono simulato,
 salva referti di stadiazione primaria e ristadiazione e controlla cartelle,
 nomi dei file, indice, durata della sessione e uscita.
+
+## Programma per Windows (prova)
+
+In `desktop/` c'è un programma Electron per Windows. Per ora è una **versione di prova**: verifica che il programma si avvii sul PC dell'ospedale e salvi nella cartella scelta, con le sottocartelle.
+
+- La cartella comune è scritta in `C:\Users\Public\StructuRad ESGAR\config.json`, comune a tutti gli utenti Windows del PC: nessuna pulizia del browser la cancella.
+- La pagina non ha accesso a Node: dal ponte (`window.EsgarDesktop`) legge e scrive solo dentro la cartella comune.
+- GitHub compila i file `.exe` su una macchina Windows (workflow «Programma Windows»): `StructuRad-ESGAR-Setup-x.y.z.exe`, che si installa per l'utente senza credenziali di amministratore, e `StructuRad-ESGAR-portatile-x.y.z.exe`, che parte senza installazione.

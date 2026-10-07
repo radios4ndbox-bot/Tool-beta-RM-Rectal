@@ -1,0 +1,39 @@
+{
+  "name": "structurad-esgar-retto",
+  "productName": "StructuRad ESGAR",
+  "version": "0.1.0",
+  "description": "StructuRad × ESGAR — RM Retto, programma per Windows",
+  "author": "StructuRad",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "^44.6.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "it.structurad.esgar.retto",
+    "productName": "StructuRad ESGAR",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "preload.js", "prova.html", "build/icon.png"],
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "StructuRad ESGAR",
+      "artifactName": "StructuRad-ESGAR-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "StructuRad-ESGAR-portatile-${version}.${ext}"
+    }
+  }
+}
