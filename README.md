@@ -116,7 +116,16 @@ accanto all'altra in ordine di data:
   versione precedente viene conservato come `indice-referti-precedente.csv`.
 
 Chrome può chiedere di nuovo il permesso di scrivere nella cartella comune: lo
-chiede da solo al primo salvataggio, o lo si concede con «Riattiva». Finché
+chiede da solo al primo salvataggio, o lo si concede con «Riattiva». Scegliendo
+«Consenti a ogni visita» (Chrome 122 e successivi) non lo chiede più; con il
+tool installato come app il permesso tende a restare. Il tool chiede anche al
+browser di non sfoltire da solo i dati del sito (`navigator.storage.persist`).
+
+La cartella comune contiene il file `structurad-esgar.json`, che la segna. Se il
+browser la dimentica (dati del sito cancellati, pulizia all'uscita), qualunque
+medico entrato la ricollega dal pannello del profilo con «Ricollega la cartella
+comune», senza l'amministratore: il tool accetta solo una cartella segnata, o
+un archivio di prima della marca, riconosciuto dagli indici dei medici. Finché
 l'amministratore non ha scelto la cartella comune, i referti si scaricano come
 file, con lo stesso nome; lo stesso vale nei browser senza File System Access
 (serve Chrome o Edge).
