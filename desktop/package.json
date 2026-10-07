@@ -18,10 +18,21 @@
   "build": {
     "appId": "it.structurad.esgar.retto",
     "productName": "StructuRad ESGAR",
-    "directories": { "output": "dist", "buildResources": "build" },
-    "files": ["main.js", "preload.js", "prova.html", "build/icon.png"],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "prova.html",
+      "build/icon.png"
+    ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "icon": "build/icon.png"
     },
     "nsis": {
@@ -34,6 +45,17 @@
     },
     "portable": {
       "artifactName": "StructuRad-ESGAR-portatile-${version}.${ext}"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "radios4ndbox-bot",
+        "repo": "Tool-beta-RM-Rectal"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/radios4ndbox-bot/Tool-beta-RM-Rectal.git"
   }
 }
