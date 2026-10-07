@@ -5896,7 +5896,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-05 · icona metallo';
+const VERSIONE = '2026-10-07 · cartella';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -6093,6 +6093,7 @@ const ADMIN_DISPOSITIVI = [
 const ARCH_DB = 'structurad-esgar', ARCH_STORE = 'cartella';
 const K_RADICE = 'radice', K_ADMIN = 'admin-pc';
 const INDICE = 'indice-referti.csv';
+const MARCA = 'structurad-esgar.json';   // segna la cartella comune: chiunque può ricollegarla
 const supportaCartelle = typeof window.showDirectoryPicker === 'function';
 let radice = null;            // cartella comune del PC
 let adminPc = '';             // codice dell'amministratore di questo PC, se la lista è vuota
@@ -6166,8 +6167,50 @@ async function impostaRadice(h){
   if (puoConfigurare()) { adminPc = sessione.codice; await idbScrivi(K_ADMIN, adminPc); }
   radice = h; permesso = 'granted';
   await idbScrivi(K_RADICE, h);
+  await segnaRadice();
   try { await dirMedico(true); } catch (_) {}
   disegnaProfilo();
+}
+
+/* Il browser tiene la cartella comune in IndexedDB. Se i dati del sito
+   si cancellano (pulizia del browser, criteri dell'ospedale), il
+   riferimento si perde: la cartella però resta segnata dal file MARCA,
+   e qualunque medico entrato può ricollegarla senza l'amministratore. */
+async function segnaRadice(){
+  if (!radice) return;
+  try { await radice.getFileHandle(MARCA); return; } catch (_) {}
+  try {
+    const w = await (await radice.getFileHandle(MARCA, { create: true })).createWritable();
+    await w.write(JSON.stringify({ tool: 'StructuRad × ESGAR — RM Retto', cartella: 'comune', creata: new Date().toISOString() }, null, 2));
+    await w.close();
+  } catch (_) {}
+}
+async function eCartellaComune(h){
+  try { await h.getFileHandle(MARCA); return true; } catch (_) {}
+  // archivi creati prima della marca: una cartella di medico con l'indice
+  for await (const [, sub] of h.entries()) {
+    if (sub.kind !== 'directory') continue;
+    try { await sub.getFileHandle(INDICE); return true; } catch (_) {}
+  }
+  return false;
+}
+/* da chiamare dentro un clic */
+async function ricollegaRadice(){
+  if (!supportaCartelle || !sessione) return false;
+  let h;
+  try { h = await window.showDirectoryPicker({ id: 'referti-esgar', mode: 'readwrite', startIn: 'documents' }); }
+  catch (_) { return false; }
+  if (!(await eCartellaComune(h))) {
+    statoAccesso('Questa non è la cartella comune dei referti.', 'ko');
+    return false;
+  }
+  radice = h; permesso = 'granted';
+  await idbScrivi(K_RADICE, h);
+  await segnaRadice();
+  try { await dirMedico(true); } catch (_) {}
+  disegnaProfilo();
+  statoAccesso(`Cartella comune ricollegata: <b>${escH(h.name)}</b>.`, 'ok');
+  return true;
 }
 
 async function aggiornaPermesso(){
@@ -6181,6 +6224,7 @@ async function chiediPermesso(){
   if (!radice) return false;
   if (!radice.requestPermission) return true;
   try { permesso = await radice.requestPermission({ mode: 'readwrite' }); } catch (_) { permesso = 'denied'; }
+  if (permesso === 'granted') segnaRadice();
   disegnaCartella();
   return permesso === 'granted';
 }
@@ -6205,7 +6249,8 @@ function disegnaCartella(){
     testo.innerHTML = `<div class="pp-percorso">${escH(radice.name)} / <b>${escH(cartellaMedico(p))}</b> / tipo di esame / anno / mese</div>`
       + (permesso === 'granted' ? '' : '<div class="pp-stato">Permesso di scrittura da riattivare.</div>');
   }
-  azioni.innerHTML = p && radice && permesso !== 'granted' ? '<button type="button" class="btn-primary" data-cartella="riattiva">Riattiva</button>' : '';
+  azioni.innerHTML = p && radice && permesso !== 'granted' ? '<button type="button" class="btn-primary" data-cartella="riattiva">Riattiva</button>'
+    : p && !radice && supportaCartelle && !(admin || config) ? '<button type="button" class="btn-secondary" data-cartella="ricollega">Ricollega la cartella comune</button>' : '';
 
   // amministrazione: solo per l'amministratore, o per chi configura un PC nuovo
   aSez.hidden = !(p && (admin || config));
@@ -6223,6 +6268,7 @@ function disegnaCartella(){
 $id('ppCartellaAzioni').addEventListener('click', async (e) => {
   const b = e.target.closest('[data-cartella]'); if (!b) return;
   if (b.dataset.cartella === 'riattiva') { if (await chiediPermesso()) try { await dirMedico(true); } catch (_) {} }
+  if (b.dataset.cartella === 'ricollega') await ricollegaRadice();
 });
 $id('ppAdminAzioni').addEventListener('click', async (e) => {
   const b = e.target.closest('[data-cartella="radice"]'); if (!b) return;
@@ -6536,8 +6582,11 @@ $id('btnSalva').addEventListener('click', async () => {
 
 (async function avviaArchivio(){
   EsgarUI.impostaData($id('arcData'), dataIso(new Date()));
+  // chiede al browser di non sfoltire da solo i dati del sito (cartella, memoria)
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {}
   try { radice = await idbLeggi(K_RADICE); adminPc = (await idbLeggi(K_ADMIN)) || ''; } catch (_) { radice = null; }
   await aggiornaPermesso();
+  if (permesso === 'granted') segnaRadice();
   disegnaProfilo();
   disegnaCaso();
 })();
@@ -6547,6 +6596,8 @@ window.EsgarTest = {
   // sceglie la cartella comune come farebbe l'amministratore dalla finestra del browser
   usaRadice: async (h) => { if (!(eAdmin() || puoConfigurare())) return false; await impostaRadice(h); return true; },
   eAdmin: () => eAdmin(),
+  ricollega: async (h) => { if (!(await eCartellaComune(h))) return false; radice = h; permesso = 'granted'; await idbScrivi(K_RADICE, h); disegnaProfilo(); return true; },
+  dimenticaRadice: async () => { radice = null; await idbScrivi(K_RADICE, null); disegnaProfilo(); },
   caso: () => caso && { codice: caso.codice, percorso: caso.percorso, data: caso.data, associato: caso.associato },
   scansiona: async () => (await scansionaCasi()).map((c) => ({ codice: c.codice, data: c.data, medico: c.medico, referti: c.referti })),
   amministratori: ADMIN_DISPOSITIVI,

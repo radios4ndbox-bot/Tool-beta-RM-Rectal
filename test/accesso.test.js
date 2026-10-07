@@ -102,7 +102,8 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.screenshot({ path: SHOTS + '/acc_pc_configura.png' });
   check(await pc.evaluate(async () => EsgarTest.usaRadice(await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto', { create: true }))), 'sceglie la cartella comune');
   check(await pc.evaluate(() => EsgarTest.eAdmin()) && /Cartella comune/.test(await pc.textContent('#ppAdminTesto')), 'ed è l\'amministratore di questo PC');
-  check((await albero()).length === 0 && await pc.evaluate(async () => { const r = await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto'); for await (const [n] of r.entries()) return n; }) === 'Bianchi Giulia', 'il tool crea la cartella del medico: Referti RM Retto/Bianchi Giulia');
+  check((await albero()).join() === 'Referti RM Retto/structurad-esgar.json', 'la cartella comune è segnata dal file structurad-esgar.json');
+  check(await pc.evaluate(async () => { const r = await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto'); const n = []; for await (const [k, h] of r.entries()) if (h.kind === 'directory') n.push(k); return n.join(); }) === 'Bianchi Giulia', 'il tool crea la cartella del medico: Referti RM Retto/Bianchi Giulia');
   check(/Referti RM Retto \/ Bianchi Giulia/.test(await pc.textContent('#ppCartellaTesto')), 'il pannello mostra la sua cartella');
 
   // referti
@@ -178,6 +179,16 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   const files = await albero();
   console.log(files.join('\n'));
   check(files.filter((f) => f.endsWith('indice-referti.csv')).length === 2, 'un indice per medico');
+  // il browser perde la cartella comune (dati del sito cancellati): un medico qualunque la ricollega
+  await pc.evaluate(() => EsgarTest.dimenticaRadice()); await pc.click('#profiloBtn').catch(() => {}); await pc.waitForTimeout(200);
+  if (!(await pc.isVisible('#pannelloProfilo'))) await pc.click('#profiloBtn');
+  check(await pc.isVisible('[data-cartella="ricollega"]'), 'cartella comune persa: il medico vede «Ricollega la cartella comune»');
+  check(!(await pc.evaluate(async () => EsgarTest.ricollega(await (await navigator.storage.getDirectory()).getDirectoryHandle('Altra', { create: true })))), 'una cartella qualsiasi non viene accettata');
+  check(await pc.evaluate(async () => EsgarTest.ricollega(await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto'))) && /Referti RM Retto \/ Neri Marco/.test(await pc.textContent('#ppCartellaTesto')), 'la cartella comune segnata si ricollega, anche senza amministratore');
+  await pc.evaluate(async () => { const r = await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto'); await r.removeEntry('structurad-esgar.json'); await EsgarTest.dimenticaRadice(); });
+  check(await pc.evaluate(async () => EsgarTest.ricollega(await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto'))), 'anche un archivio di prima della marca si riconosce dagli indici');
+  await pc.evaluate(async () => (await navigator.storage.getDirectory()).removeEntry('Altra'));
+  await pc.keyboard.press('Escape');
   const caseB = files.filter((f) => f.includes('_' + codice + '/'));
   check(caseB.length === 4 && caseB.filter((f) => /_Ristadiazione_/.test(f)).length === 2, 'nel caso di Bianchi: due stadiazioni e due ristadiazioni, vicine');
   const idxNeri = await pc.evaluate(async () => (await (await (await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto')).getDirectoryHandle('Neri Marco')).getFileHandle('indice-referti.csv')).getFile()).text());
