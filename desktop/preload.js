@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('EsgarDesktop', {
   esiste: chiama('esiste'),
   tipo: chiama('tipo'),
   creaCartella: chiama('creaCartella'),
+  rinomina: chiama('rinomina'),
   apriCartella: chiama('apriCartella'),
   apriTool: chiama('apriTool')
 });

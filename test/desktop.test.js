@@ -45,28 +45,35 @@ const ponte = creaPonte(() => config.cartella);
 let sceltaWindows = COMUNE;   // cosa «sceglie» l'amministratore nella finestra di Windows
 const programma = {
   ...ponte,
-  stato: () => ({ versione: 'test', cartella: config.cartella, raggiungibile: !!(config.cartella && fs.existsSync(config.cartella)) }),
+  stato: async () => ({ versione: 'test', cartella: config.cartella, raggiungibile: await ponte.raggiungibile() }),
   scegli: () => { if (sceltaWindows) config.cartella = sceltaWindows; return sceltaWindows; }
 };
 const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true })
   .flatMap((e) => e.isDirectory() ? albero(path.join(d, e.name), p + e.name + '/') : [p + e.name]).sort();
 
 (async () => {
-  check((() => { config.cartella = COMUNE; try { ponte.scrivi('../fuori.txt', 'no'); return false; } catch (_) { return !fs.existsSync(path.join(TMP, 'fuori.txt')); } finally { config.cartella = ''; } })(),
+  config.cartella = COMUNE;
+  check(await ponte.scrivi('../fuori.txt', 'no').then(() => false, (e) => /fuori dalla cartella/.test(e.message)) && !fs.existsSync(path.join(TMP, 'fuori.txt'))
+    && await ponte.rinomina('structurad-esgar.json', '../fuori.json').then(() => false, () => true),
     'il ponte rifiuta i percorsi fuori dalla cartella comune');
+  // venti scritture lanciate insieme sullo stesso file: in coda, l'ultima vince, nessun file provvisorio resta
+  await Promise.all(Array.from({ length: 20 }, (_, i) => ponte.scrivi('coda.txt', 'riga ' + i)));
+  check(fs.readFileSync(path.join(COMUNE, 'coda.txt'), 'utf8') === 'riga 19' && fs.readdirSync(COMUNE).join() === 'coda.txt', 'scritture in coda e sostituzione atomica');
+  fs.unlinkSync(path.join(COMUNE, 'coda.txt'));
+  config.cartella = '';
 
   const b = await chromium.launch();
   const errs = [];
   const contesto = async (funzioni) => {
     const c = await b.newContext({ viewport: { width: 1440, height: 900 } });
     // come Electron: gli errori arrivano con «Error invoking remote method…» davanti
-    await c.exposeBinding('__ponte', (_, f, ...a) => {
-      try { return programma[f](...a); } catch (e) { throw new Error(`Error invoking remote method '${f}': Error: ${e.message}`); }
+    await c.exposeBinding('__ponte', async (_, f, ...a) => {
+      try { return await programma[f](...a); } catch (e) { throw new Error(`Error invoking remote method '${f}': Error: ${e.message}`); }
     });
     await c.addInitScript((ff) => { window.EsgarDesktop = Object.fromEntries(ff.map((f) => [f, (...a) => window.__ponte(f, ...a)])); }, funzioni);
     return c;
   };
-  const TUTTE = ['stato', 'scegli', 'scrivi', 'leggi', 'elenca', 'esiste', 'tipo', 'creaCartella'];
+  const TUTTE = ['stato', 'scegli', 'scrivi', 'leggi', 'elenca', 'esiste', 'tipo', 'creaCartella', 'rinomina'];
   const pc = await (await contesto(TUTTE)).newPage();
   pc.on('pageerror', (e) => errs.push('pc: ' + e.message));
   const preparaPc = () => pc.evaluate(() => {
@@ -175,6 +182,25 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   check(albero().some((x) => /^Neri Marco\/\d{4}\/\d{4}-\d{2}-\d{2}_RT\d{2}-[A-Z2-9]{4}\/[^/]*_Stadiazione_/.test(x)) && fs.existsSync(path.join(COMUNE, 'Neri Marco', 'indice-referti.csv')),
     'i suoi referti e il suo indice vanno nella sua cartella');
   console.log(albero().join('\n'));
+
+  check(!albero().some((x) => /\.tmp-/.test(x)), 'nessun file provvisorio rimasto nella cartella comune');
+
+  // ── un indice con le colonne di prima: si rinomina, e ne nasce uno nuovo ──
+  const idxNeri = path.join(COMUNE, 'Neri Marco', 'indice-referti.csv');
+  fs.writeFileSync(idxNeri, '﻿Data;Tipo;File\r\n01/01/2025;Stadiazione;vecchio.txt\r\n', 'utf8');
+  await pc.fill('#arcAccesso', 'B777'); await salva();
+  check(/vecchio\.txt/.test(fs.readFileSync(path.join(COMUNE, 'Neri Marco', 'indice-referti-precedente.csv'), 'utf8'))
+    && /^﻿Data esame;/.test(fs.readFileSync(idxNeri, 'utf8')) && fs.readFileSync(idxNeri, 'utf8').includes('B777'),
+    'indice di prima rinominato in indice-referti-precedente.csv, quello nuovo riparte');
+
+  // ── l'indice non si può sostituire (su Windows: aperto in Excel, o di sola lettura) ──
+  if (process.platform === 'win32') {
+    fs.chmodSync(idxNeri, 0o444);
+    await pc.fill('#arcAccesso', 'B888'); await salva();
+    check(/indice-referti\.csv» è aperto in un altro programma/.test(await stato()), 'indice bloccato: «' + (await stato()).slice(0, 90) + '…»');
+    fs.chmodSync(idxNeri, 0o666);
+    check(/^﻿Data esame;/.test(fs.readFileSync(idxNeri, 'utf8')) && !albero().some((x) => /\.tmp-/.test(x)), 'l\'indice di prima è intatto, nessun file provvisorio');
+  }
 
   // ── disco di rete scollegato: messaggio chiaro, nessun file perso ──
   const prima = albero().length;

@@ -6115,6 +6115,8 @@ const ponte = async (f, ...a) => {
 function fileDesktop(rel, name){
   return {
     kind: 'file', name,
+    // rinomina nella stessa cartella, se il programma lo sa fare
+    move: Desktop.rinomina && (async (n) => { await ponte('rinomina', rel, rel.replace(/[^/]*$/, n)); }),
     getFile: async () => { const t = await ponte('leggi', rel); return { name, text: async () => t }; },
     // come nel browser, il file si scrive tutto insieme alla chiusura
     createWritable: async () => { let t = ''; return { write: async (x) => { t += x; }, close: async () => { await ponte('scrivi', rel, t); } }; }
@@ -6376,8 +6378,12 @@ async function aggiungiIndice(dirOp, riga){
   try { testo = await (await (await dirOp.getFileHandle(INDICE)).getFile()).text(); } catch (_) {}
   // un indice con le colonne di prima resta accanto, con un altro nome
   if (testo.trim() && testo.replace(/^\ufeff/, '').split(/\r?\n/)[0] !== COLONNE.join(';')) {
-    const w0 = await (await dirOp.getFileHandle('indice-referti-precedente.csv', { create: true })).createWritable();
-    await w0.write(testo); await w0.close();
+    const vecchio = Desktop && await dirOp.getFileHandle(INDICE);
+    if (vecchio && vecchio.move) await vecchio.move('indice-referti-precedente.csv');   // nel programma: si rinomina
+    else {
+      const w0 = await (await dirOp.getFileHandle('indice-referti-precedente.csv', { create: true })).createWritable();
+      await w0.write(testo); await w0.close();
+    }
     testo = '';
   }
   if (!testo.trim()) testo = '\ufeff' + COLONNE.join(';') + '\r\n';

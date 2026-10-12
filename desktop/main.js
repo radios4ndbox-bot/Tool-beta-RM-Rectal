@@ -216,13 +216,13 @@ function gestisci(canale, fn){
   });
 }
 
-gestisci('stato', () => {
+gestisci('stato', async () => {
   const c = leggiConfig();
   return {
     versione: app.getVersion(),
     config: FILE_CONFIG,
     cartella: c.cartella || '',
-    raggiungibile: !!(c.cartella && fs.existsSync(c.cartella)),
+    raggiungibile: await ponte.raggiungibile(),
     utente: os.userInfo().username,
     pc: os.hostname()
   };
@@ -240,7 +240,7 @@ gestisci('scegli', async () => {
   scriviConfig(c);
   return c.cartella;
 });
-for (const op of ['scrivi', 'leggi', 'elenca', 'esiste', 'tipo', 'creaCartella']) gestisci(op, ponte[op]);
+for (const op of ['scrivi', 'leggi', 'elenca', 'esiste', 'tipo', 'creaCartella', 'rinomina']) gestisci(op, ponte[op]);
 gestisci('apriCartella', () => { const c = leggiConfig().cartella; return c ? shell.openPath(c) : ''; });
 gestisci('apriTool', () => win.loadURL(TOOL_URL));
 

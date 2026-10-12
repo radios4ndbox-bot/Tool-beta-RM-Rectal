@@ -63,6 +63,12 @@ Su Windows `npm run dist` non ha bisogno di wine.
 3. **Ponte da completare in `main.js`:** scrittura in coda o sostituzione
    atomica per l'indice CSV, `rinomina` (per `indice-referti-precedente.csv`),
    errori chiari se la cartella non è raggiungibile (disco di rete scollegato).
+   **Fatto** in `ponte.js`: operazioni in coda, una alla volta; ogni file si
+   scrive con un nome provvisorio e poi sostituisce il vecchio; `rinomina`
+   (usata per `indice-referti-precedente.csv`); niente chiamate bloccanti,
+   con un limite di 15 secondi, così un disco di rete scollegato non ferma
+   la finestra; messaggi leggibili per cartella non raggiungibile, file
+   aperto in Excel o protetto, disco pieno.
 4. **Accesso con il telefono:** il relay ntfy.sh e il QR dovrebbero
    funzionare anche nella finestra (il PC mostra solo il QR, non serve la
    fotocamera); da verificare.
