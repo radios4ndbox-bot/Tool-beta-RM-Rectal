@@ -197,7 +197,8 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   if (process.platform === 'win32') {
     fs.chmodSync(idxNeri, 0o444);
     await pc.fill('#arcAccesso', 'B888'); await salva();
-    check(/indice-referti\.csv» è aperto in un altro programma/.test(await stato()), 'indice bloccato: «' + (await stato()).slice(0, 90) + '…»');
+    check(/^Salvato nel caso/.test(await stato()) && /L'indice non è stato aggiornato: «indice-referti\.csv» è aperto in un altro programma/.test(await stato())
+      && albero().some((x) => /^Neri Marco\/.*_B888_/.test(x)), 'indice bloccato: il referto è salvato, e il messaggio dice che manca solo l\'indice');
     fs.chmodSync(idxNeri, 0o666);
     check(/^﻿Data esame;/.test(fs.readFileSync(idxNeri, 'utf8')) && !albero().some((x) => /\.tmp-/.test(x)), 'l\'indice di prima è intatto, nessun file provvisorio');
   }

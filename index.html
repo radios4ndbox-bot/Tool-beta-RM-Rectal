@@ -3576,11 +3576,37 @@ avviaIntro();
       return await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, k, b64u.a(firma), new TextEncoder().encode(testo));
     } catch (_) { return false; }
   }
+
+  /* ─── amministratori ───────────────────────────────────────────────
+     AMMINISTRATORI: i codici dei telefoni che lo sono da sempre, su ogni
+     PC. Un altro medico lo diventa con una DELEGA: dal suo telefono manda
+     una richiesta, che arriva come notifica (argomento RICHIESTE del
+     relay) al telefono di un amministratore della lista; se questi
+     approva, il suo telefono firma il codice del richiedente. Il medico
+     conserva la delega sul telefono e la presenta a ogni accesso: il PC
+     verifica che la firma sia di un amministratore della lista e che
+     riguardi proprio il telefono che sta entrando. Vale su ogni PC.
+     Una delega si ritira mettendo il codice in REVOCATI.
+     QUESTE TRE COSTANTI DEVONO ESSERE UGUALI in index.html e telefono.html. */
+  const AMMINISTRATORI = [
+    '9407-BEE0-7B5F-AED2'    // amministratore StructuRad
+  ];
+  const REVOCATI = [];
+  const RICHIESTE = 'esgar-richieste-8iz77g9q5m94r4iws5nrgv';
+  const RE_CODICE = /^[0-9A-F]{4}(-[0-9A-F]{4}){3}$/;
+  const testoDelega = codice => `structurad-esgar|amministratore|${codice}`;
+  /* la delega { pub, firma } vale per questo codice? */
+  async function delegaValida(delega, codice) {
+    if (!delega || !delega.pub || !delega.firma || !RE_CODICE.test(codice || '') || REVOCATI.includes(codice)) return false;
+    if (!AMMINISTRATORI.includes(await codiceDispositivo(delega.pub))) return false;
+    return verificaFirma(delega.pub, delega.firma, testoDelega(codice));
+  }
   root.Canale = {
     get RELAY() { return RELAY; }, usaRelay: u => { RELAY = u; },
     nuovoAbbinamento, daFrammento, frammento, valido, apri, cifra, decifra, invia, ascolta,
     casuale, TITOLI, nomeCortese, iniziali, profiloValido,
     testoFirma, codiceDispositivo, verificaFirma, b64u,
+    AMMINISTRATORI, REVOCATI, RICHIESTE, RE_CODICE, testoDelega, delegaValida,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -6018,6 +6044,8 @@ $id('ppAccedi').addEventListener('click', async () => {
           codice: firmato ? await Canale.codiceDispositivo(m.pub) : '',
           dal: Date.now(), scade: Date.now() + SESSIONE_ORE * 3600 * 1000
         };
+        // amministratore per delega: firmata da un amministratore della lista, per questo telefono
+        if (s.codice && await Canale.delegaValida(m.delega, s.codice)) s.delegato = true;
         if (accesso !== acc) return;
         try { await Canale.invia(sess, 'pc', { tipo: 'benvenuto', nome: Canale.nomeCortese(s.profilo), scade: s.scade }); } catch (_) {}
         chiudiAccesso();
@@ -6087,9 +6115,9 @@ function disegnaQR(canvas, testo){
 // un PC senza cartella comune il primo che la sceglie ne diventa
 // l'amministratore, e lo resta per quel PC.
 // ============================================================
-const ADMIN_DISPOSITIVI = [
-  '9407-BEE0-7B5F-AED2'    // amministratore StructuRad
-];
+// la lista sta con il canale (Canale.AMMINISTRATORI), uguale nella pagina del telefono.
+// Chi non è nella lista lo diventa con una delega firmata da chi lo è: vedi «amministratori» nel canale.
+const ADMIN_DISPOSITIVI = Canale.AMMINISTRATORI;
 const ARCH_DB = 'structurad-esgar', ARCH_STORE = 'cartella';
 const K_RADICE = 'radice', K_ADMIN = 'admin-pc';
 const INDICE = 'indice-referti.csv';
@@ -6175,7 +6203,9 @@ async function idbScrivi(k, v){
 function eAdmin(){
   const c = sessione && sessione.codice;
   if (!c) return false;
-  return ADMIN_DISPOSITIVI.length ? ADMIN_DISPOSITIVI.includes(c) : c === adminPc;
+  if (!ADMIN_DISPOSITIVI.length) return c === adminPc;
+  // nella lista, oppure con una delega verificata all'accesso (e non ritirata nel frattempo)
+  return ADMIN_DISPOSITIVI.includes(c) || (sessione.delegato === true && !Canale.REVOCATI.includes(c));
 }
 /* su un PC nuovo, senza lista e senza cartella comune, il primo che entra
    con un telefono firmato può configurarlo */
@@ -6311,8 +6341,9 @@ function disegnaCartella(){
     testo.innerHTML = 'Browser senza accesso alle cartelle: i referti si <b>scaricano</b>.';
   } else if (!radice) {
     testo.innerHTML = admin || config ? ''
-      : Desktop ? 'Cartella comune non impostata: la sceglie l\'amministratore. Intanto i referti si <b>scaricano</b>.'
-      : 'Cartella comune non impostata: i referti si <b>scaricano</b>.';
+      : (Desktop ? 'Cartella comune non impostata: la sceglie l\'amministratore. Intanto i referti si <b>scaricano</b>.'
+        : 'Cartella comune non impostata: i referti si <b>scaricano</b>.')
+        + (ADMIN_DISPOSITIVI.length ? '<div class="pp-stato">Per sceglierla tu, dal telefono: «Chiedi di diventare amministratore».</div>' : '');
   } else {
     testo.innerHTML = `<div class="pp-percorso">${escH(radice.name)} / <b>${escH(cartellaMedico(p))}</b> / tipo di esame / anno / mese</div>`
       + (permesso === 'granted' ? '' : '<div class="pp-stato">Permesso di scrittura da riattivare.</div>')
@@ -6643,10 +6674,15 @@ $id('btnSalva').addEventListener('click', async () => {
     const w = await (await caso.dir.getFileHandle(nome, { create: true })).createWritable();
     await w.write(contenuto); await w.close();
     const percorso = caso.percorso.concat(nome).join('/');
-    await aggiungiIndice(dirMed, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, codice, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
-      Canale.nomeCortese(p), percorso]);
+    // il referto è già al sicuro: se l'indice non si può scrivere (per esempio è aperto in Excel) lo si dice a parte
+    let senzaIndice = '';
+    try {
+      await aggiungiIndice(dirMed, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, codice, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
+        Canale.nomeCortese(p), percorso]);
+    } catch (e) { senzaIndice = String(e && e.message || e); }
     disegnaCaso();
-    statoArchivio(`Salvato nel caso <b>${escH(codice)}</b>: <code>${escH(radice.name)}/${escH(percorso)}</code>`, 'ok');
+    statoArchivio(`Salvato nel caso <b>${escH(codice)}</b>: <code>${escH(radice.name)}/${escH(percorso)}</code>`
+      + (senzaIndice ? `<br><b>L'indice non è stato aggiornato</b>: ${escH(senzaIndice)}` : ''), senzaIndice ? 'ko' : 'ok');
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
   } catch (e) {
     statoArchivio('Salvataggio non riuscito: ' + escH(e && e.message || e), 'ko');

@@ -9,6 +9,7 @@ modifica del form e conserva le correzioni manuali.
 | `index.html` | il tool, in un file unico: si apre in Chrome o Edge |
 | `telefono.html` | la pagina del telefono, che fa da chiave per l'accesso |
 | `test/accesso.test.js` | accesso e archivio, da capo a fondo |
+| `test/amministratore.test.js` | richiesta dal telefono, approvazione e delega di amministratore |
 | `test/desktop.test.js` | archivio nel programma per Windows, attraverso il ponte |
 | `test/interfaccia.test.js` | menu a tendina, calendario e campi che imparano |
 | `test/struttura.test.js` | apprendimento dalla struttura del referto finito |
