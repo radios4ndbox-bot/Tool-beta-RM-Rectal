@@ -54,6 +54,12 @@ Su Windows `npm run dist` non ha bisogno di wine.
    Il modo più pulito: un piccolo adattatore con la stessa interfaccia degli
    handle usati oggi (`getDirectoryHandle`, `getFileHandle`, `createWritable`,
    `entries`), così il resto del codice dell'archivio non cambia.
+   **Fatto:** l'adattatore è in `index.html` (`dirDesktop`, `fileDesktop`);
+   il ponte ha in più `tipo` e `creaCartella`, e le operazioni sui file sono
+   in `ponte.js`, senza Electron, così si provano con Node. Un programma più
+   vecchio, senza le funzioni nuove, fa come il browser. Prova:
+   `node test/desktop.test.js`. Per vedere nel programma l'`index.html` del
+   repository invece di quello sul web: `npm run locale`.
 3. **Ponte da completare in `main.js`:** scrittura in coda o sostituzione
    atomica per l'indice CSV, `rinomina` (per `indice-referti-precedente.csv`),
    errori chiari se la cartella non è raggiungibile (disco di rete scollegato).

@@ -1,0 +1,198 @@
+// Il tool dentro il programma per Windows: la cartella comune passa dal
+// ponte window.EsgarDesktop invece che dal browser. Qui il ponte è finto
+// solo nel trasporto: le operazioni sui file sono quelle vere del
+// programma (desktop/ponte.js), su una cartella temporanea del disco.
+// Uso: npm i playwright && node test/desktop.test.js
+const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
+const { chromium } = require('playwright');
+const creaPonte = require('../desktop/ponte.js');
+const ROOT = path.join(__dirname, '..');
+
+// relay finto: POST /<topic>, GET /<topic>/sse?since=all
+const topics = new Map(); let seq = 0;
+const relay = http.createServer((req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const [, topic, sse] = req.url.split('?')[0].split('/');
+  const t = topics.get(topic) || { msgs: [], subs: new Set() }; topics.set(topic, t);
+  if (req.method === 'POST') {
+    let b = ''; req.on('data', (c) => b += c); req.on('end', () => {
+      const m = { id: 'm' + (++seq), time: Date.now() / 1000 | 0, event: 'message', topic, message: b };
+      t.msgs.push(m); t.subs.forEach((s) => s.write('data: ' + JSON.stringify(m) + '\n\n'));
+      res.end('{}');
+    });
+  } else if (sse === 'sse') {
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
+    res.write('data: ' + JSON.stringify({ event: 'open' }) + '\n\n');
+    t.msgs.forEach((m) => res.write('data: ' + JSON.stringify(m) + '\n\n'));
+    t.subs.add(res); req.on('close', () => t.subs.delete(res));
+  } else { res.statusCode = 404; res.end(); }
+}).listen(8126);
+const statico = http.createServer((req, res) => {
+  fs.readFile(path.join(ROOT, decodeURIComponent(req.url.split('?')[0])), (e, d) => {
+    if (e) { res.statusCode = 404; return res.end(); }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(d);
+  });
+}).listen(8125);
+
+const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg); if (!cond) process.exitCode = 1; };
+
+// il «PC»: la configurazione con la cartella comune, e il ponte del programma
+const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'esgar-desktop-'));
+const COMUNE = path.join(TMP, 'Referti RM Retto');
+fs.mkdirSync(COMUNE);
+const config = { cartella: '' };
+const ponte = creaPonte(() => config.cartella);
+let sceltaWindows = COMUNE;   // cosa «sceglie» l'amministratore nella finestra di Windows
+const programma = {
+  ...ponte,
+  stato: () => ({ versione: 'test', cartella: config.cartella, raggiungibile: !!(config.cartella && fs.existsSync(config.cartella)) }),
+  scegli: () => { if (sceltaWindows) config.cartella = sceltaWindows; return sceltaWindows; }
+};
+const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true })
+  .flatMap((e) => e.isDirectory() ? albero(path.join(d, e.name), p + e.name + '/') : [p + e.name]).sort();
+
+(async () => {
+  check((() => { config.cartella = COMUNE; try { ponte.scrivi('../fuori.txt', 'no'); return false; } catch (_) { return !fs.existsSync(path.join(TMP, 'fuori.txt')); } finally { config.cartella = ''; } })(),
+    'il ponte rifiuta i percorsi fuori dalla cartella comune');
+
+  const b = await chromium.launch();
+  const errs = [];
+  const contesto = async (funzioni) => {
+    const c = await b.newContext({ viewport: { width: 1440, height: 900 } });
+    // come Electron: gli errori arrivano con «Error invoking remote method…» davanti
+    await c.exposeBinding('__ponte', (_, f, ...a) => {
+      try { return programma[f](...a); } catch (e) { throw new Error(`Error invoking remote method '${f}': Error: ${e.message}`); }
+    });
+    await c.addInitScript((ff) => { window.EsgarDesktop = Object.fromEntries(ff.map((f) => [f, (...a) => window.__ponte(f, ...a)])); }, funzioni);
+    return c;
+  };
+  const TUTTE = ['stato', 'scegli', 'scrivi', 'leggi', 'elenca', 'esiste', 'tipo', 'creaCartella'];
+  const pc = await (await contesto(TUTTE)).newPage();
+  pc.on('pageerror', (e) => errs.push('pc: ' + e.message));
+  const preparaPc = () => pc.evaluate(() => {
+    Canale.usaRelay('http://localhost:8126');
+    const o = Canale.nuovoAbbinamento; Canale.nuovoAbbinamento = async () => (window.__abb = await o());
+  });
+  const telefono = async (ua) => {
+    const t = await (await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, userAgent: ua })).newPage();
+    t.on('pageerror', (e) => errs.push('tel: ' + e.message));
+    return t;
+  };
+  async function accedi(tel, dati){
+    if (await pc.isHidden('#pannelloProfilo')) await pc.click('#profiloBtn');
+    await pc.click('#ppAccedi');
+    await pc.waitForSelector('#qrBox:not([hidden])', { timeout: 5000 });
+    const a = await pc.evaluate(() => window.__abb);
+    await tel.goto(`http://localhost:8125/telefono.html#t=${a.t}&k=${a.k}`);
+    if (dati) {
+      await tel.fill('#cNome', dati.nome); await tel.fill('#cCognome', dati.cognome);
+      await tel.click(`#cTitolo [data-t="${dati.titolo}"]`); await tel.click('#cSalva');
+    }
+    await tel.evaluate(() => EsgarTelefono.usaRelay('http://localhost:8126'));
+    await tel.click('#aConferma');
+    await tel.waitForSelector('#vFatto:not([hidden])', { timeout: 8000 });
+    await pc.waitForFunction(() => document.getElementById('profiloNome').textContent !== 'Accedi', null, { timeout: 5000 });
+    await pc.waitForTimeout(300);
+  }
+  const stato = () => pc.textContent('#archivioStato');
+  const salva = async () => { await pc.click('#btnSalva'); await pc.waitForTimeout(500); };
+
+  await pc.goto('http://localhost:8125/index.html?nointro');
+  await preparaPc();
+
+  // ── un medico qualunque, PC senza cartella comune: niente «Ricollega» ──
+  const tel = await telefono('Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP1A) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36');
+  await accedi(tel, { nome: 'Giulia', cognome: 'Bianchi', titolo: 'Dr.ssa' });
+  const codiceTel = await tel.evaluate(() => EsgarTelefono.codice());
+  check(/la sceglie l'amministratore/.test(await pc.textContent('#ppCartellaTesto')) && await pc.locator('[data-cartella]').count() === 0,
+    'senza cartella comune: la sceglie l\'amministratore, niente «Ricollega»');
+
+  // ── l'amministratore sceglie la cartella dalla finestra di Windows ──
+  await pc.evaluate((c) => EsgarTest.amministratori.push(c), codiceTel);
+  await pc.click('#ppEsci'); await accedi(tel);
+  sceltaWindows = '';
+  await pc.click('[data-cartella="radice"]'); await pc.waitForTimeout(300);
+  check(config.cartella === '' && /nessuna/.test(await pc.textContent('#ppAdminTesto')), 'scelta annullata: non cambia nulla');
+  sceltaWindows = COMUNE;
+  await pc.click('[data-cartella="radice"]'); await pc.waitForTimeout(500);
+  check(config.cartella === COMUNE && (await pc.textContent('#ppAdminTesto')).includes(COMUNE), 'l\'amministratore sceglie la cartella comune: resta nella configurazione del PC');
+  check(albero().join() === 'structurad-esgar.json' && fs.existsSync(path.join(COMUNE, 'Bianchi Giulia')), 'sul disco: la marca e la cartella del medico');
+  check(!(await pc.evaluate(() => new Promise((ok) => { const r = indexedDB.open('structurad-esgar', 1); r.onsuccess = () => { const q = r.result.transaction('cartella').objectStore('cartella').get('radice'); q.onsuccess = () => ok(q.result || null); }; }))),
+    'nel browser non si salva nessun riferimento alla cartella');
+
+  // ── stadiazione ──
+  await pc.click('#profiloBtn');
+  await pc.click('text=Anteriore'); await pc.click('text=Posteriore');
+  await pc.click('input[name=p_ct][value=cT3c]'); await pc.click('input[name="p_cn"][value="cN+"]');
+  await pc.selectOption('#p_emviGrade', '3');
+  await pc.fill('#arcAccesso', 'A 123/456'); await pc.fill('#arcData', '28092026'); await pc.click('#arcAccesso');
+  await pc.click('#btnSalva');
+  await pc.waitForFunction(() => /Salvato/.test(document.getElementById('archivioStato').textContent), null, { timeout: 5000 });
+  const codice = (await pc.evaluate(() => EsgarTest.caso())).codice;
+  const dirCaso = `Bianchi Giulia/2026/2026-09-28_${codice}/`;
+  let f = albero();
+  const stad = f.find((x) => x.startsWith(dirCaso) && /^2026-09-28_\d{4}_Stadiazione_A123456_cT3c_cN\+_MRF-_EMVI\+\.txt$/.test(x.slice(dirCaso.length)));
+  check(!!stad, 'la stadiazione è sul disco, nella cartella del caso: ' + stad);
+  const testo = fs.readFileSync(path.join(COMUNE, stad), 'utf8');
+  check(testo.includes('Codice caso: ' + codice) && testo.includes('N. accesso: A 123/456') && /\r\n/.test(testo) && testo.includes('Dr.ssa Bianchi'), 'il file ha intestazione, codice del caso e ritorni a capo di Windows');
+  const idx = () => fs.readFileSync(path.join(COMUNE, 'Bianchi Giulia', 'indice-referti.csv'));
+  check(idx().subarray(0, 3).equals(Buffer.from([0xEF, 0xBB, 0xBF])) && idx().toString('utf8').split('\r\n')[0].endsWith('Data esame;Ora salvataggio;Tipo;Codice caso;N. accesso;Risposta;T;N;MRF;EMVI;Refertato da;File'),
+    'l\'indice CSV comincia con il BOM e le colonne: si apre in Excel');
+  await salva();
+  check(/_2\.txt/.test(await stato()) && albero().filter((x) => x.startsWith(dirCaso)).length === 2, 'stesso minuto: nessuna sovrascrittura');
+  check(idx().toString('utf8').trim().split('\r\n').length === 3, 'l\'indice ha una riga per salvataggio');
+
+  // ── ristadiazione nello stesso caso, con «Ricerca precedente» ──
+  await pc.click('#btnNuovoCaso');
+  await pc.click('#btnModeRistad'); await pc.waitForTimeout(300);
+  await pc.click('input[name=r_risposta][value=near-cCR]'); await pc.click('input[name=r_yct][value=ycT1-2]');
+  await pc.click('#btnCerca'); await pc.waitForSelector('#cercaPannello.aperto .cerca-caso', { timeout: 5000 });
+  await pc.fill('#cercaQ', 'A1234');
+  check(await pc.locator('#cercaPannello .cerca-caso').count() === 1, '«Ricerca precedente» trova il caso sul disco dal numero d\'accesso');
+  await pc.click('#cercaPannello [data-vedi="0"]'); await pc.waitForTimeout(200);
+  check(new RegExp('Codice caso: ' + codice).test(await pc.textContent('#cercaPannello .cerca-anteprima')), 'anteprima della stadiazione letta dal disco');
+  await pc.click('#cercaPannello [data-associa="0"]');
+  await pc.fill('#arcAccesso', 'A178902'); await pc.fill('#arcData', '20122026'); await pc.click('#arcAccesso');
+  await salva();
+  f = albero();
+  check(f.some((x) => x.startsWith(dirCaso) && /2026-12-20_\d{4}_Ristadiazione_A178902_near-cCR_ycT1-2/.test(x)), 'la ristadiazione va nella stessa cartella della stadiazione');
+  await pc.click('#btnModePrimaria'); await pc.waitForTimeout(200);
+
+  // ── la cartella resta: ricarica della pagina, senza permessi da riattivare ──
+  await pc.reload(); await pc.waitForTimeout(500); await preparaPc();
+  await pc.click('#profiloBtn');
+  check((await pc.textContent('#ppCartellaTesto')).includes(COMUNE) && await pc.locator('[data-cartella="riattiva"], [data-cartella="ricollega"]').count() === 0,
+    'dopo la ricarica la cartella è ancora quella: niente «Riattiva», niente «Ricollega»');
+  await pc.click('#ppEsci');
+
+  // ── un altro medico: non amministratore, la sua cartella si crea da sola ──
+  const tel2 = await telefono('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148');
+  await accedi(tel2, { nome: 'Marco', cognome: 'Neri', titolo: 'Dr.' });
+  check(await pc.isHidden('#ppAdmin') && fs.existsSync(path.join(COMUNE, 'Neri Marco')) && /Neri Marco/.test(await pc.textContent('#ppCartellaTesto')),
+    'Dr. Neri: nessuna amministrazione, la sua cartella è sul disco');
+  await pc.click('#profiloBtn');
+  await salva();
+  check(albero().some((x) => /^Neri Marco\/\d{4}\/\d{4}-\d{2}-\d{2}_RT\d{2}-[A-Z2-9]{4}\/[^/]*_Stadiazione_/.test(x)) && fs.existsSync(path.join(COMUNE, 'Neri Marco', 'indice-referti.csv')),
+    'i suoi referti e il suo indice vanno nella sua cartella');
+  console.log(albero().join('\n'));
+
+  // ── disco di rete scollegato: messaggio chiaro, nessun file perso ──
+  const prima = albero().length;
+  fs.renameSync(COMUNE, COMUNE + ' (scollegata)');
+  await pc.fill('#arcAccesso', 'C555');
+  await salva();
+  check(/Salvataggio non riuscito: Cartella comune non raggiungibile/.test(await stato()) && !/remote method/.test(await stato()), 'cartella scollegata: «' + (await stato()).slice(0, 70) + '…»');
+  fs.renameSync(COMUNE + ' (scollegata)', COMUNE);
+  await salva();
+  check(/Salvato/.test(await stato()) && albero().length === prima + 1, 'ricollegato il disco, il salvataggio riprende');
+
+  // ── un programma più vecchio, con il ponte incompleto: il tool fa come nel browser ──
+  const vecchio = await (await contesto(['stato', 'scegli', 'scrivi', 'leggi', 'elenca', 'esiste'])).newPage();
+  vecchio.on('pageerror', (e) => errs.push('vecchio: ' + e.message));
+  await vecchio.goto('http://localhost:8125/index.html?nointro'); await vecchio.waitForTimeout(300);
+  check(await vecchio.evaluate(() => Desktop === null) && await pc.evaluate(() => Desktop !== null), 'ponte senza le funzioni nuove: il tool non lo usa');
+
+  check(errs.length === 0, 'nessun errore JS ' + errs.join(' | '));
+  await b.close(); relay.close(); statico.close();
+  fs.rmSync(TMP, { recursive: true, force: true });
+})();

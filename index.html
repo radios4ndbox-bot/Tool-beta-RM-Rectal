@@ -6094,10 +6094,56 @@ const ARCH_DB = 'structurad-esgar', ARCH_STORE = 'cartella';
 const K_RADICE = 'radice', K_ADMIN = 'admin-pc';
 const INDICE = 'indice-referti.csv';
 const MARCA = 'structurad-esgar.json';   // segna la cartella comune: chiunque può ricollegarla
-const supportaCartelle = typeof window.showDirectoryPicker === 'function';
+/* PROGRAMMA PER WINDOWS
+   Nel programma (desktop/) la cartella comune non è un riferimento tenuto
+   dal browser: sta nella configurazione del PC e i file si leggono e si
+   scrivono attraverso il ponte window.EsgarDesktop. Qui sotto un
+   adattatore con la stessa interfaccia delle cartelle del browser
+   (getDirectoryHandle, getFileHandle, createWritable, entries): il resto
+   dell'archivio non cambia. Niente permessi da riattivare, niente
+   «Ricollega». Un programma più vecchio, senza le funzioni che servono,
+   si comporta come il browser. */
+const Desktop = (() => {
+  const d = window.EsgarDesktop;
+  return d && ['stato', 'scegli', 'scrivi', 'leggi', 'elenca', 'tipo', 'creaCartella'].every((f) => typeof d[f] === 'function') ? d : null;
+})();
+// Electron mette davanti al messaggio «Error invoking remote method…»: si toglie
+const ponte = async (f, ...a) => {
+  try { return await Desktop[f](...a); }
+  catch (e) { throw new Error(String(e && e.message || e).replace(/^Error invoking remote method '[^']*': (Error: )?/, '')); }
+};
+function fileDesktop(rel, name){
+  return {
+    kind: 'file', name,
+    getFile: async () => { const t = await ponte('leggi', rel); return { name, text: async () => t }; },
+    // come nel browser, il file si scrive tutto insieme alla chiusura
+    createWritable: async () => { let t = ''; return { write: async (x) => { t += x; }, close: async () => { await ponte('scrivi', rel, t); } }; }
+  };
+}
+function dirDesktop(rel, name){
+  const sotto = (n) => rel ? rel + '/' + n : n;
+  const manca = (n) => new DOMException(`«${n}» non trovato`, 'NotFoundError');
+  return {
+    kind: 'directory', name,
+    async getDirectoryHandle(n, o){
+      if (o && o.create) await ponte('creaCartella', sotto(n));
+      else if ((await ponte('tipo', sotto(n))) !== 'cartella') throw manca(n);
+      return dirDesktop(sotto(n), n);
+    },
+    async getFileHandle(n, o){
+      if (!(o && o.create) && (await ponte('tipo', sotto(n))) !== 'file') throw manca(n);
+      return fileDesktop(sotto(n), n);
+    },
+    async *entries(){
+      for (const v of await ponte('elenca', rel || '.')) yield [v.nome, v.cartella ? dirDesktop(sotto(v.nome), v.nome) : fileDesktop(sotto(v.nome), v.nome)];
+    }
+  };
+}
+const supportaCartelle = !!Desktop || typeof window.showDirectoryPicker === 'function';
 let radice = null;            // cartella comune del PC
 let adminPc = '';             // codice dell'amministratore di questo PC, se la lista è vuota
 let permesso = 'prompt';      // granted | prompt | denied
+let raggiungibile = true;     // nel programma: la cartella comune risponde (disco di rete collegato)
 
 function idb(){
   return new Promise((ok, ko) => {
@@ -6158,6 +6204,13 @@ async function dopoAccesso(){
 async function scegliRadice(){
   if (!supportaCartelle || !(eAdmin() || puoConfigurare())) return false;
   try {
+    if (Desktop) {
+      // la finestra di scelta è quella di Windows; la cartella resta nella configurazione del PC
+      const c = await ponte('scegli');
+      if (!c) return false;
+      await impostaRadice(dirDesktop('', c));
+      return true;
+    }
     const h = await window.showDirectoryPicker({ id: 'referti-esgar', mode: 'readwrite', startIn: radice || 'documents' });
     await impostaRadice(h);
     return true;
@@ -6165,8 +6218,8 @@ async function scegliRadice(){
 }
 async function impostaRadice(h){
   if (puoConfigurare()) { adminPc = sessione.codice; await idbScrivi(K_ADMIN, adminPc); }
-  radice = h; permesso = 'granted';
-  await idbScrivi(K_RADICE, h);
+  radice = h; permesso = 'granted'; raggiungibile = true;
+  if (!Desktop) await idbScrivi(K_RADICE, h);
   await segnaRadice();
   try { await dirMedico(true); } catch (_) {}
   disegnaProfilo();
@@ -6214,6 +6267,17 @@ async function ricollegaRadice(){
 }
 
 async function aggiornaPermesso(){
+  if (Desktop) {
+    // la cartella è quella della configurazione del PC, uguale per tutti gli utenti Windows
+    try {
+      const s = await ponte('stato');
+      radice = s.cartella ? dirDesktop('', s.cartella) : null;
+      raggiungibile = !!s.raggiungibile;
+    } catch (_) {}
+    permesso = 'granted';
+    disegnaCartella();
+    return;
+  }
   if (!radice) { permesso = 'prompt'; disegnaCartella(); return; }
   try { permesso = radice.queryPermission ? await radice.queryPermission({ mode: 'readwrite' }) : 'granted'; }
   catch (_) { permesso = 'prompt'; }
@@ -6244,13 +6308,16 @@ function disegnaCartella(){
   } else if (!supportaCartelle) {
     testo.innerHTML = 'Browser senza accesso alle cartelle: i referti si <b>scaricano</b>.';
   } else if (!radice) {
-    testo.innerHTML = admin || config ? '' : 'Cartella comune non impostata: i referti si <b>scaricano</b>.';
+    testo.innerHTML = admin || config ? ''
+      : Desktop ? 'Cartella comune non impostata: la sceglie l\'amministratore. Intanto i referti si <b>scaricano</b>.'
+      : 'Cartella comune non impostata: i referti si <b>scaricano</b>.';
   } else {
     testo.innerHTML = `<div class="pp-percorso">${escH(radice.name)} / <b>${escH(cartellaMedico(p))}</b> / tipo di esame / anno / mese</div>`
-      + (permesso === 'granted' ? '' : '<div class="pp-stato">Permesso di scrittura da riattivare.</div>');
+      + (permesso === 'granted' ? '' : '<div class="pp-stato">Permesso di scrittura da riattivare.</div>')
+      + (Desktop && !raggiungibile ? '<div class="pp-stato">Cartella comune non raggiungibile: controlla il disco o la rete.</div>' : '');
   }
   azioni.innerHTML = p && radice && permesso !== 'granted' ? '<button type="button" class="btn-primary" data-cartella="riattiva">Riattiva</button>'
-    : p && !radice && supportaCartelle && !(admin || config) ? '<button type="button" class="btn-secondary" data-cartella="ricollega">Ricollega la cartella comune</button>' : '';
+    : p && !radice && supportaCartelle && !Desktop && !(admin || config) ? '<button type="button" class="btn-secondary" data-cartella="ricollega">Ricollega la cartella comune</button>' : '';
 
   // amministrazione: solo per l'amministratore, o per chi configura un PC nuovo
   aSez.hidden = !(p && (admin || config));
@@ -6584,7 +6651,8 @@ $id('btnSalva').addEventListener('click', async () => {
   EsgarUI.impostaData($id('arcData'), dataIso(new Date()));
   // chiede al browser di non sfoltire da solo i dati del sito (cartella, memoria)
   try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {}
-  try { radice = await idbLeggi(K_RADICE); adminPc = (await idbLeggi(K_ADMIN)) || ''; } catch (_) { radice = null; }
+  // nel programma la cartella comune arriva dalla configurazione del PC (aggiornaPermesso)
+  try { if (!Desktop) radice = await idbLeggi(K_RADICE); adminPc = (await idbLeggi(K_ADMIN)) || ''; } catch (_) { radice = null; }
   await aggiornaPermesso();
   if (permesso === 'granted') segnaRadice();
   disegnaProfilo();

@@ -36,6 +36,8 @@ const ATTESA_RETE = 8000;     // ms per la risposta: oltre, si passa alla copia 
 const ATTESA_PAGINA = 20000;  // ms per scaricare la pagina
 const OGNI = 15 * 60 * 1000;  // ogni quanto si cerca una versione nuova del tool
 let daRiserva = false;
+// solo in sviluppo (npm run locale): il tool è l'index.html del repository, non quello sul web
+const LOCALE = !app.isPackaged && process.argv.includes('--tool-locale');
 
 function fileRiserva(url){
   if (!url.startsWith(TOOL_URL)) return '';
@@ -71,6 +73,7 @@ function serviTool(){
     const stop = new AbortController();
     let timer = setTimeout(() => stop.abort(), ATTESA_RETE);
     try {
+      if (LOCALE) throw new Error('tool locale');
       const r = await net.fetch(req.url, { signal: stop.signal, cache: 'no-cache', bypassCustomProtocolHandlers: true });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       if (!pagina) return r;
@@ -84,7 +87,7 @@ function serviTool(){
     } catch (_) {
       if (!pagina) return net.fetch(pathToFileURL(riserva).href);
       daRiserva = true;
-      const buf = fs.readFileSync(fs.existsSync(fileCopia()) ? fileCopia() : riserva);
+      const buf = fs.readFileSync(!LOCALE && fs.existsSync(fileCopia()) ? fileCopia() : riserva);
       versioneCaricata = impronta(buf);
       return new Response(buf, HTML);
     } finally { clearTimeout(timer); }
@@ -98,7 +101,7 @@ function serviTool(){
    referto in corso. */
 const urlTool = (url) => String(url || '').startsWith(TOOL_URL);
 async function controllaTool(aMano){
-  if (!win || !urlTool(win.webContents.getURL())) return;
+  if (LOCALE || !win || !urlTool(win.webContents.getURL())) return;
   if (!app.isPackaged && process.argv.includes('--prova-aggiornamento')) versioneCaricata = 'prova';
   const dico = (message) => { if (aMano === true) dialog.showMessageBox(win, { type: 'info', title: 'Aggiornamenti', message }); };
   let nuova = '';
@@ -195,16 +198,8 @@ function scriviConfig(c){
   fs.writeFileSync(FILE_CONFIG, JSON.stringify(c, null, 2), 'utf8');
 }
 
-/* ── percorsi: solo dentro la cartella comune ── */
-function dentro(rel){
-  const base = leggiConfig().cartella;
-  if (!base) throw new Error('Cartella comune non impostata');
-  if (!fs.existsSync(base)) throw new Error('Cartella comune non raggiungibile: ' + base);
-  const p = path.resolve(base, String(rel || '.'));
-  const r = path.relative(base, p);
-  if (r.startsWith('..') || path.isAbsolute(r)) throw new Error('Percorso fuori dalla cartella comune');
-  return p;
-}
+/* ── file: solo dentro la cartella comune (vedi ponte.js) ── */
+const ponte = require('./ponte')(() => leggiConfig().cartella || '');
 
 /* ── chi può chiamare il ponte: solo la pagina di prova e il tool ── */
 function consentito(url){
@@ -245,16 +240,7 @@ gestisci('scegli', async () => {
   scriviConfig(c);
   return c.cartella;
 });
-gestisci('scrivi', (rel, testo) => {
-  const p = dentro(rel);
-  fs.mkdirSync(path.dirname(p), { recursive: true });
-  fs.writeFileSync(p, String(testo), 'utf8');
-  return path.relative(leggiConfig().cartella, p);
-});
-gestisci('leggi', (rel) => fs.readFileSync(dentro(rel), 'utf8'));
-gestisci('elenca', (rel) => fs.readdirSync(dentro(rel), { withFileTypes: true })
-  .map((d) => ({ nome: d.name, cartella: d.isDirectory() })));
-gestisci('esiste', (rel) => { try { return fs.existsSync(dentro(rel)); } catch (_) { return false; } });
+for (const op of ['scrivi', 'leggi', 'elenca', 'esiste', 'tipo', 'creaCartella']) gestisci(op, ponte[op]);
 gestisci('apriCartella', () => { const c = leggiConfig().cartella; return c ? shell.openPath(c) : ''; });
 gestisci('apriTool', () => win.loadURL(TOOL_URL));
 

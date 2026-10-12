@@ -10,6 +10,7 @@
   "scripts": {
     "start": "electron .",
     "prova": "electron . --prova",
+    "locale": "electron . --tool-locale",
     "dist": "electron-builder --win --publish never"
   },
   "devDependencies": {
@@ -26,6 +27,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "ponte.js",
       "prova.html",
       "build/icon.png",
       {

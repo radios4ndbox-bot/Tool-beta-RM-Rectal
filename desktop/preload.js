@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('EsgarDesktop', {
   leggi: chiama('leggi'),
   elenca: chiama('elenca'),
   esiste: chiama('esiste'),
+  tipo: chiama('tipo'),
+  creaCartella: chiama('creaCartella'),
   apriCartella: chiama('apriCartella'),
   apriTool: chiama('apriTool')
 });
