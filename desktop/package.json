@@ -9,6 +9,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "prova": "electron . --prova",
     "dist": "electron-builder --win --publish never"
   },
   "devDependencies": {
@@ -26,7 +27,16 @@
       "main.js",
       "preload.js",
       "prova.html",
-      "build/icon.png"
+      "build/icon.png",
+      {
+        "from": "..",
+        "to": "tool",
+        "filter": [
+          "index.html",
+          "manifest.webmanifest",
+          "icone/**"
+        ]
+      }
     ],
     "win": {
       "target": [
@@ -57,5 +67,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/radios4ndbox-bot/Tool-beta-RM-Rectal.git"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

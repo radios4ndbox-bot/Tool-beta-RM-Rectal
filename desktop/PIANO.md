@@ -36,6 +36,11 @@ Su Windows `npm run dist` non ha bisogno di wine.
    - copia dentro il programma (`files` di electron-builder): funziona anche
      senza rete, si aggiorna solo reinstallando.
    Consigliata: dal web, con la copia interna come riserva se la rete manca.
+   **Fatto:** all'avvio si carica il tool dal web; se la rete manca (o non
+   risponde entro 8 secondi) la copia interna risponde allo stesso indirizzo,
+   così i dati salvati nel browser restano gli stessi, e il titolo della
+   finestra dice «copia interna (senza rete)». La pagina di prova si apre dal
+   menu (Alt → Programma) o con `npm run prova`.
 2. **Salvataggio tramite il ponte.** In `index.html`, quando esiste
    `window.EsgarDesktop`:
    - `radice` non è più un handle del browser: le funzioni dell'archivio
@@ -58,9 +63,26 @@ Su Windows `npm run dist` non ha bisogno di wine.
 5. **Pagina del telefono:** resta sul web (`telefono.html`), il telefono non
    usa il programma.
 6. **Icona e nome:** già impostati (`build/icon.png`, «StructuRad ESGAR»).
+   **Aggiornamenti del tool — fatto:** ogni versione scaricata resta sul PC
+   (cartella dati dell'utente) ed è quella che si apre senza rete. Con il
+   programma aperto, ogni 15 minuti si confronta la pagina sul web con quella
+   nella finestra: se è cambiata compare il riquadro «È disponibile una nuova
+   versione del tool» (Aggiorna ora / Più tardi). Non si ricarica mai da
+   soli. Dal menu: «Controlla aggiornamenti del tool».
 7. **Aggiornamenti del programma** (solo se si sceglie la copia interna o
    cambia il ponte): `electron-updater` con le Release di GitHub, oppure si
    reinstalla a mano la nuova versione.
+   **Fatto con `electron-updater`:** il programma installato cerca una nuova
+   Release all'avvio e ogni 4 ore, la scarica e la installa alla chiusura;
+   nella pagina compare «Aggiornamento del programma pronto». La versione
+   portatile e `npm start` non si aggiornano. Se il controllo fallisce non
+   succede nulla. Per pubblicare una versione nuova del programma:
+   1. aumentare `version` in `package.json` (es. 0.2.0) e fare commit e push;
+   2. creare e inviare il tag con lo stesso numero:
+      `git tag desktop-v0.2.0` e `git push origin desktop-v0.2.0`;
+   3. il workflow «Programma Windows» crea la Release con l'installer,
+      `latest.yml` e il `.blockmap`. La Release non deve essere «pre-release».
+   Da provare con una Release vera: da 0.2.0 a 0.2.1.
 
 ## Prove prima di portarlo in reparto
 

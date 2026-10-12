@@ -36,4 +36,8 @@ jobs:
       - if: startsWith(github.ref, 'refs/tags/desktop-v')
         uses: softprops/action-gh-release@v2
         with:
-          files: desktop/dist/*.exe
+          # latest.yml e .blockmap servono al programma installato per aggiornarsi
+          files: |
+            desktop/dist/*.exe
+            desktop/dist/*.blockmap
+            desktop/dist/latest.yml
