@@ -310,10 +310,21 @@ button{font-family:var(--sans);}
   min-height:18px; margin:6px 18px 0; font-family:var(--mono); font-size:11px; color:var(--green);
   transition:opacity .3s ease;
 }
-/* vuota non tiene spazio: lo lascia al referto */
-.status:empty{opacity:0; min-height:0; margin-top:0;}
+.status:empty{opacity:0;}
+/* sopra il referto: «Indietro» a sinistra, i messaggi a destra */
+.referto-barra{display:flex; align-items:center; gap:10px; margin:8px 16px 0;}
+.referto-barra .status{flex:1; min-width:0; min-height:0; margin:0; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.btn-indietro{display:inline-flex; align-items:center; gap:6px; flex-shrink:0; padding:4px 11px 4px 9px; border:1px solid var(--border); border-radius:999px; background:var(--surface);
+  font-family:var(--sans); font-size:11.5px; font-weight:500; color:var(--accent); cursor:pointer;
+  transition:background-color .15s, border-color .15s, color .15s, opacity .2s, transform .25s var(--molla);}
+.btn-indietro svg{width:13px; height:13px; transition:transform .3s var(--molla);}
+.btn-indietro:hover:not(:disabled){border-color:var(--accent); background:var(--accent-bg);}
+.btn-indietro:hover:not(:disabled) svg{transform:translateX(-2px);}
+.btn-indietro:active:not(:disabled){transform:scale(.95);}
+.btn-indietro:disabled{color:var(--faint); cursor:default; opacity:.6;}
+@media print{ .referto-barra{display:none !important;} }
 #output{
-  flex:1; min-height:150px; margin:8px 16px 16px; resize:none;
+  flex:1; min-height:150px; margin:6px 16px 16px; resize:none;
   white-space:pre-wrap; font-family:var(--mono); font-size:12.5px; line-height:1.65; color:#1A1013;
   background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:16px 18px;
   outline:none; transition:border-color .15s ease, background-color .15s ease;
@@ -1967,7 +1978,11 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
       </div>
       <div class="archivio-stato" id="archivioStato"></div>
       <div class="proposte-ref" id="proposteRef" hidden></div>
-      <div class="status" id="status"></div>
+      <div class="referto-barra">
+        <button type="button" class="btn-indietro" id="btnIndietro" disabled title="Niente da annullare">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Indietro</button>
+        <div class="status" id="status"></div>
+      </div>
       <textarea id="output" spellcheck="false" aria-label="Testo del referto"></textarea>
       <pre id="printArea"></pre>
     </div>
@@ -2759,7 +2774,12 @@ function mergeAndRender(computeFn, headerDefs, lastGeneratedRef){
     }
   });
 
-  const finalText = [mergedIntro, ...mergedSections, fresh.tail].filter(s=>s && s.trim()).join('\n\n');
+  // quello che il medico ha scritto DOPO la riga finale (una nota in coda) resta dov'è:
+  // prima, alla prima modifica del form, spariva
+  const tailCur = curSplit.sections['__tail__'] || '';
+  const coda = fresh.tail && tailCur.startsWith(fresh.tail) ? tailCur.slice(fresh.tail.length).trim() : '';
+
+  const finalText = [mergedIntro, ...mergedSections, fresh.tail, coda].filter(s=>s && s.trim()).join('\n\n');
   document.getElementById('output').value = finalText.trim() + '\n';
   lastGeneratedRef.value = fresh;
 }
@@ -7970,6 +7990,7 @@ window.EsgarStile = (function(){
       lastGenPrimariaRef.value = null; lastGenRistadRef.value = null;
       $('output').value = '';
       liveUpdate();
+      document.dispatchEvent(new CustomEvent('esgar:referto-rifatto'));   // «Indietro» riparte da qui
     }
   }
 
@@ -8972,6 +8993,135 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   proponi();
 
   window.EsgarStruttura = { analizza, differenze, proposte: () => proposte().map((p) => ({ tipo: p.tipo, sez: p.sez, testo: p.testo, volte: p.volte })), nomeSezione };
+})();
+</script>
+<script>
+// ============================================================
+// INDIETRO — rimediare a un passo sbagliato
+//
+// Sopra il referto, «Indietro» annulla l'ultima modifica: una scelta nel
+// form, una riga aggiunta o tolta, una correzione scritta a mano, una
+// proposta applicata, «Rigenera tutto». Torna indietro TUTTO insieme, il
+// testo del referto e il form che lo ha composto: così il referto e i
+// dati che finiscono nel nome del file restano d'accordo.
+//
+// Ogni modalità (stadiazione, ristadiazione) ha la sua pila di passi, fino
+// a 50. Le battute scritte di seguito contano come un passo solo. Il cambio
+// di modalità non è un passo; quando lo Stile personale ricompone il
+// referto, la pila riparte da lì.
+// ============================================================
+(function(){
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const out = $('output'), btn = $('btnIndietro');
+  const LISTE = { p_ln_container: lnList, p_td_container: tdList, p_metaln_container: metaLnList };
+  const MAX = 50, PAUSA = 500;
+  const pile = { primaria: [], ristad: [] };
+  const pannello = () => $(mode === 'ristad' ? 'panel-ristad' : 'panel-primaria');
+  const generato = () => (mode === 'ristad' ? lastGenRistadRef : lastGenPrimariaRef);
+  const fissi = (pan) => Array.prototype.filter.call(pan.querySelectorAll('input, select, textarea'), (e) => !e.closest('[data-row]'));
+  const spunta = (e) => e.type === 'checkbox' || e.type === 'radio';
+  const leggi = (e) => spunta(e) ? e.checked : e.hasAttribute('data-date') ? e.value + '\n' + (e.getAttribute('data-iso') || '') : e.value;
+  /* rimette un valore; dice se è cambiato */
+  function metti(e, v){
+    if (leggi(e) === v) return false;
+    if (spunta(e)) e.checked = v;
+    else if (e.hasAttribute('data-date')) { const [testo, iso] = String(v).split('\n'); if (iso) window.EsgarUI.impostaData(e, iso); else { e.setAttribute('data-iso', ''); e.value = testo; } }
+    else { e.value = v; if (e.tagName === 'SELECT') window.EsgarUI.syncSelect(e); }
+    return true;
+  }
+
+  function fotografa(){
+    const pan = pannello();
+    return {
+      testo: out.value, generato: JSON.stringify(generato().value), campi: fissi(pan).map(leggi),
+      liste: Object.keys(LISTE).filter((id) => pan.contains($(id)))
+        .map((id) => [id, Array.from($(id).querySelectorAll('[data-row]'), (r) => Array.from(r.querySelectorAll('[data-f]'), (f) => f.value))])
+    };
+  }
+  const uguali = (a, b) => !!a && !!b && a.testo === b.testo && JSON.stringify([a.campi, a.liste]) === JSON.stringify([b.campi, b.liste]);
+
+  let attuale = fotografa();     // lo stato com'era prima della modifica in corso
+  let timer = null, inRipristino = false;
+  function disegna(){
+    const n = pile[mode].length;
+    btn.disabled = !n;
+    btn.title = n ? `Annulla l'ultima modifica al referto e al form (${n} ${n === 1 ? 'passo' : 'passi'})` : 'Niente da annullare';
+  }
+  /* qualcosa sta cambiando: lo stato di prima va nella pila; a modifica finita si riparte da quello nuovo */
+  function segna(){
+    if (inRipristino) return;
+    if (!timer) { pile[mode].push(attuale); if (pile[mode].length > MAX) pile[mode].shift(); }
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      attuale = fotografa();
+      const p = pile[mode];
+      if (uguali(attuale, p[p.length - 1])) p.pop();      // un clic che non ha cambiato niente
+      disegna();
+    }, PAUSA);
+  }
+  function azzera(){
+    clearTimeout(timer); timer = null;
+    pile.primaria.length = 0; pile.ristad.length = 0;
+    attuale = fotografa(); disegna();
+  }
+
+  async function ripristina(s){
+    inRipristino = true;
+    try {
+      const pan = pannello();
+      const toccati = [];
+      // le righe aggiunte (linfonodi, tumor deposit…): si rifanno tante quante erano, poi si riempiono
+      s.liste.forEach(([id, righe]) => {
+        const c = $(id);
+        if (c.querySelectorAll('[data-row]').length !== righe.length) { c.querySelectorAll('[data-row]').forEach((r) => r.remove()); righe.forEach(() => LISTE[id].add()); }
+      });
+      await new Promise((ok) => setTimeout(ok, 0));       // i menu a tendina delle righe nuove si vestono da soli
+      s.liste.forEach(([id, righe]) => $(id).querySelectorAll('[data-row]').forEach((r, i) => r.querySelectorAll('[data-f]').forEach((f, j) => { if (metti(f, righe[i][j])) toccati.push(f); })));
+      fissi(pan).forEach((e, i) => { if (metti(e, s.campi[i])) toccati.push(e); });
+      // gli automatismi del form (campi che compaiono, etichette calcolate) seguono i valori rimessi
+      toccati.forEach((e) => e.dispatchEvent(new Event('change', { bubbles: true })));
+      if (!toccati.length) liveUpdate();
+      // per ultimo il testo, com'era, con il suo «generato»: le correzioni a mano tornano tali
+      generato().value = JSON.parse(s.generato);
+      out.value = s.testo;
+      out.dispatchEvent(new Event('input', { bubbles: true }));      // le proposte seguono il referto
+      out.classList.remove('flash'); void out.offsetWidth; out.classList.add('flash');
+    } finally {
+      inRipristino = false;
+      attuale = fotografa();
+    }
+  }
+
+  btn.addEventListener('click', async () => {
+    clearTimeout(timer); timer = null;        // se una modifica era ancora in corso, lo stato di prima è già in cima
+    const s = pile[mode].pop();
+    if (!s) return;
+    btn.disabled = true;
+    await ripristina(s);
+    disegna();
+    setStatus('Tornato indietro di un passo.');
+  });
+
+  $('form-pane').addEventListener('input', segna);
+  $('form-pane').addEventListener('change', segna);
+  out.addEventListener('input', segna);
+  // i pulsanti che cambiano form o referto senza passare da un campo: righe aggiunte e tolte, proposte, «Rigenera tutto»
+  document.addEventListener('click', (ev) => {
+    const t = ev.target instanceof Element ? ev.target : null;
+    if (t && t.closest('#form-pane button, .output-pane button') && !t.closest('#btnIndietro, #btnModePrimaria, #btnModeRistad')) segna();
+  }, true);
+  // cambiando modalità si guarda l'altra pila
+  ['btnModePrimaria', 'btnModeRistad'].forEach((id) => $(id).addEventListener('click', () => {
+    clearTimeout(timer); timer = null;
+    setTimeout(() => { attuale = fotografa(); disegna(); }, 0);
+  }));
+  // lo Stile personale ha ricomposto il referto: i passi di prima avevano altri titoli
+  document.addEventListener('esgar:referto-rifatto', azzera);
+
+  disegna();
+  window.EsgarIndietro = { passi: () => pile[mode].length, azzera };
 })();
 </script>
 </body>

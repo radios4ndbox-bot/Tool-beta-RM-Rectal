@@ -11,6 +11,7 @@ modifica del form e conserva le correzioni manuali.
 | `test/accesso.test.js` | accesso e archivio, da capo a fondo |
 | `test/amministratore.test.js` | richiesta dal telefono, approvazione e delega di amministratore |
 | `test/desktop.test.js` | archivio nel programma per Windows, attraverso il ponte |
+| `test/indietro.test.js` | «Indietro» sopra il referto: testo e form tornano insieme |
 | `test/interfaccia.test.js` | menu a tendina, calendario e campi che imparano |
 | `test/struttura.test.js` | apprendimento dalla struttura del referto finito |
 
