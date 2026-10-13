@@ -302,15 +302,18 @@ button{font-family:var(--sans);}
 .report-title{font-size:17px; font-weight:500; margin-top:1px;}
 .report-mode{font-family:var(--mono); font-size:10.5px; color:#A8979C; text-align:right; white-space:nowrap;}
 .report-mode strong{display:block; font-size:12px; font-weight:500; color:var(--red-light); letter-spacing:.06em; text-transform:uppercase;}
-.action-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding:12px 16px 4px;}
-.action-row .spacer{flex:1;}
+.action-row{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding:12px 16px 4px;}
+.action-row .spacer{flex:1; min-width:0;}
+/* un po' più stretti, così stanno su una riga sola anche nella finestra del programma */
+.action-row button{padding-left:13px; padding-right:13px; white-space:nowrap;}
 .status{
   min-height:18px; margin:6px 18px 0; font-family:var(--mono); font-size:11px; color:var(--green);
   transition:opacity .3s ease;
 }
-.status:empty{opacity:0;}
+/* vuota non tiene spazio: lo lascia al referto */
+.status:empty{opacity:0; min-height:0; margin-top:0;}
 #output{
-  flex:1; min-height:320px; margin:8px 16px 16px; resize:none;
+  flex:1; min-height:150px; margin:8px 16px 16px; resize:none;
   white-space:pre-wrap; font-family:var(--mono); font-size:12.5px; line-height:1.65; color:#1A1013;
   background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:16px 18px;
   outline:none; transition:border-color .15s ease, background-color .15s ease;
@@ -618,12 +621,28 @@ nav.intro-in-corso .nav-right,
 .cerca-anteprima{margin:8px 0 0; padding:8px 10px; max-height:180px; overflow:auto; white-space:pre-wrap; font-family:var(--mono); font-size:10.5px; line-height:1.5;
   background:#fff; border:1px solid var(--border); border-radius:8px; color:var(--text);}
 @media print{ .archivio-caso, .cerca-pannello{display:none !important;} }
-.proposte-ref{margin:10px 16px 0; padding:8px 10px 6px; border-radius:10px; border:1px solid var(--accent-line); background:var(--accent-bg);
+/* «Dai tuoi referti»: una riga che si apre. Chiusa occupa una riga sola e
+   dice quante proposte ci sono; aperta le elenca, e oltre una certa altezza
+   scorre, così il referto sotto resta sempre visibile. */
+.proposte-ref{margin:8px 16px 0; border-radius:10px; border:1px solid var(--accent-line); background:var(--accent-bg); overflow:hidden;
   animation:popSection .35s var(--molla) both; transform-origin:top center;}
 .proposte-ref[hidden]{display:none;}
-.pr-testa{font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:0 2px 6px;}
-.pr-voce{display:flex; align-items:center; gap:8px; padding:6px 4px; border-top:1px solid var(--accent-line); font-size:12px;}
+.pr-testa{display:flex; align-items:center; gap:8px; width:100%; padding:7px 10px; border:none; background:transparent; cursor:pointer; text-align:left;
+  font-family:var(--sans); font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); transition:background-color .15s;}
+.pr-testa:hover{background:rgba(123,30,52,.06);}
+.pr-n{min-width:18px; padding:0 6px; border-radius:999px; font-family:var(--mono); font-size:10px; font-weight:600; letter-spacing:0; line-height:1.7; text-align:center; color:#fff; background:var(--accent);}
+.pr-anteprima{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11.5px; font-weight:400; letter-spacing:0; text-transform:none; color:var(--muted); transition:opacity .2s;}
+.proposte-ref.aperte .pr-anteprima{opacity:0;}
+.pr-freccia{width:15px; height:15px; flex-shrink:0; margin-left:auto; transition:transform 300ms cubic-bezier(.26,1.4,.46,.9);}
+.proposte-ref.aperte .pr-freccia{transform:rotate(180deg);}
+.pr-corpo{display:grid; grid-template-rows:0fr; transition:grid-template-rows .34s cubic-bezier(.22,1,.36,1);}
+.proposte-ref.aperte .pr-corpo{grid-template-rows:1fr;}
+.pr-lista{min-height:0; overflow:hidden; visibility:hidden; transition:visibility 0s linear .34s;}
+.proposte-ref.aperte .pr-lista{max-height:min(30vh, 190px); overflow-y:auto; visibility:visible; padding:0 10px 4px; border-top:1px solid var(--accent-line); transition:none;}
+.pr-voce{display:flex; align-items:center; gap:8px; padding:5px 0; border-top:1px solid var(--accent-line); font-size:12px;}
 .pr-voce:first-of-type{border-top:none;}
+/* nella scheda del referto si stringe solo il testo: testata, pulsanti e righe dell'archivio restano interi */
+.report-card > :not(#output){flex-shrink:0;}
 .pr-sez{flex-shrink:0; font-size:10px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:#fff; padding:2px 7px; border-radius:6px;
   background:linear-gradient(135deg, var(--rose), var(--accent)); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .pr-testo{flex:1; min-width:0; line-height:1.4; color:var(--text);}
@@ -8878,14 +8897,25 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     correnti = proposte();
     box.hidden = !correnti.length;
     if (!correnti.length) { box.innerHTML = ''; return; }
-    box.innerHTML = '<div class="pr-testa">Dai tuoi referti</div>' + correnti.map((p, i) => `<div class="pr-voce">
+    // una riga che si apre: chiusa dice quante proposte ci sono e la prima, aperta le elenca
+    box.classList.toggle('aperte', aperte);
+    const prima = correnti[0];
+    box.innerHTML = `<button type="button" class="pr-testa" aria-expanded="${aperte}" aria-controls="prCorpo" title="Frasi che di solito aggiungi o riscrivi in questo tipo di referto">
+        <span>Dai tuoi referti</span><b class="pr-n">${correnti.length}</b>
+        <span class="pr-anteprima">${esc(nomeSezione(prima.sez))}: ${esc(prima.testo)}${correnti.length > 1 ? ' …' : ''}</span>
+        <svg class="pr-freccia" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button><div class="pr-corpo" id="prCorpo"><div class="pr-lista">` + correnti.map((p, i) => `<div class="pr-voce">
         <span class="pr-sez">${esc(nomeSezione(p.sez))}</span>
         <span class="pr-testo">${p.tipo === 'sos' ? `<em>di solito scrivi</em> ${esc(p.testo)}` : esc(p.testo)}${p.motivo ? ` <span class="mem-perche">${esc(p.motivo)}</span>` : ''}</span>
         <span class="pr-volte">×${p.volte}</span>
         <button type="button" class="btn-secondary" data-pr="${i}">${p.tipo === 'sos' ? 'Sostituisci' : 'Aggiungi'}</button>
         <button type="button" class="pr-x" data-prx="${i}" aria-label="Non ora" title="Non proporla per questo referto">×</button>
-      </div>`).join('');
+      </div>`).join('') + '</div></div>';
   }
+  // aperte o chiuse: resta com'è stato lasciato, anche alla prossima apertura del tool
+  const K_APERTE = 'structurad.esgar.proposte-aperte';
+  let aperte = false;
+  try { aperte = localStorage.getItem(K_APERTE) === '1'; } catch (_) {}
 
   /* inserisce nella sezione giusta del referto a schermo */
   function applica(p){
@@ -8912,6 +8942,15 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     proponi();
   }
   $('proposteRef').addEventListener('click', (ev) => {
+    const testa = ev.target.closest('.pr-testa');
+    if (testa) {
+      // si apre e si chiude sul posto, senza ridisegnare: così scorre
+      aperte = !aperte;
+      $('proposteRef').classList.toggle('aperte', aperte);
+      testa.setAttribute('aria-expanded', String(aperte));
+      try { localStorage.setItem(K_APERTE, aperte ? '1' : '0'); } catch (_) {}
+      return;
+    }
     const a = ev.target.closest('[data-pr]');
     if (a) { applica(correnti[+a.dataset.pr]); return; }
     const x = ev.target.closest('[data-prx]');
@@ -8928,6 +8967,8 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   $('form-pane').addEventListener('change', dopo);
   $('output').addEventListener('input', dopo);
   ['btnModePrimaria', 'btnModeRistad', 'btnGenerate'].forEach((id) => $(id).addEventListener('click', dopo));
+  // entra un medico, o arriva la sua memoria dalla cartella: le proposte sono le sue
+  document.addEventListener('esgar:memoria', dopo);
   proponi();
 
   window.EsgarStruttura = { analizza, differenze, proposte: () => proposte().map((p) => ({ tipo: p.tipo, sez: p.sez, testo: p.testo, volte: p.volte })), nomeSezione };
