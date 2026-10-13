@@ -103,17 +103,18 @@ const urlTool = (url) => String(url || '').startsWith(TOOL_URL);
 async function controllaTool(aMano){
   if (LOCALE || !win || !urlTool(win.webContents.getURL())) return;
   if (!app.isPackaged && process.argv.includes('--prova-aggiornamento')) versioneCaricata = 'prova';
-  const dico = (message) => { if (aMano === true) dialog.showMessageBox(win, { type: 'info', title: 'Aggiornamenti', message }); };
+  // la risposta a «Controlla aggiornamenti» compare nella pagina, con lo stile del tool
+  const dico = (titolo, testo) => { if (aMano === true) avvisa({ id: 'esgar-controllo', titolo, testo, ricarica: false }); };
   let nuova = '';
   try {
     const r = await net.fetch(TOOL_URL, { signal: AbortSignal.timeout(ATTESA_PAGINA), cache: 'no-store', bypassCustomProtocolHandlers: true });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     nuova = impronta(Buffer.from(await r.arrayBuffer()));
-  } catch (_) { return dico('Controllo non riuscito: la rete non risponde.'); }
+  } catch (_) { return dico('Controllo non riuscito', 'La rete non risponde: riprova fra poco.'); }
   if (nuova === versioneCaricata) {
     // era la copia interna ed è già l'ultima versione: la rete è tornata
     if (daRiserva) { daRiserva = false; win.setTitle(win.webContents.getTitle()); }
-    return dico('Il tool è aggiornato.');
+    return dico('Il tool è aggiornato', 'Stai usando l\'ultima versione pubblicata.');
   }
   if (aMano !== true && nuova === versioneAvvisata) return;
   versioneAvvisata = nuova;
@@ -157,28 +158,37 @@ function riquadroAvviso(a){
   const ID = a.id;
   if (document.getElementById(ID)) return;
   const el = (tag, stile, testo) => { const e = document.createElement(tag); e.style.cssText = stile; if (testo) e.textContent = testo; return e; };
-  const bottone = 'font:inherit;font-size:13px;padding:7px 12px;border-radius:8px;cursor:pointer;border:1px solid #fff;';
+  // con i colori e le forme del tool; entra ed esce scivolando
+  const bottone = 'font:inherit;font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:999px;cursor:pointer;';
   // i riquadri si impilano: il secondo sta sopra il primo
   const sotto = document.querySelectorAll('[data-esgar-avviso]').length;
-  const box = el('div', `position:fixed;right:18px;bottom:${18 + sotto * 150}px;z-index:2147483647;max-width:340px;padding:14px 16px;border-radius:12px;`
-    + 'background:#7B1E34;color:#fff;font:13px/1.5 "IBM Plex Sans","Segoe UI",system-ui,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.35);');
+  const box = el('div', `position:fixed;right:76px;bottom:${22 + sotto * 160}px;z-index:2147483647;width:340px;max-width:calc(100vw - 100px);overflow:hidden;border-radius:14px;`
+    + 'background:#fff;color:#1E1215;font:13px/1.55 "IBM Plex Sans","Segoe UI",system-ui,sans-serif;border:1px solid #E7DEDA;box-shadow:0 24px 50px -20px rgba(26,12,17,.55);'
+    + 'opacity:0;transform:translateY(14px) scale(.97);transition:opacity .22s ease, transform .42s cubic-bezier(.34,1.28,.64,1);');
   box.id = ID;
   box.dataset.esgarAvviso = '1';
   box.setAttribute('role', 'status');
-  box.append(
-    el('div', 'font-weight:600;margin-bottom:4px;', a.titolo),
-    el('div', 'opacity:.9;', a.testo));
-  const azioni = el('div', 'display:flex;gap:8px;margin-top:12px;');
-  const dopo = el('button', bottone + 'background:transparent;color:#fff;', a.ricarica ? 'Più tardi' : 'Ho capito');
-  dopo.addEventListener('click', () => box.remove());
+  const testa = el('div', 'position:relative;padding:13px 16px 12px 20px;background:#1A0C11;color:#fff;font-size:14px;font-weight:600;', a.titolo);
+  testa.append(el('span', 'position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,#EE5A68,#C42A40 40%,#7B1E34 72%,#3A0A14);'));
+  box.append(testa, el('div', 'padding:12px 16px 2px 20px;color:#6E5F63;', a.testo));
+  const azioni = el('div', 'display:flex;justify-content:flex-end;gap:8px;padding:12px 16px 14px;');
+  const via = () => {
+    box.style.transition = 'opacity .18s ease, transform .18s ease';
+    box.style.opacity = '0'; box.style.transform = 'translateY(10px) scale(.97)';
+    setTimeout(() => box.remove(), 200);
+  };
+  const dopo = el('button', bottone + 'border:1px solid #E8C6CE;background:#F5E4E8;color:#7B1E34;', a.ricarica ? 'Più tardi' : 'Ho capito');
+  dopo.addEventListener('click', via);
+  azioni.append(dopo);
   if (a.ricarica) {
-    const ora = el('button', bottone + 'background:#fff;color:#7B1E34;', 'Aggiorna ora');
+    const ora = el('button', bottone + 'border:1px solid #5C1426;background:#7B1E34;color:#fff;', 'Aggiorna ora');
     ora.addEventListener('click', () => location.reload());
     azioni.append(ora);
   }
-  azioni.append(dopo);
   box.append(azioni);
   document.body.append(box);
+  requestAnimationFrame(() => requestAnimationFrame(() => { box.style.opacity = '1'; box.style.transform = 'none'; }));
+  if (!a.ricarica && ID === 'esgar-controllo') setTimeout(via, 6000);   // la risposta a un controllo a mano se ne va da sola
 }
 
 /* ── configurazione ── */

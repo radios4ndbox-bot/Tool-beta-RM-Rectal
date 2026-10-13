@@ -543,9 +543,11 @@ nav.intro-in-corso .nav-right,
   background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:14px;
   box-shadow:0 24px 50px -20px rgba(26,12,17,.55);
   overflow:hidden; transform-origin:top right;
-  animation:popSection .32s var(--molla) both;
+  transition:opacity .2s ease, transform .34s var(--molla);
 }
-.pannello-profilo[hidden]{display:none;}
+/* chiuso resta nel documento, invisibile: così si apre e si chiude con la stessa morbidezza */
+.pannello-profilo[hidden]{display:block; opacity:0; visibility:hidden; pointer-events:none; transform:translateY(-6px) scale(.95);
+  transition:opacity .16s ease, transform .16s ease, visibility 0s linear .16s;}
 .pp-testa{position:relative; padding:16px 18px 14px 22px; background:var(--ink); color:#fff;}
 .pp-testa::before{content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
   background:linear-gradient(180deg, var(--red-light), var(--rose) 40%, var(--accent) 72%, var(--wine));}
@@ -595,9 +597,10 @@ nav.intro-in-corso .nav-right,
   position:fixed; z-index:1500; width:min(440px, calc(100vw - 24px)); max-height:min(560px, calc(100vh - 80px));
   display:flex; flex-direction:column; border-radius:12px; overflow:hidden;
   background:var(--surface); border:1px solid var(--border); box-shadow:0 22px 46px -16px rgba(26,12,17,.5);
-  visibility:hidden; opacity:0; pointer-events:none; transform-origin:top left;
+  visibility:hidden; opacity:0; pointer-events:none; transform:scale(.96); transform-origin:top left;
+  transition:opacity .16s ease, transform .16s ease, visibility 0s linear .16s;      /* la chiusura */
 }
-.cerca-pannello.aperto{visibility:visible; pointer-events:auto; animation:popSection .32s var(--molla) forwards;}
+.cerca-pannello.aperto{visibility:visible; opacity:1; transform:none; pointer-events:auto; transition:none; animation:popSection .32s var(--molla) forwards;}
 .cerca-testa{display:flex; justify-content:space-between; align-items:center; padding:10px 8px 10px 14px; background:var(--ink); color:#fff;
   font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;}
 .cerca-x{width:26px; height:26px; border:none; border-radius:7px; background:transparent; color:#C9B5BB; font-size:18px; cursor:pointer;}
@@ -704,9 +707,10 @@ label.field > .sel-wrap.sel-unit{flex:0 0 110px;}
   position:fixed; z-index:600; width:272px; padding:10px;
   background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:12px;
   box-shadow:0 18px 38px -14px rgba(26,12,17,.42), 0 2px 6px rgba(26,12,17,.07);
-  opacity:0; transform:scale(.9); transform-origin:top left; pointer-events:none; visibility:hidden;
+  opacity:0; transform:scale(.96); transform-origin:top left; pointer-events:none; visibility:hidden;
+  transition:opacity .16s ease, transform .16s ease, visibility 0s linear .16s;      /* la chiusura */
 }
-.cal-panel.open{pointer-events:auto; visibility:visible; animation:popSection .3s var(--molla) forwards;}
+.cal-panel.open{pointer-events:auto; visibility:visible; opacity:1; transform:none; transition:none; animation:popSection .3s var(--molla) forwards;}
 .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
 .cal-titolo{font-family:var(--mono); font-size:12px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; color:var(--accent);}
 .cal-nav{
@@ -901,9 +905,10 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
   padding:0 0 10px; border-radius:12px; overflow:hidden;
   background:var(--surface); border:1px solid var(--border);
   box-shadow:0 18px 38px -14px rgba(26,12,17,.45), 0 2px 6px rgba(26,12,17,.07);
-  opacity:0; transform:scale(.92); transform-origin:top left; pointer-events:none; visibility:hidden;
+  opacity:0; transform:scale(.96); transform-origin:top left; pointer-events:none; visibility:hidden;
+  transition:opacity .16s ease, transform .16s ease, visibility 0s linear .16s;      /* la chiusura */
 }
-.ct-info.aperta{visibility:visible; pointer-events:auto; animation:popSection .3s var(--molla) forwards;}
+.ct-info.aperta{visibility:visible; opacity:1; transform:none; pointer-events:auto; transition:none; animation:popSection .3s var(--molla) forwards;}
 .ct-info-testa{display:flex; align-items:center; gap:9px; padding:10px 8px 10px 14px; background:var(--ink); color:#fff; margin-bottom:8px;}
 .ct-info-sigla{font-family:var(--mono); font-size:12px; font-weight:500; padding:2px 8px; border-radius:6px;
   background:linear-gradient(135deg, var(--rose), var(--accent)); color:#fff; flex-shrink:0;}
@@ -918,15 +923,34 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 /* ══════════════════════════════════════════════════════════════════
    MEMORIA DEL TOOL — pagina come «Personalizzazione» in Archivist
    ══════════════════════════════════════════════════════════════════ */
-.mg-overlay{position:fixed; inset:0; z-index:700; display:none; align-items:center; justify-content:center; background:rgba(18,7,10,.55);}
-.mg-overlay.open{display:flex; animation:mgVelo .25s ease both;}
-@keyframes mgVelo{from{background-color:rgba(18,7,10,0);}}
+/* Aperture e chiusure morbide: il velo sfuma e la pagina sale o scende.
+   Chiusa, la pagina resta nel documento ma invisibile e senza clic. */
+.mg-overlay{position:fixed; inset:0; z-index:700; display:flex; align-items:center; justify-content:center; background:rgba(18,7,10,.55);
+  opacity:0; visibility:hidden; pointer-events:none; transition:opacity .2s ease, visibility 0s linear .2s;}
+.mg-overlay.open{opacity:1; visibility:visible; pointer-events:auto; transition:opacity .26s ease;}
 .mg-pagina{
   width:min(1080px, calc(100vw - 140px)); height:min(760px, calc(100vh - 80px));
   display:flex; flex-direction:column; overflow:hidden; border-radius:18px;
   background:var(--surface); box-shadow:0 30px 80px -30px rgba(0,0,0,.6);
-  animation:popSection .34s var(--molla) both;
+  transform:translateY(14px) scale(.965); transition:transform .2s ease;
 }
+.mg-overlay.open .mg-pagina{transform:none; transition:transform .42s var(--molla);}
+@media print{ .mg-overlay, .dlg, .cancello{display:none !important;} }
+
+/* ── finestre di conferma del tool, al posto di quelle di Windows ── */
+.dlg{position:fixed; inset:0; z-index:2000; display:grid; place-items:center; padding:24px; background:rgba(18,7,10,.5);
+  opacity:0; visibility:hidden; pointer-events:none; transition:opacity .18s ease, visibility 0s linear .18s;}
+.dlg.open{opacity:1; visibility:visible; pointer-events:auto; transition:opacity .22s ease;}
+.dlg-carta{width:min(420px, 100%); overflow:hidden; border-radius:16px; background:var(--surface); box-shadow:0 34px 80px -28px rgba(0,0,0,.7);
+  transform:translateY(12px) scale(.96); transition:transform .18s ease;}
+.dlg.open .dlg-carta{transform:none; transition:transform .4s var(--molla);}
+.dlg-testa{position:relative; padding:16px 20px 14px 24px; background:var(--ink); color:#fff;}
+.dlg-testa::before{content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:linear-gradient(180deg, var(--red-light), var(--rose) 40%, var(--accent) 72%, var(--wine));}
+.dlg-titolo{font-size:15.5px; font-weight:600; line-height:1.35;}
+.dlg-testo{padding:16px 22px 4px; font-size:13px; line-height:1.6; color:var(--muted); white-space:pre-line;}
+.dlg-testo:empty{display:none;}
+.dlg-azioni{display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; padding:16px 20px 18px;}
+.dlg-azioni .btn-primary.pericolo{background:#9A2A2A; border-color:#7A1F1F;}
 .pg-testa{display:flex; align-items:center; gap:14px; flex-shrink:0; padding:14px 18px 14px 20px; color:#fff; position:relative;
   background:radial-gradient(700px 160px at 20% 0%, #3A0E19 0%, var(--ink) 70%);}
 .pg-testa::after{content:''; position:absolute; left:0; right:0; bottom:0; height:2px;
@@ -1091,10 +1115,12 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 /* ── Cancello: l'accesso con il telefono prima di tutto ── */
 .cancello{position:fixed; inset:0; z-index:800; display:grid; place-items:center; padding:24px;
   background:rgba(18,7,10,.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
-  animation:cancelloVelo .45s ease both;}
-@keyframes cancelloVelo{from{background-color:rgba(18,7,10,0); backdrop-filter:blur(0); -webkit-backdrop-filter:blur(0);}}
-.cancello[hidden]{display:none;}
-.cancello-carta{width:min(400px, 100%); overflow:hidden; border-radius:18px; background:var(--surface); box-shadow:0 40px 90px -30px rgba(0,0,0,.75); animation:popSection .4s var(--molla) both;}
+  opacity:1; transition:opacity .45s ease;}
+/* chiuso resta nel documento, invisibile: così entra ed esce sfumando */
+.cancello[hidden]{display:grid; opacity:0; visibility:hidden; pointer-events:none; transition:opacity .22s ease, visibility 0s linear .22s;}
+.cancello-carta{width:min(400px, 100%); overflow:hidden; border-radius:18px; background:var(--surface); box-shadow:0 40px 90px -30px rgba(0,0,0,.75);
+  transition:transform .5s var(--molla);}
+.cancello[hidden] .cancello-carta{transform:translateY(16px) scale(.95); transition:transform .22s ease;}
 .cancello-testa{position:relative; padding:22px 24px 18px 28px; background:var(--ink); color:#fff;}
 .cancello-testa::before{content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:linear-gradient(180deg, var(--red-light), var(--rose) 40%, var(--accent) 72%, var(--wine));}
 .cancello-testa h1{margin:6px 0 6px; font-size:21px; font-weight:600; letter-spacing:-.01em;}
@@ -6103,6 +6129,58 @@ const TEL_URL = /^https:$/.test(location.protocol) ? new URL('telefono.html', lo
 const $id = (id) => document.getElementById(id);
 const escH = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// ============================================================
+// FINESTRE DI CONFERMA — del tool, non di Windows
+//
+// chiedi({ titolo, testo, si, no, pericolo }) apre una finestra con lo
+// stile del tool e risponde true o false: prende il posto di confirm(),
+// che nel programma per Windows apriva un riquadro di sistema.
+// Invio conferma, Esc o un clic fuori annullano. Una alla volta.
+// ============================================================
+const AZZERA = { titolo: 'Azzerare la memoria?', testo: 'Tutte le frasi imparate vengono cancellate. I referti salvati non si toccano.', si: 'Azzera tutto', pericolo: true };
+let dialogoInCorso = null;
+function chiedi(o){
+  o = typeof o === 'string' ? { titolo: o } : (o || {});
+  let d = $id('dialogo');
+  if (!d) {
+    d = document.createElement('div');
+    d.id = 'dialogo'; d.className = 'dlg'; d.setAttribute('role', 'alertdialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'dialogoTitolo');
+    d.innerHTML = '<div class="dlg-carta"><div class="dlg-testa"><div class="dlg-titolo" id="dialogoTitolo"></div></div><div class="dlg-testo" id="dialogoTesto"></div>'
+      + '<div class="dlg-azioni"><button type="button" class="btn-secondary" data-dialogo="no"></button><button type="button" class="btn-primary" data-dialogo="si"></button></div></div>';
+    document.body.appendChild(d);
+    d.addEventListener('mousedown', (ev) => { if (ev.target === d) dialogoInCorso && dialogoInCorso(false); });
+    d.addEventListener('click', (ev) => { const b = ev.target.closest('[data-dialogo]'); if (b && dialogoInCorso) dialogoInCorso(b.dataset.dialogo === 'si'); });
+    // prima di tutti gli altri: Esc chiude questa finestra, non quella sotto
+    document.addEventListener('keydown', (ev) => {
+      if (!dialogoInCorso) return;
+      if (ev.key === 'Escape') { ev.preventDefault(); ev.stopImmediatePropagation(); dialogoInCorso(false); }
+      else if (ev.key === 'Tab') {                         // il fuoco resta fra i due pulsanti
+        ev.preventDefault();
+        const b = Array.from(d.querySelectorAll('[data-dialogo]')).filter((x) => !x.hidden);
+        b[(b.indexOf(document.activeElement) + (ev.shiftKey ? b.length - 1 : 1)) % b.length].focus();
+      }
+    }, true);
+    void d.offsetWidth;
+  }
+  if (dialogoInCorso) dialogoInCorso(false);
+  $id('dialogoTitolo').textContent = o.titolo || '';
+  $id('dialogoTesto').textContent = o.testo || '';
+  const si = d.querySelector('[data-dialogo=si]'), no = d.querySelector('[data-dialogo=no]');
+  si.textContent = o.si || 'OK'; si.classList.toggle('pericolo', !!o.pericolo);
+  no.textContent = o.no || 'Annulla'; no.hidden = o.no === false;
+  const prima = document.activeElement;
+  d.classList.add('open');
+  si.focus();
+  return new Promise((ok) => {
+    dialogoInCorso = (risposta) => {
+      dialogoInCorso = null;
+      d.classList.remove('open');
+      if (prima && prima.focus) try { prima.focus(); } catch (_) {}
+      ok(!!risposta);
+    };
+  });
+}
+
 let sessione = leggiSessione();
 let accesso = null;          // { a, chiudi, scade } mentre il QR è a schermo
 
@@ -6170,7 +6248,7 @@ function apriPannello(apri){
 $id('profiloBtn').addEventListener('click', (e) => { e.stopPropagation(); apriPannello(); });
 document.addEventListener('mousedown', (e) => {
   const pan = $id('pannelloProfilo');
-  if (pan.hidden || accesso) return;          // durante l'accesso il QR resta
+  if (pan.hidden || accesso || e.target.closest('.dlg')) return;          // durante l'accesso il QR resta; una conferma non lo chiude
   if (!pan.contains(e.target) && !$id('profiloBtn').contains(e.target)) apriPannello(false);
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$id('pannelloProfilo').hidden && !accesso) apriPannello(false); });
@@ -6588,7 +6666,7 @@ $id('ppCartellaAzioni').addEventListener('click', async (e) => {
 });
 $id('ppAdminAzioni').addEventListener('click', async (e) => {
   const b = e.target.closest('[data-cartella="radice"]'); if (!b) return;
-  if (radice && !confirm('Cambiare la cartella comune? I referti già salvati restano dove sono.')) return;
+  if (radice && !(await chiedi({ titolo: 'Cambiare la cartella comune?', testo: 'I referti già salvati restano dove sono.', si: 'Cambia cartella' }))) return;
   if (await scegliRadice()) statoAccesso(`Cartella comune impostata: <b>${escH(radice.name)}</b>.`, 'ok');
 });
 
@@ -6826,7 +6904,8 @@ $id('btnSalva').addEventListener('click', async () => {
   if (!testo) { statoArchivio('Il referto è vuoto.', 'ko'); return; }
   const s = sintesiReferto();
   // una ristadiazione senza stadiazione associata apre un caso nuovo solo se lo si vuole
-  if (s.tipo === 'Ristadiazione' && !caso && !confirm('Questa ristadiazione non è associata a una stadiazione.\n\nOK: salvala in un caso nuovo.\nAnnulla: cerca prima la stadiazione con «Ricerca precedente».')) {
+  if (s.tipo === 'Ristadiazione' && !caso && !(await chiedi({ titolo: 'Questa ristadiazione non è associata a una stadiazione',
+    testo: 'Puoi salvarla in un caso nuovo, oppure cercare prima la stadiazione con «Ricerca precedente».', si: 'Salva in un caso nuovo', no: 'Cerco la stadiazione' }))) {
     statoArchivio('Usa <b>Ricerca precedente</b> per associare la ristadiazione alla sua stadiazione.', 'ko');
     return;
   }
@@ -7639,9 +7718,10 @@ window.EsgarStile = (function(){
     $('railStile').setAttribute('aria-expanded', 'true');
     disegna();
   }
-  function chiudi(senzaChiedere){
+  async function chiudi(senzaChiedere){
     if (!aperta()) return;
-    if (!senzaChiedere && sporca() && !confirm('Chiudere senza salvare le modifiche allo stile?')) return;
+    if (!senzaChiedere && sporca() && !(await chiedi({ titolo: 'Chiudere senza salvare?', testo: 'Le modifiche allo stile fatte in questa finestra andranno perse.', si: 'Chiudi senza salvare', no: 'Continua a modificare' }))) return;
+    if (!aperta()) return;
     $('stOverlay').classList.remove('open');
     $('railStile').setAttribute('aria-expanded', 'false');
     bozza = null; parte = null;
@@ -7799,9 +7879,7 @@ window.EsgarStile = (function(){
     if (!a) return;
     if (a.dataset.imp === 'profilo') { ev.stopPropagation(); apriPannello(true); }
     if (a.dataset.imp === 'gestisci') { toggleRail(null); window.EsgarMemoriaPagina.apri(); }
-    if (a.dataset.imp === 'azzera' && confirm('Cancellare tutte le frasi imparate su questo PC? I referti salvati non si toccano.')) {
-      EsgarMemoria.azzera(); disegnaMemoria();
-    }
+    if (a.dataset.imp === 'azzera') chiedi(AZZERA).then((si) => { if (si) { EsgarMemoria.azzera(); disegnaMemoria(); } });
   });
 
   applicaPrefs();
@@ -8227,7 +8305,7 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   }
 
   $('mgOverlay').addEventListener('mousedown', (ev) => { if (ev.target === $('mgOverlay')) chiudi(); });
-  $('mgOverlay').addEventListener('click', (ev) => {
+  $('mgOverlay').addEventListener('click', async (ev) => {
     if (ev.target.closest('[data-mg-chiudi]')) { chiudi(); return; }
     const nodo = ev.target.closest('[data-passo]');
     if (nodo) { const [m, i] = nodo.dataset.passo.split(':'); apriPasso(m, +i); return; }
@@ -8247,11 +8325,12 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
       case 'annulla': inModifica = null; disegnaLista(); break;
       case 'salva': salvaModifica(voce); break;
       case 'elimina':
-        if (confirm('Dimenticare questa frase? Il campo non la proporrà più.')) { G().elimina(campo, c); aggiorna(); }
+        if (await chiedi({ titolo: 'Dimenticare questa frase?', testo: 'Il campo non la proporrà più.', si: 'Dimentica', pericolo: true })) { G().elimina(campo, c); aggiorna(); }
         break;
       case 'elimina-sost': {
         const [, modo, sez] = campo.split(':');
-        if (confirm('Dimenticare questa riformulazione?')) { G().eliminaSostituzione(modo, sez, b.closest('[data-sost]').dataset.sost); disegnaNav(); disegnaSost(); }
+        const quale = b.closest('[data-sost]').dataset.sost;
+        if (await chiedi({ titolo: 'Dimenticare questa riformulazione?', testo: 'Il tool tornerà a proporre la frase com\'era.', si: 'Dimentica', pericolo: true })) { G().eliminaSostituzione(modo, sez, quale); disegnaNav(); disegnaSost(); }
         break;
       }
       case 'aggiungi': {
@@ -8267,7 +8346,7 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
         break;
       }
       case 'azzera':
-        if (confirm('Cancellare tutte le frasi imparate su questo PC? I referti salvati non si toccano.')) { window.EsgarMemoria.azzera(); disegna(); stato('Memoria azzerata.', 'ok'); }
+        if (await chiedi(AZZERA)) { window.EsgarMemoria.azzera(); disegna(); stato('Memoria azzerata.', 'ok'); }
         break;
     }
   });

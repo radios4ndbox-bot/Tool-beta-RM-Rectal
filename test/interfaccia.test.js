@@ -142,16 +142,18 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   check(unite.length === 1 && unite[0].n === usiPrima && unite[0].preferita, 'correggendo una frase uguale a un\'altra si uniscono (usi sommati, preferita)');
   await p.fill('#mgNuova', 'infiltrazione della parete posteriore della vescica'); await p.keyboard.press('Enter'); await p.waitForTimeout(200);
   check(await p.evaluate(() => EsgarMemoria.gestione.voci('p_ctNote').some((v) => v.manuale && v.preferita && /vescica/.test(v.testo))), 'Insegna: frase aggiunta a mano, già preferita');
-  p.once('dialog', (d) => d.accept());
-  await p.click('.mg-voce:has-text("vescica") [data-mg=elimina]'); await p.waitForTimeout(200);
+  await p.click('.mg-voce:has-text("vescica") [data-mg=elimina]');
+  check(await p.isVisible('#dialogo.open') && /Dimenticare questa frase/.test(await p.textContent('#dialogoTitolo')), 'la conferma è una finestra del tool, non di Windows');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(250);
+  check(!(await p.isVisible('#dialogo.open')) && await p.isVisible('#mgOverlay.open') && await p.locator('#mgLista .mg-voce').count() === 2, 'Esc annulla la conferma e lascia aperta la pagina sotto');
+  await p.click('.mg-voce:has-text("vescica") [data-mg=elimina]'); await p.click('#dialogo.open [data-dialogo=si]'); await p.waitForTimeout(200);
   check(await p.locator('#mgLista .mg-voce').count() === 1, 'Dimentica toglie la frase');
   // esporta, azzera, importa
   await p.click('#mgNav [data-campo=""]'); await p.waitForTimeout(300);
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('[data-mg=esporta]')]);
   const file = await dl.path();
   check(JSON.parse(require('fs').readFileSync(file, 'utf8')).memoria.campi.p_ctNote.voci.length === 1, 'Esporta: file JSON con la memoria');
-  p.once('dialog', (d) => d.accept());
-  await p.click('[data-mg=azzera]'); await p.waitForTimeout(200);
+  await p.click('[data-mg=azzera]'); await p.click('#dialogo.open [data-dialogo=si]'); await p.waitForTimeout(200);
   check(await p.evaluate(() => Object.keys(EsgarMemoria.stato().campi).length === 0), 'Azzera tutto');
   await p.setInputFiles('#mgImporta', file); await p.waitForTimeout(300);
   check(await p.evaluate(() => (EsgarMemoria.stato().campi.p_ctNote || { voci: [] }).voci.length === 1) && /importata/.test(await p.textContent('#mgStato')), 'Importa: la memoria torna dal file');
@@ -167,8 +169,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await p.click('.rail-btn[data-pan=archivio]'); await p.waitForTimeout(500);
   check(/ricorda <b>|ricorda \d|frasi/.test(await p.innerHTML('#impMemoria')) && /1 frase|\d+ frasi/.test(await p.textContent('#impMemoria')), 'Archivio: quante frasi ricorda: ' + (await p.textContent('#impMemoria')).slice(0, 70));
   await p.screenshot({ path: SHOTS + '/imp_archivio.png' });
-  p.once('dialog', (d) => d.accept());
-  await p.click('[data-imp=azzera]'); await p.waitForTimeout(200);
+  await p.click('[data-imp=azzera]'); await p.click('#dialogo.open [data-dialogo=si]'); await p.waitForTimeout(200);
   check(await p.evaluate(() => Object.keys(EsgarMemoria.stato().campi).length === 0), 'Azzera la memoria');
   await p.click('.rail-btn[data-pan=aspetto]'); await p.waitForTimeout(500);
   await p.click('[data-pref=dense]');

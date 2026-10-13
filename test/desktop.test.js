@@ -225,8 +225,7 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   if (await pc.isVisible('#pannelloProfilo')) await pc.click('#profiloBtn');
   await pc.click('#railStile'); await pc.waitForTimeout(400);
   await pc.click('[data-st-titoli=maiuscolo]');
-  pc.once('dialog', (d) => d.accept());
-  await pc.click('[data-st=annulla]'); await pc.waitForTimeout(200);
+  await pc.click('#stOverlay .st-piede [data-st=annulla]'); await pc.click('#dialogo.open [data-dialogo=si]'); await pc.waitForTimeout(300);
   check(!(await pc.isVisible('#stOverlay.open')) && /^Stage finale:/m.test(await pc.inputValue('#output')), '«Annulla» chiede conferma e lascia lo stile com\'era');
   await pc.click('#railStile'); await pc.waitForTimeout(400);
   await pc.click('[data-st-titoli=maiuscolo]');

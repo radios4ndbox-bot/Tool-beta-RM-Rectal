@@ -123,8 +123,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.click('#btnNuovoCaso');
   await pc.click('#btnModeRistad'); await pc.waitForTimeout(300);
   await pc.click('input[name=r_risposta][value=near-cCR]'); await pc.click('input[name=r_yct][value=ycT1-2]');
-  pc.once('dialog', (d) => d.dismiss());
-  await pc.click('#btnSalva'); await pc.waitForTimeout(300);
+  await pc.click('#btnSalva'); await pc.click('#dialogo.open [data-dialogo=no]'); await pc.waitForTimeout(300);
   check(/Ricerca precedente/.test(await pc.textContent('#archivioStato')), 'ristadiazione non associata: chiede conferma e non salva');
   await pc.click('#btnCerca'); await pc.waitForSelector('#cercaPannello.aperto .cerca-caso', { timeout: 5000 });
   await pc.fill('#cercaQ', codice.toLowerCase().slice(0, 6));
