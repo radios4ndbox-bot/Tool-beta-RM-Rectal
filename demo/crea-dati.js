@@ -29,6 +29,39 @@ const CASI = [
   { data: '06102026', acc: 'A195544', ct: 'cT3b', cn: 'cN0', emvi: '2', pareti: ['Laterale destra'] }
 ];
 
+// la memoria di esempio. campi: valori dei campi liberi del form, «letti» volte
+// volte con le scelte indicate; struttura: frasi aggiunte nel referto (aggiunte)
+// e frasi del tool riscritte (sost); preferite: quelle con la stella.
+const P = 'primaria', R = 'ristad';
+const MEMORIA = {
+  campi: [
+    { modo: P, volte: 6, campi: { p_premedicazione: 'Buscopan 20 mg e.v.' } },
+    { modo: P, volte: 2, campi: { p_premedicazione: 'Glucagone 1 mg i.m.' } },
+    { modo: P, volte: 4, scelte: ['input[name=p_mrf][value=si]'], campi: { p_mrfSede: 'ore 3-5', p_emviDett: 'vena rettale superiore', p_emviSerie: 'serie 5, immagine 22' } },
+    { modo: P, volte: 2, scelte: ['input[name=p_mrf][value=si]'], campi: { p_mrfSede: 'ore 11-1', p_emviDett: 'vene rettali medie di destra' } },
+    { modo: P, volte: 3, scelte: ['input[name=p_ct][value=cT4b]'], campi: { p_ctNote: 'infiltrazione del muscolo elevatore dell\'ano di sinistra', p_organiDett: 'versante posteriore della prostata' } },
+    { modo: P, volte: 2, scelte: ['input[name=p_ct][value=cT4b]'], campi: { p_ctNote: 'infiltrazione della capsula prostatica', p_organiDett: 'parete posteriore della vagina' } },
+    { modo: P, volte: 4, campi: { p_lnLivello: 'lungo i vasi presacrali, livello S2' } },
+    { modo: P, volte: 2, campi: { p_lnLivello: 'all\'origine dell\'arteria rettale superiore', p_peritDett: 'nodulo di 6 mm nello scavo del Douglas' } },
+    { modo: R, volte: 5, campi: { r_premedicazione: 'Buscopan 20 mg e.v.', r_metaConfronto: 'invariate rispetto al basale' } },
+    { modo: R, volte: 3, campi: { r_mrfSede: 'ore 3-5', r_mrfSerie: 'serie 4, immagine 18', r_emviDove: 'vena rettale superiore, ridotta di calibro' } },
+    { modo: R, volte: 3, campi: { r_lnMesoSede: 'mesoretto posteriore, a ore 6', r_lnLatSede: 'otturatorio di sinistra', r_tdDett: 'un deposito di 5 mm' } },
+    { modo: R, volte: 2, campi: { r_sfintDett: 'sfintere interno, quadrante posteriore', r_yctDett: 'muscolo elevatore dell\'ano di sinistra', r_metaConfronto: 'ridotte di numero', r_lnNonRegSede: 'iliaco comune destro', r_metaDett: 'linfonodo iliaco comune destro di 8 mm' } }
+  ],
+  struttura: [
+    { modo: P, volte: 5, aggiunte: [{ sez: 'intro', testo: 'Esame di buona qualità tecnica, senza artefatti da movimento.' }, { sez: 'stagefinale', testo: 'Si consiglia discussione multidisciplinare.' }] },
+    { modo: P, volte: 4, aggiunte: [{ sez: 'mrf', testo: 'Piano adiposo di clivaggio ben riconoscibile.' }, { sez: 'linfonodi', testo: 'Non adenopatie lungo le catene iliache esterne.' }],
+      sost: [{ sez: 'mrf', gen: '- non coinvolta', alt: '- libera, con piano adiposo conservato' }] },
+    { modo: P, volte: 3, aggiunte: [{ sez: 'morfologia', testo: 'Lesione a crescita prevalentemente vegetante.' }, { sez: 'organi', testo: 'Non segni di infiltrazione degli organi adiacenti.' }, { sez: 'meta', testo: 'Non versamento libero nello scavo pelvico.' }],
+      sost: [{ sez: 'linfonodi', gen: '- non presenti', alt: '- non linfonodi con caratteri di sospetto' }] },
+    { modo: P, volte: 2, aggiunte: [{ sez: 'localizzazione', testo: 'Margine inferiore al di sopra della riflessione peritoneale anteriore.' }, { sez: 'emvi', testo: 'Vasi mesorettali di calibro regolare.' }, { sez: 'morfologia', testo: 'Lesione ulcerata a margini rilevati.' }] },
+    { modo: R, volte: 4, aggiunte: [{ sez: 'intro', testo: 'Confronto con la RM di stadiazione.' }, { sez: 'statolocale', testo: 'Fibrosi a basso segnale in T2 nella sede della pregressa lesione.' }, { sez: 'stagefinale', testo: 'Quadro compatibile con buona risposta al trattamento.' }] },
+    { modo: R, volte: 3, aggiunte: [{ sez: 'ycmrf', testo: 'Ricomparsa del piano adiposo fra fibrosi e fascia.' }, { sez: 'linfonodi', testo: 'Linfonodi mesorettali ridotti di numero e dimensioni.' }] },
+    { modo: R, volte: 2, aggiunte: [{ sez: 'emvisfint', testo: 'Complesso sfinterico indenne.' }, { sez: 'meta', testo: 'Non nuove localizzazioni pelviche.' }, { sez: 'stagefinale', testo: 'Si consiglia rivalutazione endoscopica.' }] }
+  ],
+  preferite: [['p_premedicazione', 'Buscopan 20 mg e.v.'], ['ref:primaria:stagefinale', 'Si consiglia discussione multidisciplinare.'], ['ref:ristad:statolocale', 'Fibrosi a basso segnale in T2 nella sede della pregressa lesione.']]
+};
+
 (async () => {
   const b = await chromium.launch();
   const c = await b.newContext({ viewport: { width: 1440, height: 900 } });
@@ -69,7 +102,32 @@ const CASI = [
       await p.click('#btnModePrimaria'); await p.waitForTimeout(300);
     }
   }
-  await p.waitForTimeout(1500);       // la memoria del medico finisce nel suo file
+  // ── la memoria di esempio: frasi già imparate in gran parte dei passi ──
+  // Si insegnano come le imparerebbe il tool: i campi liberi compilando il
+  // form e «leggendo» il referto più volte, le frasi del referto e le
+  // riformulazioni con la stessa funzione che usa quando il medico corregge
+  // il testo. Così hanno usi, date e contesto, non sono «insegnate a mano».
+  const frasi = await p.evaluate(async (m) => {
+    const pausa = (ms) => new Promise((r) => setTimeout(r, ms));
+    const out = document.getElementById('output');
+    const scrivi = (id, t) => { const e = document.getElementById(id); e.value = t; e.dispatchEvent(new Event('input', { bubbles: true })); };
+    const letti = (EsgarMemoria.stato().visti || []).length;
+    for (const g of m.campi) {
+      document.getElementById(g.modo === 'ristad' ? 'btnModeRistad' : 'btnModePrimaria').click(); await pausa(250);
+      (g.scelte || []).forEach((s) => { const e = document.querySelector(s); if (e && !e.checked) e.click(); });
+      Object.entries(g.campi).forEach(([id, t]) => scrivi(id, t));
+      await pausa(60);
+      for (let i = 0; i < g.volte; i++) { out.value += ' '; EsgarMemoria.impara(); }     // ogni volta un referto «diverso»
+      Object.keys(g.campi).forEach((id) => scrivi(id, ''));
+    }
+    // i referti letti restano quelli salvati davvero
+    const stato = EsgarMemoria.stato(); stato.visti = stato.visti.slice(0, letti);
+    for (const s of m.struttura) for (let i = 0; i < s.volte; i++) EsgarMemoria.gestione.imparaStruttura(s.modo, s.aggiunte || [], s.sost || []);
+    m.preferite.forEach(([k, testo]) => { const v = EsgarMemoria.gestione.voci(k).find((x) => x.testo === testo); if (v) EsgarMemoria.gestione.fissa(k, v.chiave, true); });
+    return EsgarMemoria.gestione.campi().reduce((a, c) => a + c.voci, 0);
+  }, MEMORIA);
+  console.log('frasi nella memoria di esempio: ' + frasi);
+  await p.waitForTimeout(1800);       // la memoria del medico finisce nel suo file
   fs.writeFileSync(path.join(__dirname, 'dati', 'medico.json'), JSON.stringify({ nome, cognome, titolo }, null, 2) + '\n');
   console.log(`referti salvati: ${n} per ${cognome} ${nome} · errori: ${errs.join(' | ') || 'nessuno'}`);
   await b.close(); srv.close();

@@ -1,16 +1,15 @@
 StructuRad × ESGAR — RM Retto · Ristadiazione
-Codice caso: RT26-HAY7
-Data esame: 18/05/2026    N. accesso: A160021
+Codice caso: RT26-RK7G
+Data esame: 20/04/2026    N. accesso: A151377
 Refertato da: Dr. Viggiano (Pasquale Viggiano)
-Salvato: 13/10/2026 16:38
+Salvato: 13/10/2026 17:56
 ────────────────────────────────────────────────
 
 Esame eseguito su apparecchio 1.5T con sequenze TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist).
 Confronto con RM basale del: 12/01/2026
 
 STATO LOCALE DELLA NEOPLASIA:
-Probabilità di malattia residua: Malattia residua minore — fibrosi eterogenea con segnale tumorale intermedio +/- restrizione focale della diffusione
-Categoria ycT stimata (massima): ycT3ab — crescita extramurale ≤5 mm
+Probabilità di malattia residua: Risposta clinica quasi completa (near-cCR) — fibrosi prevalentemente omogenea, con o senza piccoli foci di restrizione della diffusione
 Componente mucinosa: No
 
 ycEMVI E INVASIONE SFINTERICA:
@@ -32,6 +31,6 @@ Presenti al basale: no
 Stato attuale: non evidenza di linfonodi a distanza / noduli peritoneali sospetti
 
 STAGE FINALE (sintesi):
-Malattia residua minore ycT3ab ycMRF-.
+Risposta clinica quasi completa (near-cCR) ycMRF-.
 
 Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026, doi:10.1007/s00330-025-12275-9).

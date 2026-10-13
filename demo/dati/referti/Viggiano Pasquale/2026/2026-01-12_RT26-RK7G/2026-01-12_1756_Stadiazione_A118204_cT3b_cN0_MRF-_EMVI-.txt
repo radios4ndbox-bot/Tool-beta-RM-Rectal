@@ -1,8 +1,8 @@
 StructuRad × ESGAR — RM Retto · Stadiazione primaria
-Codice caso: RT26-JFAA
-Data esame: 02/09/2026    N. accesso: A186620
+Codice caso: RT26-RK7G
+Data esame: 12/01/2026    N. accesso: A118204
 Refertato da: Dr. Viggiano (Pasquale Viggiano)
-Salvato: 13/10/2026 16:38
+Salvato: 13/10/2026 17:56
 ────────────────────────────────────────────────
 
 Esame eseguito su apparecchio 1.5T con sequenze TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist).
@@ -14,7 +14,7 @@ MRF:
 - non coinvolta
 
 cT STAGE:
-cT2 — invasione muscolare propria, senza estensione extramurale
+cT3b — estensione extramurale 1–5 mm
 
 EMVI:
 grado 1 (EMVI-)
@@ -31,6 +31,6 @@ METASTASI PELVICHE:
 - non evidenza di noduli peritoneali
 
 STAGE FINALE:
-Lesione a placca del retto medio e basso cT2, MRF-, N0, M-, TD-, EMVI-.
+Lesione a placca del retto medio e basso cT3b, MRF-, N0, M-, TD-, EMVI-.
 
 Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).

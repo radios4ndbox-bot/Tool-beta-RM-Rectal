@@ -1,27 +1,27 @@
 StructuRad × ESGAR — RM Retto · Stadiazione primaria
-Codice caso: RT26-7BDJ
-Data esame: 21/05/2026    N. accesso: A158112
+Codice caso: RT26-CG9X
+Data esame: 03/02/2026    N. accesso: A123456
 Refertato da: Dr. Viggiano (Pasquale Viggiano)
-Salvato: 13/10/2026 16:38
+Salvato: 13/10/2026 17:56
 ────────────────────────────────────────────────
 
 Esame eseguito su apparecchio 1.5T con sequenze TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist).
 
 MORFOLOGIA:
-Lesione semicircolare del retto medio e basso, a livello della parete anteriore, posteriore.
+Lesione semicircolare del retto medio e basso, a livello della parete anteriore, laterale destra.
 
 MRF:
 - non coinvolta
 
 cT STAGE:
-cT3a — estensione extramurale <1 mm
+cT3c — estensione extramurale 5–15 mm
 
 EMVI:
-grado 2 (EMVI-)
+grado 3 (EMVI+)
 
 LINFONODI SOSPETTI:
 - non presenti
-- categoria cN: possibile cN+
+- categoria cN: cN+
 
 TUMOR DEPOSIT:
 non presente
@@ -31,6 +31,6 @@ METASTASI PELVICHE:
 - non evidenza di noduli peritoneali
 
 STAGE FINALE:
-Lesione semicircolare del retto medio e basso cT3a, MRF-, N+, M-, TD-, EMVI-.
+Lesione semicircolare del retto medio e basso cT3c, MRF-, N+, M-, TD-, EMVI+.
 
 Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).
