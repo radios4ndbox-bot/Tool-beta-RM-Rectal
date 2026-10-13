@@ -1,0 +1,36 @@
+StructuRad × ESGAR — RM Retto · Stadiazione primaria
+Codice caso: RT26-JFAA
+Data esame: 02/09/2026    N. accesso: A186620
+Refertato da: Dr. Viggiano (Pasquale Viggiano)
+Salvato: 13/10/2026 16:38
+────────────────────────────────────────────────
+
+Esame eseguito su apparecchio 1.5T con sequenze TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist).
+
+MORFOLOGIA:
+Lesione a placca del retto medio e basso, a livello della parete posteriore.
+
+MRF:
+- non coinvolta
+
+cT STAGE:
+cT2 — invasione muscolare propria, senza estensione extramurale
+
+EMVI:
+grado 1 (EMVI-)
+
+LINFONODI SOSPETTI:
+- non presenti
+- categoria cN: cN0
+
+TUMOR DEPOSIT:
+non presente
+
+METASTASI PELVICHE:
+- non evidenza di linfonodi a distanza sospetti
+- non evidenza di noduli peritoneali
+
+STAGE FINALE:
+Lesione a placca del retto medio e basso cT2, MRF-, N0, M-, TD-, EMVI-.
+
+Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).

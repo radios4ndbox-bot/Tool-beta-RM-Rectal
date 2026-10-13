@@ -1,0 +1,55 @@
+{
+  "name": "structurad-esgar-retto-demo",
+  "productName": "StructuRad ESGAR Demo",
+  "version": "0.2.0",
+  "description": "StructuRad × ESGAR — RM Retto, programma dimostrativo",
+  "author": "StructuRad",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "..\\desktop\\node_modules\\.bin\\electron .",
+    "dist": "..\\desktop\\node_modules\\.bin\\electron-builder --win portable --publish never",
+    "dati": "node crea-dati.js"
+  },
+  "build": {
+    "appId": "it.structurad.esgar.retto.demo",
+    "productName": "StructuRad ESGAR Demo",
+    "electronVersion": "44.6.0",
+    "directories": {
+      "output": "dist",
+      "buildResources": "../desktop/build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "dati/**",
+      {
+        "from": "../desktop",
+        "to": ".",
+        "filter": [
+          "ponte.js",
+          "build/icon.png"
+        ]
+      },
+      {
+        "from": "..",
+        "to": "tool",
+        "filter": [
+          "index.html",
+          "manifest.webmanifest",
+          "icone/**"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "../desktop/build/icon.png"
+    },
+    "portable": {
+      "artifactName": "StructuRad-ESGAR-Demo-${version}.${ext}"
+    }
+  }
+}
