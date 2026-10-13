@@ -43,6 +43,8 @@ const MEMORIA = {
     { modo: P, volte: 2, scelte: ['input[name=p_ct][value=cT4b]'], campi: { p_ctNote: 'infiltrazione della capsula prostatica', p_organiDett: 'parete posteriore della vagina' } },
     { modo: P, volte: 4, campi: { p_lnLivello: 'lungo i vasi presacrali, livello S2' } },
     { modo: P, volte: 2, campi: { p_lnLivello: 'all\'origine dell\'arteria rettale superiore', p_peritDett: 'nodulo di 6 mm nello scavo del Douglas' } },
+    { modo: P, volte: 3, scelte: ['#p_tdAdd'], campi: { '#p_td_container input[data-f=sede]': 'mesoretto posteriore, a ore 6' } },
+    { modo: P, volte: 2, campi: { '#p_td_container input[data-f=sede]': 'lungo i vasi rettali superiori' } },
     { modo: R, volte: 5, campi: { r_premedicazione: 'Buscopan 20 mg e.v.', r_metaConfronto: 'invariate rispetto al basale' } },
     { modo: R, volte: 3, campi: { r_mrfSede: 'ore 3-5', r_mrfSerie: 'serie 4, immagine 18', r_emviDove: 'vena rettale superiore, ridotta di calibro' } },
     { modo: R, volte: 3, campi: { r_lnMesoSede: 'mesoretto posteriore, a ore 6', r_lnLatSede: 'otturatorio di sinistra', r_tdDett: 'un deposito di 5 mm' } },
@@ -55,6 +57,8 @@ const MEMORIA = {
     { modo: P, volte: 3, aggiunte: [{ sez: 'morfologia', testo: 'Lesione a crescita prevalentemente vegetante.' }, { sez: 'organi', testo: 'Non segni di infiltrazione degli organi adiacenti.' }, { sez: 'meta', testo: 'Non versamento libero nello scavo pelvico.' }],
       sost: [{ sez: 'linfonodi', gen: '- non presenti', alt: '- non linfonodi con caratteri di sospetto' }] },
     { modo: P, volte: 2, aggiunte: [{ sez: 'localizzazione', testo: 'Margine inferiore al di sopra della riflessione peritoneale anteriore.' }, { sez: 'emvi', testo: 'Vasi mesorettali di calibro regolare.' }, { sez: 'morfologia', testo: 'Lesione ulcerata a margini rilevati.' }] },
+    { modo: P, volte: 3, aggiunte: [{ sez: 'ct', testo: 'Estensione extramurale misurata sul piano assiale obliquo.' }, { sez: 'td', testo: 'Non depositi tumorali nel mesoretto.' }] },
+    { modo: R, volte: 2, aggiunte: [{ sez: 'td', testo: 'Non depositi tumorali residui nel mesoretto.' }, { sez: 'linfonodi', testo: 'Non linfonodi laterali sospetti.' }] },
     { modo: R, volte: 4, aggiunte: [{ sez: 'intro', testo: 'Confronto con la RM di stadiazione.' }, { sez: 'statolocale', testo: 'Fibrosi a basso segnale in T2 nella sede della pregressa lesione.' }, { sez: 'stagefinale', testo: 'Quadro compatibile con buona risposta al trattamento.' }] },
     { modo: R, volte: 3, aggiunte: [{ sez: 'ycmrf', testo: 'Ricomparsa del piano adiposo fra fibrosi e fascia.' }, { sez: 'linfonodi', testo: 'Linfonodi mesorettali ridotti di numero e dimensioni.' }] },
     { modo: R, volte: 2, aggiunte: [{ sez: 'emvisfint', testo: 'Complesso sfinterico indenne.' }, { sez: 'meta', testo: 'Non nuove localizzazioni pelviche.' }, { sez: 'stagefinale', testo: 'Si consiglia rivalutazione endoscopica.' }] }
@@ -110,14 +114,18 @@ const MEMORIA = {
   const frasi = await p.evaluate(async (m) => {
     const pausa = (ms) => new Promise((r) => setTimeout(r, ms));
     const out = document.getElementById('output');
-    const scrivi = (id, t) => { const e = document.getElementById(id); e.value = t; e.dispatchEvent(new Event('input', { bubbles: true })); };
+    // un campo si indica con il suo id, o con un selettore se sta in una riga aggiunta (tumor deposit)
+    const scrivi = (id, t) => { const e = document.getElementById(id) || document.querySelector(id); e.value = t; e.dispatchEvent(new Event('input', { bubbles: true })); };
     const letti = (EsgarMemoria.stato().visti || []).length;
+    let lettura = 0;
     for (const g of m.campi) {
       document.getElementById(g.modo === 'ristad' ? 'btnModeRistad' : 'btnModePrimaria').click(); await pausa(250);
       (g.scelte || []).forEach((s) => { const e = document.querySelector(s); if (e && !e.checked) e.click(); });
       Object.entries(g.campi).forEach(([id, t]) => scrivi(id, t));
       await pausa(60);
-      for (let i = 0; i < g.volte; i++) { out.value += ' '; EsgarMemoria.impara(); }     // ogni volta un referto «diverso»
+      // ogni volta un referto «diverso»: il tool non impara due volte dallo stesso testo, e non tutti
+      // i campi cambiano il referto (alcuni compaiono solo con la loro voce spuntata)
+      for (let i = 0; i < g.volte; i++) { out.value += '\n' + (++lettura); EsgarMemoria.impara(); }
       Object.keys(g.campi).forEach((id) => scrivi(id, ''));
     }
     // i referti letti restano quelli salvati davvero

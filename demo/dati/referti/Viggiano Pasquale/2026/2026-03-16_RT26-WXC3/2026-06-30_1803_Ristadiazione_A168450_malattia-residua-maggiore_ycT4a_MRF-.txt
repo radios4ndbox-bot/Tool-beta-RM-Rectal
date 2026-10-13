@@ -1,8 +1,8 @@
 StructuRad × ESGAR — RM Retto · Ristadiazione
-Codice caso: RT26-VVS7
+Codice caso: RT26-WXC3
 Data esame: 30/06/2026    N. accesso: A168450
 Refertato da: Dr. Viggiano (Pasquale Viggiano)
-Salvato: 13/10/2026 17:57
+Salvato: 13/10/2026 18:03
 ────────────────────────────────────────────────
 
 Esame eseguito su apparecchio 1.5T con sequenze TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist).

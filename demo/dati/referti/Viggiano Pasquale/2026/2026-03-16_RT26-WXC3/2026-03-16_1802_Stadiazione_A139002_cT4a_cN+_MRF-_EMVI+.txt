@@ -1,23 +1,23 @@
 StructuRad × ESGAR — RM Retto · Stadiazione primaria
-Codice caso: RT26-SUXJ
-Data esame: 14/07/2026    N. accesso: A171045
+Codice caso: RT26-WXC3
+Data esame: 16/03/2026    N. accesso: A139002
 Refertato da: Dr. Viggiano (Pasquale Viggiano)
-Salvato: 13/10/2026 17:57
+Salvato: 13/10/2026 18:02
 ────────────────────────────────────────────────
 
 Esame eseguito su apparecchio 1.5T con sequenze TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist).
 
 MORFOLOGIA:
-Lesione a placca del retto medio e basso, a livello della parete laterale destra.
+Lesione a placca del retto medio e basso, a livello della parete anteriore.
 
 MRF:
 - non coinvolta
 
 cT STAGE:
-cT3d — estensione extramurale >15 mm
+cT4a — infiltrazione peritoneo viscerale
 
 EMVI:
-grado 3 (EMVI+)
+grado 4 (EMVI+)
 
 LINFONODI SOSPETTI:
 - non presenti
@@ -31,6 +31,6 @@ METASTASI PELVICHE:
 - non evidenza di noduli peritoneali
 
 STAGE FINALE:
-Lesione a placca del retto medio e basso cT3d, MRF-, N+, M-, TD-, EMVI+.
+Lesione a placca del retto medio e basso cT4a, MRF-, N+, M-, TD-, EMVI+.
 
 Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).

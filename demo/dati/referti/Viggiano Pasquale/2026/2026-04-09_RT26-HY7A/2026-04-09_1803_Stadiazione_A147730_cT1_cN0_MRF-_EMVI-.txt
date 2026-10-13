@@ -1,8 +1,8 @@
 StructuRad × ESGAR — RM Retto · Stadiazione primaria
-Codice caso: RT26-X7EC
-Data esame: 02/09/2026    N. accesso: A186620
+Codice caso: RT26-HY7A
+Data esame: 09/04/2026    N. accesso: A147730
 Refertato da: Dr. Viggiano (Pasquale Viggiano)
-Salvato: 13/10/2026 17:57
+Salvato: 13/10/2026 18:03
 ────────────────────────────────────────────────
 
 Esame eseguito su apparecchio 1.5T con sequenze TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist).
@@ -14,10 +14,10 @@ MRF:
 - non coinvolta
 
 cT STAGE:
-cT2 — invasione muscolare propria, senza estensione extramurale
+cT1 — invasione sottomucosa
 
 EMVI:
-grado 1 (EMVI-)
+grado 0 (EMVI-)
 
 LINFONODI SOSPETTI:
 - non presenti
@@ -31,6 +31,6 @@ METASTASI PELVICHE:
 - non evidenza di noduli peritoneali
 
 STAGE FINALE:
-Lesione a placca del retto medio e basso cT2, MRF-, N0, M-, TD-, EMVI-.
+Lesione a placca del retto medio e basso cT1, MRF-, N0, M-, TD-, EMVI-.
 
 Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).
