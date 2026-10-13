@@ -266,10 +266,15 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   check(await pc.isVisible('#arOverlay.open') && miei.length > 2 && await pc.locator('#arCasi .ar-ref').count() === miei.length
     && new RegExp('Neri · ' + miei.length + ' referti').test(await pc.textContent('#arSub')) && await pc.isHidden('#pannelloProfilo'),
     '«Mostra archivio» apre la finestra con i ' + miei.length + ' referti della cartella di Neri, e solo quelli');
+  // con tanti casi l'elenco scorre: nessun caso viene schiacciato e nessun referto tagliato
+  await pc.setViewportSize({ width: 1264, height: 520 });
+  check(await pc.evaluate(() => { const l = document.getElementById('arCasi'); return l.scrollHeight > l.clientHeight && [...l.querySelectorAll('.ar-caso')].every((c) => c.scrollHeight <= c.clientHeight + 1); }),
+    'in una finestra bassa l\'elenco scorre e ogni caso si vede intero');
+  await pc.setViewportSize({ width: 1440, height: 900 });
   await pc.fill('#arCerca', 'b777');
   check(await pc.locator('#arCasi .ar-ref').count() === 1, 'la ricerca trova il referto dal numero d\'accesso');
   await pc.click('#arCasi .ar-ref'); await pc.waitForTimeout(400);
-  check(/Codice caso: RT\d{2}-/.test(await pc.textContent('#arTesto')) && /N\. accesso: B777/.test(await pc.textContent('#arTesto')) && /Neri Marco\/\d{4}\//.test(await pc.textContent('#arVista .ar-vista-testa')),
+  check(/Codice caso: RT\d{2}-/.test(await pc.textContent('#arTesto')) && /N\. accesso: B777/.test(await pc.textContent('#arTesto')) && /Neri Marco[\\/]\d{4}[\\/]/.test(await pc.textContent('#arVista .ar-vista-testa')),
     'cliccando un referto lo si rilegge dal disco, con il suo percorso');
   await pc.fill('#arCerca', 'zzz');
   check(/Nessun referto/.test(await pc.textContent('#arCasi')), 'una ricerca senza esito lo dice');

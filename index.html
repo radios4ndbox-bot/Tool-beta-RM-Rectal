@@ -1081,11 +1081,11 @@ html.vt-passo.indietro::view-transition-new(mg-corpo){animation:mpTorna .34s eas
 .reduce-motion .mp-sinapsi.disegna path{animation:none; stroke-dashoffset:0;}
 
 /* ── Archivio: i referti del medico, riletti dalla sua cartella ── */
-.ar-corpo{flex:1; min-height:0; display:grid; grid-template-columns:370px 1fr;}
+.ar-corpo{flex:1; min-height:0; display:grid; grid-template-columns:clamp(250px, 34%, 370px) minmax(0, 1fr);}
 .ar-lista{min-height:0; display:flex; flex-direction:column; gap:10px; padding:14px 12px 0; border-right:1px solid var(--border); background:var(--surface2);}
 .ar-lista input{width:100%; background:#fff;}
 .ar-casi{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px 2px 14px;}
-.ar-caso{border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:hidden; animation:panVoce .4s cubic-bezier(.22,1,.36,1) calc(var(--i, 0) * 30ms) both;}
+.ar-caso{flex-shrink:0; border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:hidden; animation:panVoce .4s cubic-bezier(.22,1,.36,1) calc(var(--i, 0) * 30ms) both;}
 .ar-caso-testa{display:flex; align-items:center; gap:8px; padding:8px 11px; border-bottom:1px solid var(--border); background:var(--surface2); font-size:11.5px; color:var(--muted);}
 .ar-ref{display:grid; grid-template-columns:auto 1fr; gap:1px 9px; width:100%; padding:8px 11px; border:none; border-top:1px solid var(--border); background:transparent; text-align:left; font-family:var(--sans); color:var(--text); cursor:pointer; transition:background-color .15s;}
 .ar-ref:first-of-type{border-top:none;}
@@ -7139,14 +7139,16 @@ $id('btnSalva').addEventListener('click', async () => {
   async function mostra(k){
     const c = casi.find((x) => k.startsWith(x.nome + '/')); if (!c) return;
     const nome = k.slice(c.nome.length + 1), x = leggiNomeReferto(nome);
-    scelto = k; disegnaLista();
+    // si segna la scelta senza ridisegnare l'elenco: così non lampeggia e resta dov'è
+    scelto = k;
+    $id('arCasi').querySelectorAll('[data-ar-ref]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.arRef === k)));
     let testo;
     try { testo = await (await (await c.dir.getFileHandle(nome)).getFile()).text(); }
     catch (e) { messaggio('Il referto non si è potuto leggere: ' + escH(e && e.message || e)); return; }
     if (scelto !== k) return;
     $id('arVista').innerHTML = `<div class="ar-vista-testa">
         <div><h3>${/^Ristad/i.test(x.tipo) ? 'Ristadiazione' : 'Stadiazione'} del ${escH(dataIt(x.data))} · caso ${escH(c.codice)}</h3>
-          <p>${escH(radice.name)}/${escH([c.medico, c.anno, c.nome, nome].join('/'))}</p></div>
+          <p>${escH([radice.name, c.medico, c.anno, c.nome, nome].join(/\\/.test(radice.name) ? '\\' : '/'))}</p></div>
         <button type="button" class="btn-secondary" data-ar="copia">Copia</button></div>
       <pre class="ar-testo" id="arTesto"></pre>`;
     $id('arTesto').textContent = testo.replace(/\r\n/g, '\n');
