@@ -137,7 +137,12 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   check(await pc.inputValue('#r_confronto') === '28/09/2026' && (await pc.inputValue('#output')).includes('Confronto con RM basale del: 28/09/2026'), 'associando, la RM basale di confronto prende la data della stadiazione');
   await pc.fill('#arcAccesso', 'A178902'); await pc.fill('#arcData', '20122026'); await pc.click('#arcAccesso');
   await pc.click('#btnSalva'); await pc.waitForTimeout(400);
-  check(new RegExp('Bianchi Giulia/2026/2026-09-28_' + codice + '/2026-12-20_\\d{4}_Ristadiazione_A178902_near-cCR_ycT1-2').test(await pc.textContent('#archivioStato')), 'ristadiazione nella stessa cartella della stadiazione');
+  check(new RegExp('Bianchi Giulia/2026/2026-09-28_' + codice + '/2026-12-20_\\d{4}_Ristadiazione_A178902_near-cCR(?!_ycT)').test(await pc.textContent('#archivioStato')), 'ristadiazione nella stessa cartella della stadiazione; con risposta quasi completa lo ycT rimasto spuntato non entra nel nome');
+  // con malattia residua lo ycT c'è, nel nome come nel referto
+  await pc.click('input[name=r_risposta][value=minore]');
+  await pc.click('#btnSalva'); await pc.waitForTimeout(400);
+  check(/_Ristadiazione_A178902_malattia-residua-minore_ycT1-2/.test(await pc.textContent('#archivioStato')), 'con malattia residua lo ycT entra nel nome del file');
+  await pc.click('input[name=r_risposta][value=near-cCR]');
   await pc.screenshot({ path: SHOTS + '/casi_salvato.png' });
   await pc.screenshot({ path: SHOTS + '/acc_pc_salvato.png' });
   await pc.click('#btnModePrimaria'); await pc.waitForTimeout(200);
@@ -189,7 +194,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.evaluate(async () => (await navigator.storage.getDirectory()).removeEntry('Altra'));
   await pc.keyboard.press('Escape');
   const caseB = files.filter((f) => f.includes('_' + codice + '/'));
-  check(caseB.length === 4 && caseB.filter((f) => /_Ristadiazione_/.test(f)).length === 2, 'nel caso di Bianchi: due stadiazioni e due ristadiazioni, vicine');
+  check(caseB.length === 5 && caseB.filter((f) => /_Ristadiazione_/.test(f)).length === 3, 'nel caso di Bianchi: due stadiazioni e tre ristadiazioni, vicine');
   const idxNeri = await pc.evaluate(async () => (await (await (await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Referti RM Retto')).getDirectoryHandle('Neri Marco')).getFileHandle('indice-referti.csv')).getFile()).text());
   check(/Codice caso/.test(idxNeri) && idxNeri.includes(codice) && idxNeri.includes('Bianchi Giulia/2026/2026-09-28_' + codice), 'l\'indice di Neri ha la sua ristadiazione, con codice e percorso');
 

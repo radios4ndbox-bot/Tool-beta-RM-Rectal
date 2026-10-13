@@ -162,7 +162,7 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   await pc.fill('#arcAccesso', 'A178902'); await pc.fill('#arcData', '20122026'); await pc.click('#arcAccesso');
   await salva();
   f = albero();
-  check(f.some((x) => x.startsWith(dirCaso) && /2026-12-20_\d{4}_Ristadiazione_A178902_near-cCR_ycT1-2/.test(x)), 'la ristadiazione va nella stessa cartella della stadiazione');
+  check(f.some((x) => x.startsWith(dirCaso) && /2026-12-20_\d{4}_Ristadiazione_A178902_near-cCR(?!_ycT)/.test(x)), 'la ristadiazione va nella stessa cartella della stadiazione');
   await pc.click('#btnModePrimaria'); await pc.waitForTimeout(200);
 
   // ── la cartella resta: ricarica della pagina, senza permessi da riattivare ──

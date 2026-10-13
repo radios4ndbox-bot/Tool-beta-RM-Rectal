@@ -90,7 +90,7 @@ accanto all'altra in ordine di data:
 │   └── 2026/
 │       └── 2026-03-10_RT26-7K4M/
 │           ├── 2026-03-10_1412_Stadiazione_A123456_cT3c_cN+_MRF-_EMVI+.txt
-│           └── 2026-06-20_0930_Ristadiazione_A178902_near-cCR_ycT1-2_MRF-.txt
+│           └── 2026-06-20_0930_Ristadiazione_A178902_near-cCR_MRF-.txt
 └── Neri Marco/
     └── …
 ```

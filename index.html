@@ -6787,7 +6787,10 @@ function sintesiReferto(){
   }
   const risp = { 'cCR': 'cCR', 'near-cCR': 'near-cCR', 'minore': 'malattia residua minore', 'maggiore': 'malattia residua maggiore' }[r('r_risposta')] || '';
   const ycn = { 'ycN0': 'ycN0', 'ycN+': 'ycN+', 'possibile': 'ycN dubbio' }[r('r_ycn')] || '';
-  return { tipo: 'Ristadiazione', risposta: risp, t: r('r_yct'), n: ycn, mrf: mrf(r('r_mrf')), emvi: emvi(sel('r_emviGrade')) };
+  // come nel referto: lo ycT si riporta solo se si sospetta residuo, non nella risposta (quasi) completa,
+  // anche se nel form è rimasto spuntato da prima
+  const residuo = ['minore', 'maggiore'].includes(r('r_risposta'));
+  return { tipo: 'Ristadiazione', risposta: risp, t: residuo ? r('r_yct') : '', n: ycn, mrf: mrf(r('r_mrf')), emvi: emvi(sel('r_emviGrade')) };
 }
 function nomeFile(data, adesso, accessoN, s){
   const pezzi = [dataIso(data), due(adesso.getHours()) + due(adesso.getMinutes()), s.tipo === 'Ristadiazione' ? 'Ristadiazione' : 'Stadiazione',
@@ -6841,7 +6844,7 @@ function disegnaArchivioRow(){
 //
 //   <comune>/Bianchi Giulia/2026/2026-03-10_RT26-7K4M/
 //       2026-03-10_1412_Stadiazione_A123456_cT3c_cN+_MRF-_EMVI+.txt
-//       2026-06-20_0930_Ristadiazione_A178902_near-cCR_ycT1-2_MRF-.txt
+//       2026-06-20_0930_Ristadiazione_A178902_near-cCR_MRF-.txt
 //
 // Il caso resta nella cartella del medico che ha fatto la stadiazione;
 // chi salva la ristadiazione la ritrova nel proprio indice, con il
