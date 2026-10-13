@@ -187,16 +187,29 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   const leggiJson = (f) => { try { return JSON.parse(fs.readFileSync(path.join(COMUNE, f), 'utf8')); } catch (_) { return null; } };
   const haFrase = () => pc.evaluate(() => EsgarMemoria.gestione.voci('p_ctNote').some((v) => v.testo === 'frase di Neri'));
   await pc.evaluate(() => EsgarMemoria.gestione.aggiungi('p_ctNote', 'frase di Neri'));
-  await pc.click('.rail-btn[data-pan=stile]'); await pc.waitForTimeout(500);
-  check(/Neri/.test(await pc.textContent('#stChi')) && await pc.isVisible('#stCorpo'), 'Stile personale: è quello di Dr. Neri');
+  // la finestra dello stile: il referto del tool, con le parti da cliccare
+  await pc.click('#railStile'); await pc.waitForTimeout(500);
+  check(/Neri/.test(await pc.textContent('#stSub')) && await pc.locator('#stFoglio [data-parte]').count() === 12 && /Clicca una parte/.test(await pc.textContent('#stIspettore')),
+    'Stile personale di Dr. Neri: il referto con apertura, dieci sezioni e chiusura da cliccare');
   await pc.click('[data-st-titoli=iniziale]');
-  await pc.fill('#stChiusura', 'Si resta a disposizione.'); await pc.waitForTimeout(700);
-  await pc.click('[data-st-ometti="primaria:td"]'); await pc.waitForTimeout(300);
+  await pc.click('[data-parte=chiusura]'); await pc.fill('#stTesto', 'Si resta a disposizione.');
+  await pc.click('[data-parte=td]'); await pc.click('[data-st=ometti]');
+  await pc.click('[data-parte=mrf]'); await pc.fill('#stNome', 'Fascia mesorettale');
+  const foglio = await pc.textContent('#stFoglio');
+  check(/Fascia mesorettale:/.test(foglio) && /Stage finale:/.test(foglio) && /Si resta a disposizione\./.test(foglio) && await pc.locator('[data-parte=td].omessa').count() === 1,
+    'la bozza si vede subito nel foglio: titolo scritto a mano, grafia dei titoli, chiusura, sezione barrata');
   let ref = await pc.inputValue('#output');
-  check(/^Stage finale:/m.test(ref) && !/STAGE FINALE/.test(ref) && /Si resta a disposizione\.\n\nReferto redatto/.test(ref) && !/Tumor deposit:/i.test(ref),
-    'il referto prende lo stile: titoli con l\'iniziale, chiusura, sezione omessa');
-  await pc.click('.rail-btn[data-pan=stile]'); await pc.waitForTimeout(1700);
-  check((leggiJson('Neri Marco/memoria-esgar.json') || { campi: {} }).campi.p_ctNote && leggiJson('Neri Marco/stile-esgar.json').titoli === 'iniziale',
+  check(/^STAGE FINALE/m.test(ref) && !/Si resta a disposizione/.test(ref), 'finché non si salva il referto vero non cambia');
+  await pc.click('[data-parte=emvi]'); await pc.fill('#stNome', 'Fascia mesorettale'); await pc.click('[data-st=salva]'); await pc.waitForTimeout(200);
+  check(await pc.isVisible('#stOverlay.open') && /stesso titolo/.test(await pc.textContent('#stStato')), 'due sezioni con lo stesso titolo non si salvano');
+  await pc.click('[data-st=ripristina]');
+  await pc.click('[data-st=salva]'); await pc.waitForTimeout(400);
+  ref = await pc.inputValue('#output');
+  check(!(await pc.isVisible('#stOverlay.open')) && /^Stage finale:/m.test(ref) && !/STAGE FINALE/.test(ref) && /^Fascia mesorettale:/m.test(ref) && /Si resta a disposizione\.\n\nReferto redatto/.test(ref) && !/Tumor deposit:/i.test(ref),
+    '«Salva»: il referto prende lo stile (titoli, titolo tuo, chiusura, sezione omessa)');
+  await pc.waitForTimeout(1700);
+  const stileFile = leggiJson('Neri Marco/stile-esgar.json') || {};
+  check((leggiJson('Neri Marco/memoria-esgar.json') || { campi: {} }).campi.p_ctNote && stileFile.titoli === 'iniziale' && stileFile.nomi.primaria.mrf === 'Fascia mesorettale:',
     'memoria e stile sono nella cartella del medico: memoria-esgar.json, stile-esgar.json');
   // un altro medico ha i suoi
   await pc.click('#profiloBtn'); await pc.click('#ppEsci'); await accedi(tel);
@@ -207,10 +220,21 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   await pc.evaluate(() => Object.keys(localStorage).filter((k) => /esgar\.(memoria|stile)/.test(k)).forEach((k) => localStorage.removeItem(k)));
   await accedi(tel2); await pc.waitForTimeout(500);
   ref = await pc.inputValue('#output');
-  check(await haFrase() && /^Stage finale:/m.test(ref) && /Si resta a disposizione/.test(ref), 'Neri su un PC nuovo: memoria e stile tornano dalla sua cartella');
-  await pc.click('.rail-btn[data-pan=stile]'); await pc.waitForTimeout(400);
-  await pc.click('[data-st-ometti="primaria:td"]'); await pc.click('[data-st-titoli=maiuscolo]'); await pc.fill('#stChiusura', ''); await pc.waitForTimeout(700);
-  await pc.click('.rail-btn[data-pan=stile]'); await pc.waitForTimeout(1700);
+  check(await haFrase() && /^Stage finale:/m.test(ref) && /^Fascia mesorettale:/m.test(ref) && /Si resta a disposizione/.test(ref), 'Neri su un PC nuovo: memoria e stile tornano dalla sua cartella');
+  // si torna allo stile del tool; chiudendo senza salvare non cambia niente
+  if (await pc.isVisible('#pannelloProfilo')) await pc.click('#profiloBtn');
+  await pc.click('#railStile'); await pc.waitForTimeout(400);
+  await pc.click('[data-st-titoli=maiuscolo]');
+  pc.once('dialog', (d) => d.accept());
+  await pc.click('[data-st=annulla]'); await pc.waitForTimeout(200);
+  check(!(await pc.isVisible('#stOverlay.open')) && /^Stage finale:/m.test(await pc.inputValue('#output')), '«Annulla» chiede conferma e lascia lo stile com\'era');
+  await pc.click('#railStile'); await pc.waitForTimeout(400);
+  await pc.click('[data-st-titoli=maiuscolo]');
+  await pc.click('[data-parte=td]'); await pc.click('[data-st=ometti]');
+  await pc.click('[data-parte=chiusura]'); await pc.click('[data-st=togli]');
+  await pc.click('[data-parte=mrf]'); await pc.click('[data-st=ripristina]');
+  await pc.click('[data-st=salva]'); await pc.waitForTimeout(1900);
+  check(/^MRF:/m.test(await pc.inputValue('#output')) && /^STAGE FINALE/m.test(await pc.inputValue('#output')), 'tolte le regolazioni, il referto torna quello del tool');
   if (await pc.isVisible('#pannelloProfilo')) await pc.click('#profiloBtn');
 
   await salva(); await pc.waitForTimeout(1700);          // il referto appena salvato entra nella memoria, e la memoria nel file

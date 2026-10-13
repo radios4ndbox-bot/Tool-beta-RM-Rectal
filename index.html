@@ -1040,17 +1040,53 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 .reduce-motion .mp-nodo, .reduce-motion .mp-encefalo{animation:none;}
 .reduce-motion .mp-sinapsi.disegna path{animation:none; stroke-dashoffset:0;}
 
-/* ── Stile personale (pannello delle impostazioni) ── */
-.st-gruppo{display:block; margin:0 0 16px;}
-.st-lab{display:block; margin-bottom:6px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);}
-.st-seg{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
-.st-seg button{padding:9px 8px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface); font-family:var(--mono); font-size:11.5px; color:var(--muted); cursor:pointer; transition:border-color .15s, background-color .15s, color .15s;}
-.st-seg button[aria-checked="true"]{border-color:var(--accent); background:var(--accent-bg); color:var(--accent); font-weight:600;}
-.st-gruppo textarea{width:100%; min-height:58px; resize:vertical; padding:8px 11px; border:1.5px solid var(--border); border-radius:7px; background:var(--bg); outline:none;
-  font-family:var(--sans); font-size:12.5px; line-height:1.5; color:var(--text);}
-.st-gruppo textarea:focus{border-color:var(--accent); background:#fff; box-shadow:0 0 0 3px rgba(123,30,52,.09);}
-.st-sotto{margin:10px 0 6px; font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent);}
-#stOmetti .pan-voce{padding-top:7px; padding-bottom:7px;}
+/* ── Stile personale: il referto con le parti da cliccare ── */
+.st-barra{display:flex; align-items:center; gap:18px; flex-wrap:wrap; flex-shrink:0; padding:10px 20px; border-bottom:1px solid var(--border); background:var(--surface2);}
+.st-barra:empty{display:none;}
+.st-barra-gruppo{display:flex; align-items:center; gap:8px;}
+.st-lab{font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);}
+.st-seg{display:flex; gap:2px; padding:3px; border-radius:999px; border:1px solid var(--border); background:var(--surface);}
+.st-seg button{padding:5px 13px; border:none; border-radius:999px; background:transparent; font-family:var(--sans); font-size:11.5px; font-weight:500; color:var(--muted); cursor:pointer; transition:background-color .15s, color .15s;}
+.st-seg.mono button{font-family:var(--mono); font-size:11px;}
+.st-seg button[aria-checked="true"]{background:var(--accent); color:#fff;}
+.st-corpo{flex:1; min-height:0; display:grid; grid-template-columns:1fr 310px;}
+.st-scena{min-height:0; overflow-y:auto; padding:20px 22px 24px; background:var(--bg);}
+.st-foglio{max-width:560px; margin:0 auto; overflow:hidden; border-radius:14px; background:var(--surface); border:1px solid var(--border); box-shadow:0 18px 40px -28px rgba(26,12,17,.6);}
+.st-foglio-testa{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; padding:14px 18px 13px 22px; background:var(--ink); color:#fff; position:relative;}
+.st-foglio-testa::before{content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:linear-gradient(180deg, var(--red-light), var(--rose) 40%, var(--accent) 72%, var(--wine));}
+.st-foglio-testa span{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--red-light);}
+.st-foglio-testa b{display:block; margin-top:3px; font-size:15px; font-weight:600;}
+.st-foglio-modo{text-align:right;}
+.st-foglio-modo span{color:#A8979C; letter-spacing:.04em; text-transform:none;}
+.st-foglio-modo b{font-family:var(--mono); font-size:10.5px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--red-light);}
+.st-foglio-corpo{display:flex; flex-direction:column; gap:4px; padding:14px 12px 16px; font-family:var(--mono); font-size:12.5px; line-height:1.6; color:var(--text);}
+.st-fissa{padding:6px 10px; white-space:pre-wrap; color:var(--muted);}
+.st-parte{position:relative; display:block; width:100%; padding:6px 10px; border:1.5px dashed transparent; border-radius:9px; background:transparent; text-align:left; white-space:pre-wrap;
+  font:inherit; color:inherit; cursor:pointer; transition:border-color .15s, background-color .15s;}
+.st-parte:hover{border-color:var(--accent-line); background:var(--accent-bg);}
+.st-parte.scelta{border-style:solid; border-color:var(--accent); background:var(--accent-bg);}
+.st-parte .st-tit{font-weight:600; color:var(--accent);}
+.st-parte em{font-style:normal; color:var(--faint);}
+.st-parte.vuota{border-color:var(--border2); color:var(--faint); font-family:var(--sans); font-size:12px;}
+.st-parte.omessa .st-tit, .st-parte.omessa .st-testo{text-decoration:line-through; color:var(--faint);}
+.st-bollo{position:absolute; top:6px; right:8px; padding:1px 8px; border-radius:999px; font-family:var(--sans); font-size:10px; font-weight:600; letter-spacing:.04em; color:#fff; background:var(--muted);}
+.st-bollo.mio{background:var(--accent);}
+.st-ispettore{min-height:0; overflow-y:auto; padding:18px 18px 20px; border-left:1px solid var(--border); background:var(--surface);}
+.st-ispettore h3{margin:0 0 3px; font-size:15px; font-weight:600;}
+.st-ispettore p{margin:0 0 14px; font-size:12px; line-height:1.55; color:var(--muted);}
+.st-ispettore .st-lab{display:block; margin:0 0 6px;}
+.st-ispettore input[type=text]{width:100%;}
+.st-ispettore textarea{width:100%; min-height:110px; resize:vertical; padding:8px 11px; border:1.5px solid var(--border); border-radius:7px; background:var(--bg); outline:none;
+  font-family:var(--sans); font-size:13px; line-height:1.5; color:var(--text);}
+.st-ispettore textarea:focus{border-color:var(--accent); background:#fff; box-shadow:0 0 0 3px rgba(123,30,52,.09);}
+.st-ispettore .pan-voce{margin-top:14px;}
+.st-ispettore .btn-ghost{margin-top:8px; padding:5px 0; font-size:11.5px; color:var(--accent);}
+.st-suggerimento{display:flex; flex-direction:column; align-items:center; gap:10px; padding:38px 14px; text-align:center; color:var(--muted); font-size:12.5px; line-height:1.55;}
+.st-suggerimento svg{width:30px; height:30px; color:var(--accent-line);}
+.st-piede{display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-shrink:0; padding:11px 18px; border-top:1px solid var(--border); background:var(--surface2);}
+.st-piede .pp-stato{margin:0 auto 0 0;}
+.st-piede [hidden], .st-corpo > [hidden]{display:none;}
+.st-fuori{grid-column:1 / -1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:40px; text-align:center; color:var(--muted); font-size:13.5px; line-height:1.6;}
 
 /* ── Cancello: l'accesso con il telefono prima di tutto ── */
 .cancello{position:fixed; inset:0; z-index:800; display:grid; place-items:center; padding:24px;
@@ -2718,7 +2754,7 @@ liveUpdate();
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg>
       <span class="rail-eco">Memoria</span>
     </button>
-    <button type="button" class="rail-btn" data-pan="stile" role="tab" aria-selected="false" title="Stile personale: come vuoi il tuo referto">
+    <button type="button" class="rail-btn" id="railStile" aria-haspopup="dialog" aria-expanded="false" title="Stile personale: come vuoi il tuo referto">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4c-7 0-12 4-13 11l-2 5"/><path d="M20 4c0 6-3 10-9 11"/><path d="M9 13h5"/></svg>
       <span class="rail-eco">Stile</span>
     </button>
@@ -2751,29 +2787,6 @@ liveUpdate();
         <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         <span><strong>Azzera la memoria</strong><em>I referti salvati restano</em></span>
       </button>
-    </section>
-
-    <section class="pan" data-pan="stile">
-      <h3 class="pan-tit">Stile personale</h3>
-      <p class="pan-desc" id="stChi"></p>
-      <div id="stCorpo">
-        <div class="st-gruppo">
-          <span class="st-lab">Titoli delle sezioni</span>
-          <div class="st-seg" role="radiogroup" aria-label="Titoli delle sezioni">
-            <button type="button" role="radio" aria-checked="false" data-st-titoli="maiuscolo">MORFOLOGIA:</button>
-            <button type="button" role="radio" aria-checked="false" data-st-titoli="iniziale">Morfologia:</button>
-          </div>
-        </div>
-        <label class="st-gruppo"><span class="st-lab">Apertura</span>
-          <textarea id="stApertura" rows="2" maxlength="400" placeholder="Una frase fissa in testa al referto"></textarea></label>
-        <label class="st-gruppo"><span class="st-lab">Chiusura</span>
-          <textarea id="stChiusura" rows="2" maxlength="400" placeholder="Una frase fissa in coda al referto"></textarea></label>
-        <div class="st-gruppo">
-          <span class="st-lab">Sezioni da omettere</span>
-          <p class="pan-desc">Una sezione omessa non compare mai nel tuo referto, anche se nel form è compilata.</p>
-          <div id="stOmetti"></div>
-        </div>
-      </div>
     </section>
 
     <section class="pan" data-pan="aspetto">
@@ -2875,6 +2888,35 @@ liveUpdate();
     <div class="pg-corpo">
       <div class="pg-nav" id="mgNav" role="tablist" aria-label="Campi"></div>
       <section class="pg-sezione" id="mgCorpo"></section>
+    </div>
+  </div>
+</div>
+
+<!-- Stile personale: il referto del tool, con ogni parte da cliccare e regolare -->
+<div class="mg-overlay" id="stOverlay" role="dialog" aria-modal="true" aria-labelledby="stTitolo">
+  <div class="mg-pagina">
+    <div class="pg-testa">
+      <div class="pg-icona" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c-7 0-12 4-13 11l-2 5"/><path d="M20 4c0 6-3 10-9 11"/><path d="M9 13h5"/></svg></div>
+      <div>
+        <div class="pg-titolo" id="stTitolo">Stile personale</div>
+        <div class="pg-sub" id="stSub"></div>
+      </div>
+      <button type="button" class="pg-x" data-st="annulla" aria-label="Chiudi">&times;</button>
+    </div>
+    <div class="st-barra" id="stBarra"></div>
+    <div class="st-corpo">
+      <div class="st-scena">
+        <div class="st-foglio">
+          <div class="st-foglio-testa"><div><span>Referto strutturato · ESGAR</span><b>RM Retto</b></div><div class="st-foglio-modo"><span>modalità</span><b id="stModo"></b></div></div>
+          <div class="st-foglio-corpo" id="stFoglio"></div>
+        </div>
+      </div>
+      <aside class="st-ispettore" id="stIspettore" aria-live="polite"></aside>
+    </div>
+    <div class="st-piede">
+      <span class="pp-stato" id="stStato"></span>
+      <button type="button" class="btn-ghost" data-st="annulla">Annulla</button>
+      <button type="button" class="btn-primary" data-st="salva" id="stSalva">Salva</button>
     </div>
   </div>
 </div>
@@ -7421,7 +7463,8 @@ const annunciaSessione = () => document.dispatchEvent(new CustomEvent('esgar:ses
 // Tre regolazioni, che restano del medico (EsgarPersonale: sul PC e nel
 // file stile-esgar.json della sua cartella):
 //   · titoli delle sezioni: MAIUSCOLO come li scrive il tool, oppure
-//     con la sola iniziale maiuscola (le sigle restano sigle);
+//     con la sola iniziale maiuscola (le sigle restano sigle); e, sezione
+//     per sezione, un titolo scritto dal medico;
 //   · una frase fissa di apertura e una di chiusura;
 //   · sezioni da omettere: non compaiono mai nel suo referto.
 // Lo stile veste il referto appena composto (vesti, chiamata dal motore
@@ -7434,10 +7477,11 @@ window.EsgarStile = (function(){
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const MODI = ['primaria', 'ristad'];
+  const NOME_MODO = { primaria: 'Stadiazione primaria', ristad: 'Ristadiazione' };
   const DEFS = { primaria: SECTION_HEADERS_PRIMARIA, ristad: SECTION_HEADERS_RISTAD };
   const ORIG = { primaria: DEFS.primaria.map((d) => d[1]), ristad: DEFS.ristad.map((d) => d[1]) };
   const SEMPRE = ['stagefinale'];      // la sintesi finale non si omette
-  const vuoto = () => ({ v: 1, titoli: 'maiuscolo', apertura: '', chiusura: '', ometti: { primaria: [], ristad: [] } });
+  const vuoto = () => ({ v: 1, titoli: 'maiuscolo', apertura: '', chiusura: '', ometti: { primaria: [], ristad: [] }, nomi: { primaria: {}, ristad: {} } });
 
   /* «cT STAGE:» → «cT stage:»; le sigle restano sigle */
   const iniziale = (h) => h.split(' ').map((w, i) => {
@@ -7448,41 +7492,55 @@ window.EsgarStile = (function(){
 
   const D = window.EsgarPersonale.dato({
     base: 'structurad.esgar.stile.v1', file: 'stile-esgar.json',
-    vuoto, valido: (s) => s.v === 1, dopo: () => applica()
+    vuoto, valido: (s) => s.v === 1, dopo: () => { chiudi(true); applica(); }
   });
   const attivo = () => !!window.EsgarPersonale.idMedico();
-  function stile(){
-    const s = attivo() ? D.get() : vuoto();
+  function norma(s){
     if (s.titoli !== 'iniziale') s.titoli = 'maiuscolo';
     s.apertura = String(s.apertura || ''); s.chiusura = String(s.chiusura || '');
     if (!s.ometti) s.ometti = {};
-    MODI.forEach((m) => { if (!Array.isArray(s.ometti[m])) s.ometti[m] = []; });
+    if (!s.nomi) s.nomi = {};
+    MODI.forEach((m) => {
+      if (!Array.isArray(s.ometti[m])) s.ometti[m] = [];
+      if (!s.nomi[m] || typeof s.nomi[m] !== 'object') s.nomi[m] = {};
+    });
     return s;
   }
-  const impronta = (s) => JSON.stringify([s.titoli, s.apertura.trim(), s.chiusura.trim(), s.ometti.primaria, s.ometti.ristad]);
+  const stile = () => norma(attivo() ? D.get() : vuoto());
+  /* il titolo di una sezione: quello che il medico le ha dato, o quello del tool nella grafia scelta */
+  const titoloTool = (s, m, i) => s.titoli === 'iniziale' ? iniziale(ORIG[m][i]) : ORIG[m][i];
+  const titolo = (s, m, i) => s.nomi[m][DEFS[m][i][0]] || titoloTool(s, m, i);
+  const impronta = (s) => JSON.stringify([s.titoli, s.apertura.trim(), s.chiusura.trim(),
+    MODI.map((m) => [s.ometti[m].slice().sort(), Object.keys(s.nomi[m]).sort().map((k) => [k, s.nomi[m][k]])])]);
 
-  /* il referto appena composto { intro, sections, tail } con lo stile del medico */
-  function vesti(o, modo){
-    const s = stile();
+  /* il referto appena composto { intro, sections, tail } con uno stile */
+  function vestiCon(s, o, modo){
     DEFS[modo].forEach((d, i) => {
       const t = o.sections[d[0]];
       if (!t) return;
       if (s.ometti[modo].includes(d[0]) && !SEMPRE.includes(d[0])) { o.sections[d[0]] = ''; return; }
-      const h = ORIG[modo][i];
-      if (d[1] !== h && t.startsWith(h)) o.sections[d[0]] = d[1] + t.slice(h.length);
+      const h = ORIG[modo][i], mio = titolo(s, modo, i);
+      if (mio !== h && t.startsWith(h)) o.sections[d[0]] = mio + t.slice(h.length);
     });
     if (s.apertura.trim()) o.intro = s.apertura.trim() + (o.intro ? '\n\n' + o.intro : '');
     if (s.chiusura.trim()) o.tail = s.chiusura.trim() + (o.tail ? '\n\n' + o.tail : '');
     return o;
   }
+  let nudo = false;
+  const vesti = (o, modo) => nudo ? o : vestiCon(stile(), o, modo);
+  /* il referto come lo compone il tool, senza stile: serve alla finestra dello stile */
+  function grezzo(modo){
+    nudo = true;
+    try { return modo === 'ristad' ? computeSectionsRistad() : computeSectionsPrimaria(); } finally { nudo = false; }
+  }
 
-  /* lo stile in vigore cambia (accesso, uscita, una regolazione): i titoli
-     si aggiornano e il referto riparte dal form, perché quello a schermo
-     ha i titoli di prima */
+  /* lo stile in vigore cambia (accesso, uscita, «Salva»): i titoli si
+     aggiornano e il referto riparte dal form, perché quello a schermo ha
+     i titoli di prima */
   let inVigore = impronta(vuoto());
   function applica(){
     const s = stile();
-    MODI.forEach((m) => DEFS[m].forEach((d, i) => { d[1] = s.titoli === 'iniziale' ? iniziale(ORIG[m][i]) : ORIG[m][i]; }));
+    MODI.forEach((m) => DEFS[m].forEach((d, i) => { d[1] = titolo(s, m, i); }));
     const ora = impronta(s);
     if (ora !== inVigore) {
       inVigore = ora;
@@ -7490,54 +7548,164 @@ window.EsgarStile = (function(){
       $('output').value = '';
       liveUpdate();
     }
+  }
+
+  // ── la finestra: il referto del tool, con ogni parte da cliccare ──
+  // Si lavora su una bozza: niente cambia nel referto vero finché non si salva.
+  let bozza = null, modoEd = 'primaria', parte = null;
+  const aperta = () => $('stOverlay').classList.contains('open');
+  const sporca = () => !!bozza && impronta(bozza) !== impronta(stile());
+  const statoSt = (t, tono) => { const e = $('stStato'); e.className = 'pp-stato ' + (tono || ''); e.textContent = t || ''; };
+  const pulisciTitolo = (t) => { const x = String(t || '').replace(/[\r\n]+/g, ' ').replace(/:+\s*$/, '').trim().slice(0, 60); return x ? x + ':' : ''; };
+
+  function disegnaBarra(){
+    $('stBarra').innerHTML = !bozza ? '' : `
+      <div class="st-barra-gruppo"><span class="st-lab">Referto</span>
+        <div class="st-seg" role="radiogroup" aria-label="Tipo di referto">${MODI.map((m) => `<button type="button" role="radio" aria-checked="${modoEd === m}" data-st-modo="${m}">${NOME_MODO[m]}</button>`).join('')}</div></div>
+      <div class="st-barra-gruppo"><span class="st-lab">Titoli</span>
+        <div class="st-seg mono" role="radiogroup" aria-label="Grafia dei titoli">
+          <button type="button" role="radio" aria-checked="${bozza.titoli === 'maiuscolo'}" data-st-titoli="maiuscolo">MORFOLOGIA:</button>
+          <button type="button" role="radio" aria-checked="${bozza.titoli === 'iniziale'}" data-st-titoli="iniziale">Morfologia:</button>
+        </div></div>`;
+  }
+  function disegnaFoglio(){
+    const o = grezzo(modoEd);
+    const frase = (k, testo, invito) => `<button type="button" class="st-parte${testo.trim() ? '' : ' vuota'}${parte === k ? ' scelta' : ''}" data-parte="${k}">${testo.trim() ? esc(testo.trim()) + '<span class="st-bollo mio">tua</span>' : invito}</button>`;
+    $('stModo').textContent = NOME_MODO[modoEd];
+    $('stFoglio').innerHTML = frase('apertura', bozza.apertura, '+ Frase di apertura')
+      + `<div class="st-fissa">${esc(o.intro)}</div>`
+      + DEFS[modoEd].map((d, i) => {
+        const k = d[0], t = o.sections[k] || '', h = ORIG[modoEd][i];
+        const corpo = t.startsWith(h) ? t.slice(h.length) : (t ? '\n' + t : '');
+        const om = bozza.ometti[modoEd].includes(k) && !SEMPRE.includes(k);
+        return `<button type="button" class="st-parte${om ? ' omessa' : ''}${parte === k ? ' scelta' : ''}" data-parte="${k}"><span class="st-tit">${esc(titolo(bozza, modoEd, i))}</span>`
+          + `<span class="st-testo">${t ? esc(corpo) : '\n<em>compare quando compili la scheda</em>'}</span>`
+          + (om ? '<span class="st-bollo">omessa</span>' : bozza.nomi[modoEd][k] ? '<span class="st-bollo mio">titolo tuo</span>' : '') + '</button>';
+      }).join('')
+      + frase('chiusura', bozza.chiusura, '+ Frase di chiusura')
+      + `<div class="st-fissa">${esc(o.tail)}</div>`;
+  }
+  function disegnaIspettore(){
+    const e = $('stIspettore');
+    if (!parte) {
+      e.innerHTML = `<div class="st-suggerimento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 4 7.5 17 2.2-7.3L21 11.5 4 4Z"/></svg>
+        <span><b>Clicca una parte del referto</b> per regolarla: il titolo di una sezione, se ometterla, le frasi di apertura e di chiusura.</span>
+        <span>Il testo è quello che il form compone adesso; niente cambia nel referto finché non premi «Salva».</span></div>`;
+      return;
+    }
+    if (parte === 'apertura' || parte === 'chiusura') {
+      const ap = parte === 'apertura';
+      e.innerHTML = `<h3>Frase di ${ap ? 'apertura' : 'chiusura'}</h3>
+        <p>${ap ? 'Sta in testa a ogni tuo referto, prima della tecnica d\'esame.' : 'Sta in coda a ogni tuo referto, prima della riga sui criteri ESGAR.'}</p>
+        <label class="st-lab" for="stTesto">Testo</label>
+        <textarea id="stTesto" maxlength="400" placeholder="${ap ? 'Una frase fissa in testa al referto' : 'Una frase fissa in coda al referto'}">${esc(bozza[parte])}</textarea>
+        ${bozza[parte].trim() ? '<button type="button" class="btn-ghost" data-st="togli">Togli la frase</button>' : ''}`;
+      return;
+    }
+    const i = DEFS[modoEd].findIndex((d) => d[0] === parte);
+    const mio = bozza.nomi[modoEd][parte], om = bozza.ometti[modoEd].includes(parte);
+    e.innerHTML = `<h3>${esc(titoloTool(bozza, modoEd, i).replace(/:$/, ''))}</h3>
+      <p>Sezione del referto di ${NOME_MODO[modoEd].toLowerCase()}. Il contenuto lo compone il form; le frasi che ci aggiungi le impara la Memoria.</p>
+      <label class="st-lab" for="stNome">Titolo nel tuo referto</label>
+      <input type="text" id="stNome" maxlength="60" autocomplete="off" spellcheck="false" value="${esc(titolo(bozza, modoEd, i).replace(/:$/, ''))}">
+      ${mio ? '<button type="button" class="btn-ghost" data-st="ripristina">Torna al titolo del tool</button>' : ''}
+      ${SEMPRE.includes(parte) ? '<p style="margin-top:16px">La sintesi finale non si può omettere.</p>'
+        : `<button type="button" class="pan-voce pan-toggle" role="switch" aria-checked="${om}" data-st="ometti">
+            <span><strong>Ometti dal referto</strong><em>Non compare mai, anche se nel form è compilata</em></span><span class="pan-pill" aria-hidden="true"></span></button>`}`;
+  }
+  function disegna(){
+    const p = attivo() && sessione.profilo;
+    $('stSub').textContent = p ? `Il referto come lo vuole ${Canale.nomeCortese(p)} · ${window.EsgarPersonale.nelFile() ? 'resta nella tua cartella, su ogni PC' : 'resta su questo PC'}` : 'Lo stile è di chi ha fatto l\'accesso';
+    $('stOverlay').querySelector('.st-scena').hidden = !bozza;
+    $('stIspettore').hidden = !bozza;
+    $('stSalva').hidden = !bozza;
+    let fuori = $('stFuori');
+    if (!bozza) {
+      if (!fuori) { fuori = document.createElement('div'); fuori.id = 'stFuori'; fuori.className = 'st-fuori'; $('stOverlay').querySelector('.st-corpo').appendChild(fuori); }
+      fuori.innerHTML = '<span>Lo stile è personale: <b>accedi con il telefono</b> per impostare il tuo.</span><button type="button" class="btn-primary" data-st="accedi">Accedi con il telefono</button>';
+      disegnaBarra();
+      return;
+    }
+    if (fuori) fuori.remove();
+    disegnaBarra(); disegnaFoglio(); disegnaIspettore();
+  }
+
+  function apri(){
+    modoEd = typeof mode !== 'undefined' && mode === 'ristad' ? 'ristad' : 'primaria';
+    bozza = attivo() ? norma(JSON.parse(JSON.stringify(stile()))) : null;
+    parte = null;
+    statoSt('');
+    $('stOverlay').classList.add('open');
+    $('railStile').setAttribute('aria-expanded', 'true');
     disegna();
   }
-
-  function disegna(){
-    const chi = $('stChi'); if (!chi) return;
-    const s = stile(), p = attivo() && sessione.profilo;
-    chi.innerHTML = p
-      ? `Il referto come lo vuole <b>${esc(Canale.nomeCortese(p))}</b>. ${window.EsgarPersonale.nelFile() ? 'Resta nella tua cartella: lo ritrovi su ogni PC.' : 'Resta su questo PC.'}`
-      : 'Lo stile è personale: <b>accedi con il telefono</b> per impostare il tuo.';
-    $('stCorpo').hidden = !p;
-    if (!p) return;
-    document.querySelectorAll('[data-st-titoli]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.stTitoli === s.titoli)));
-    ['stApertura', 'stChiusura'].forEach((id) => { const e = $(id), v = id === 'stApertura' ? s.apertura : s.chiusura; if (document.activeElement !== e && e.value !== v) e.value = v; });
-    $('stOmetti').innerHTML = MODI.map((m) => `<div class="st-sotto">${m === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}</div>`
-      + DEFS[m].map((d, i) => SEMPRE.includes(d[0]) ? '' : `<button type="button" class="pan-voce pan-toggle" role="switch" aria-checked="${s.ometti[m].includes(d[0])}" data-st-ometti="${m}:${d[0]}">
-          <span><strong>${esc(iniziale(ORIG[m][i]).replace(/:$/, ''))}</strong></span><span class="pan-pill" aria-hidden="true"></span></button>`).join('')).join('');
+  function chiudi(senzaChiedere){
+    if (!aperta()) return;
+    if (!senzaChiedere && sporca() && !confirm('Chiudere senza salvare le modifiche allo stile?')) return;
+    $('stOverlay').classList.remove('open');
+    $('railStile').setAttribute('aria-expanded', 'false');
+    bozza = null; parte = null;
   }
-
-  function cambia(fn){
-    if (!attivo()) return;
-    const s = stile();
-    fn(s);
-    D.set(s); D.salva();
+  function salva(){
+    if (!bozza || !attivo()) return;
+    // due sezioni con lo stesso titolo non si distinguerebbero più
+    for (const m of MODI) {
+      const visti = new Set();
+      for (let i = 0; i < DEFS[m].length; i++) {
+        const t = titolo(bozza, m, i).toLowerCase();
+        if (visti.has(t)) { modoEd = m; parte = DEFS[m][i][0]; disegna(); statoSt(`Due sezioni hanno lo stesso titolo «${titolo(bozza, m, i)}»: cambiane uno.`, 'ko'); return; }
+        visti.add(t);
+      }
+    }
+    D.set(bozza); D.salva();
+    bozza = null;
+    chiudi(true);
     applica();
   }
-  const pan = document.querySelector('.pan[data-pan=stile]');
-  let attesa = null;
-  if (pan) {
-    pan.addEventListener('click', (ev) => {
-      const t = ev.target.closest('[data-st-titoli]');
-      if (t) { cambia((s) => { s.titoli = t.dataset.stTitoli; }); return; }
-      const o = ev.target.closest('[data-st-ometti]');
-      if (o) {
-        const [m, k] = o.dataset.stOmetti.split(':');
-        cambia((s) => { s.ometti[m] = s.ometti[m].includes(k) ? s.ometti[m].filter((x) => x !== k) : s.ometti[m].concat(k); });
-      }
-    });
-    // mentre si scrive il referto non si rigenera a ogni lettera
-    pan.addEventListener('input', (ev) => {
-      if (ev.target.id !== 'stApertura' && ev.target.id !== 'stChiusura') return;
-      clearTimeout(attesa);
-      attesa = setTimeout(() => cambia((s) => { s.apertura = $('stApertura').value.slice(0, 400); s.chiusura = $('stChiusura').value.slice(0, 400); }), 450);
-    });
-  }
-  const railStile = document.querySelector('.rail-btn[data-pan=stile]');
-  if (railStile) railStile.addEventListener('click', disegna);
 
-  const api = { vesti, stato: () => stile(), pronto: () => D.pronto(), titolo: (h) => iniziale(h) };
+  $('railStile').addEventListener('click', () => (aperta() ? chiudi() : apri()));
+  $('stOverlay').addEventListener('mousedown', (ev) => { if (ev.target === $('stOverlay')) chiudi(); });
+  $('stOverlay').addEventListener('click', (ev) => {
+    const a = ev.target.closest('[data-st]');
+    if (a) {
+      switch (a.dataset.st) {
+        case 'annulla': chiudi(); return;
+        case 'salva': salva(); return;
+        case 'accedi': chiudi(true); apriPannello(true); return;
+        case 'togli': bozza[parte] = ''; break;
+        case 'ripristina': delete bozza.nomi[modoEd][parte]; break;
+        case 'ometti': { const l = bozza.ometti[modoEd]; bozza.ometti[modoEd] = l.includes(parte) ? l.filter((x) => x !== parte) : l.concat(parte); break; }
+      }
+      statoSt(''); disegna(); return;
+    }
+    if (!bozza) return;
+    const m = ev.target.closest('[data-st-modo]');
+    if (m) { modoEd = m.dataset.stModo; parte = null; disegna(); return; }
+    const t = ev.target.closest('[data-st-titoli]');
+    if (t) { bozza.titoli = t.dataset.stTitoli; disegna(); return; }
+    const p = ev.target.closest('[data-parte]');
+    if (p) {
+      parte = p.dataset.parte; statoSt(''); disegna();
+      const campo = $('stTesto') || $('stNome');
+      if (campo) { campo.focus(); if (campo.select && campo.id === 'stNome') campo.select(); }
+    }
+  });
+  // mentre si scrive si aggiorna solo il foglio: il campo tiene il cursore
+  $('stOverlay').addEventListener('input', (ev) => {
+    if (!bozza || !parte) return;
+    if (ev.target.id === 'stTesto') bozza[parte] = ev.target.value.slice(0, 400);
+    else if (ev.target.id === 'stNome') {
+      const i = DEFS[modoEd].findIndex((d) => d[0] === parte), t = pulisciTitolo(ev.target.value);
+      if (!t || t === titoloTool(bozza, modoEd, i)) delete bozza.nomi[modoEd][parte]; else bozza.nomi[modoEd][parte] = t;
+    } else return;
+    statoSt(''); disegnaFoglio();
+  });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape' || !aperta()) return;
+    ev.stopPropagation(); chiudi();
+  });
+
+  const api = { vesti, stato: () => stile(), pronto: () => D.pronto(), titolo: (h) => iniziale(h), apri, chiudi };
   window.EsgarStile = api;       // applica() rigenera il referto, che passa da vesti
   applica();
   return api;

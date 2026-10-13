@@ -185,8 +185,9 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   check(await p.isVisible('#cancello') && await p.locator('#cancello #ppFuori').count() === 1 &&await p.evaluate(() => document.getElementById('viewsPort').inert), 'all\'avvio, senza sessione: il cancello chiede l\'accesso e il tool dietro è fermo');
   await p.click('#cancelloSenza'); await p.waitForTimeout(200);
   check(!(await p.isVisible('#cancello')) && await p.evaluate(() => !document.getElementById('viewsPort').inert && !!document.querySelector('#pannelloProfilo #ppFuori')), '«Continua senza accesso»: il tool si apre, e l\'accesso torna nel profilo');
-  await p.click('.rail-btn[data-pan=stile]'); await p.waitForTimeout(400);
-  check(/accedi con il telefono/i.test(await p.textContent('#stChi')) && await p.isHidden('#stCorpo'), 'senza accesso lo Stile personale non si imposta');
+  await p.click('#railStile'); await p.waitForTimeout(400);
+  check(await p.isVisible('#stOverlay.open') && /accedi con il telefono/i.test(await p.textContent('#stFuori')) && await p.isHidden('#stFoglio') && await p.isHidden('#stSalva'), 'senza accesso lo Stile personale non si imposta');
+  await p.keyboard.press('Escape');
   await p.reload(); await p.waitForTimeout(500);
   check(!(await p.isVisible('#cancello')), 'nella stessa scheda il cancello non torna');
   check(errs.length === 0, 'nessun errore JS ' + errs.join(' | '));
