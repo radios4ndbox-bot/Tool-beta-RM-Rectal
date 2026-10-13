@@ -189,8 +189,9 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   await pc.evaluate(() => EsgarMemoria.gestione.aggiungi('p_ctNote', 'frase di Neri'));
   // la finestra dello stile: il referto del tool, con le parti da cliccare
   await pc.click('#railStile'); await pc.waitForTimeout(500);
-  check(/Neri/.test(await pc.textContent('#stSub')) && await pc.locator('#stFoglio [data-parte]').count() === 12 && /Clicca una parte/.test(await pc.textContent('#stIspettore')),
-    'Stile personale di Dr. Neri: il referto con apertura, dieci sezioni e chiusura da cliccare');
+  check(/Neri/.test(await pc.textContent('#stSub')) && await pc.locator('#stFoglio [data-parte]').count() === 22 && await pc.locator('#stFoglio [data-parte^="frase:"]').count() === 10 && /Clicca una parte/.test(await pc.textContent('#stIspettore')),
+    'Stile personale di Dr. Neri: apertura, dieci sezioni ognuna con il posto per una frase fissa, chiusura');
+  await pc.click('[data-parte="frase:linfonodi"]'); await pc.fill('#stTesto', 'Non adenopatie iliache esterne.');
   await pc.click('[data-st-titoli=iniziale]');
   await pc.click('[data-parte=chiusura]'); await pc.fill('#stTesto', 'Si resta a disposizione.');
   await pc.click('[data-parte=td]'); await pc.click('[data-st=ometti]');
@@ -205,8 +206,9 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   await pc.click('[data-st=ripristina]');
   await pc.click('[data-st=salva]'); await pc.waitForTimeout(400);
   ref = await pc.inputValue('#output');
-  check(!(await pc.isVisible('#stOverlay.open')) && /^Stage finale:/m.test(ref) && !/STAGE FINALE/.test(ref) && /^Fascia mesorettale:/m.test(ref) && /Si resta a disposizione\.\n\nReferto redatto/.test(ref) && !/Tumor deposit:/i.test(ref),
-    '«Salva»: il referto prende lo stile (titoli, titolo tuo, chiusura, sezione omessa)');
+  check(!(await pc.isVisible('#stOverlay.open')) && /^Stage finale:/m.test(ref) && !/STAGE FINALE/.test(ref) && /^Fascia mesorettale:/m.test(ref) && /Si resta a disposizione\.\n\nReferto redatto/.test(ref) && !/Tumor deposit:/i.test(ref)
+    && /^Linfonodi sospetti:\n- non presenti\nNon adenopatie iliache esterne\.$/m.test(ref),
+    '«Salva»: il referto prende lo stile (titoli, titolo tuo, frase fissa in fondo alla sezione, chiusura, sezione omessa)');
   await pc.waitForTimeout(1700);
   const stileFile = leggiJson('Neri Marco/stile-esgar.json') || {};
   check((leggiJson('Neri Marco/memoria-esgar.json') || { campi: {} }).campi.p_ctNote && stileFile.titoli === 'iniziale' && stileFile.nomi.primaria.mrf === 'Fascia mesorettale:',
@@ -232,8 +234,9 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   await pc.click('[data-parte=td]'); await pc.click('[data-st=ometti]');
   await pc.click('[data-parte=chiusura]'); await pc.click('[data-st=togli]');
   await pc.click('[data-parte=mrf]'); await pc.click('[data-st=ripristina]');
+  await pc.click('[data-parte="frase:linfonodi"]'); await pc.click('[data-st=togli]');
   await pc.click('[data-st=salva]'); await pc.waitForTimeout(1900);
-  check(/^MRF:/m.test(await pc.inputValue('#output')) && /^STAGE FINALE/m.test(await pc.inputValue('#output')), 'tolte le regolazioni, il referto torna quello del tool');
+  check(/^MRF:/m.test(await pc.inputValue('#output')) && /^STAGE FINALE/m.test(await pc.inputValue('#output')) && !/iliache esterne/.test(await pc.inputValue('#output')), 'tolte le regolazioni, il referto torna quello del tool');
   if (await pc.isVisible('#pannelloProfilo')) await pc.click('#profiloBtn');
 
   await salva(); await pc.waitForTimeout(1700);          // il referto appena salvato entra nella memoria, e la memoria nel file
