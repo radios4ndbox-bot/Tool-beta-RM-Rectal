@@ -1084,6 +1084,35 @@ html.vt-passo.indietro::view-transition-new(mg-corpo){animation:mpTorna .34s eas
 .ar-corpo{flex:1; min-height:0; display:grid; grid-template-columns:clamp(250px, 34%, 370px) minmax(0, 1fr);}
 .ar-lista{min-height:0; display:flex; flex-direction:column; gap:10px; padding:14px 12px 0; border-right:1px solid var(--border); background:var(--surface2);}
 .ar-lista input{width:100%; background:#fff;}
+.ar-cerca{display:flex; gap:6px;}
+.ar-cerca input{flex:1; min-width:0;}
+/* il filtro per stage finale: più variabili, più valori per variabile */
+.ar-filtri-btn{display:flex; align-items:center; gap:5px; flex-shrink:0; padding:0 11px; border:1.5px solid var(--border); border-radius:7px; background:#fff; font-family:var(--sans); font-size:12px; font-weight:500; color:var(--muted); cursor:pointer;
+  transition:border-color .15s, background-color .15s, color .15s;}
+.ar-filtri-btn svg{width:14px; height:14px;}
+.ar-filtri-btn:hover{border-color:var(--border2); color:var(--text);}
+.ar-filtri-btn[aria-expanded="true"], .ar-filtri-btn.attivo{border-color:var(--accent); background:var(--accent-bg); color:var(--accent);}
+.ar-filtri-btn b{min-width:17px; padding:0 5px; border-radius:999px; font-family:var(--mono); font-size:10px; line-height:1.6; color:#fff; background:var(--accent);}
+.ar-filtri-btn b[hidden]{display:none;}
+.ar-filtri{display:grid; grid-template-rows:0fr; margin-top:-10px; transition:grid-template-rows .36s cubic-bezier(.22,1,.36,1), margin-top .36s cubic-bezier(.22,1,.36,1);}
+.ar-filtri.aperti{grid-template-rows:1fr; margin-top:0;}
+.ar-filtri-dentro{min-height:0; overflow:hidden; display:flex; flex-direction:column; gap:8px; opacity:0; transition:opacity .2s ease;}
+.ar-filtri.aperti .ar-filtri-dentro{max-height:38vh; overflow-y:auto; opacity:1; transition:opacity .3s ease .08s;}
+.ar-gruppo{display:grid; grid-template-columns:62px 1fr; align-items:baseline; gap:6px;}
+.ar-gruppo > span{font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
+.ar-chips{display:flex; flex-wrap:wrap; gap:4px;}
+.ar-chip{display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border:1px solid var(--border); border-radius:999px; background:#fff; font-family:var(--mono); font-size:11px; color:var(--text); cursor:pointer;
+  transition:background-color .18s, border-color .18s, color .18s, transform .25s var(--molla);}
+.ar-chip i{font-style:normal; font-size:9.5px; color:var(--faint); transition:color .18s;}
+.ar-chip:hover{border-color:var(--accent-line); background:var(--accent-bg);}
+.ar-chip:active{transform:scale(.94);}
+.ar-chip[aria-pressed="true"]{border-color:var(--accent); background:var(--accent); color:#fff;}
+.ar-chip[aria-pressed="true"] i{color:#F3C9D1;}
+.ar-filtri-piede{display:flex; justify-content:flex-end; padding-bottom:2px;}
+.ar-filtri-piede[hidden]{display:none;}
+.ar-filtri-piede button{border:none; background:transparent; padding:2px 0; font-family:var(--sans); font-size:11.5px; color:var(--accent); text-decoration:underline; text-underline-offset:3px; cursor:pointer;}
+.ar-conta{font-size:11px; color:var(--muted); margin:-4px 2px;}
+.ar-conta:empty{display:none;}
 .ar-casi{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px 2px 14px;}
 .ar-caso{flex-shrink:0; border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:hidden; animation:panVoce .4s cubic-bezier(.22,1,.36,1) calc(var(--i, 0) * 30ms) both;}
 .ar-caso-testa{display:flex; align-items:center; gap:8px; padding:8px 11px; border-bottom:1px solid var(--border); background:var(--surface2); font-size:11.5px; color:var(--muted);}
@@ -2975,7 +3004,15 @@ liveUpdate();
     </div>
     <div class="ar-corpo">
       <div class="ar-lista">
-        <input type="text" id="arCerca" placeholder="Cerca: codice caso, N. accesso, data, stadio" autocomplete="off" spellcheck="false">
+        <div class="ar-cerca">
+          <input type="text" id="arCerca" placeholder="Cerca: codice caso, N. accesso, data" autocomplete="off" spellcheck="false">
+          <button type="button" class="ar-filtri-btn" id="arFiltriBtn" aria-expanded="false" aria-controls="arFiltri" title="Filtra per stage finale">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8.5V19l-4 1.5v-7L3 5Z"/></svg>
+            <span>Stage</span><b id="arFiltriN" hidden></b>
+          </button>
+        </div>
+        <div class="ar-filtri" id="arFiltri"><div class="ar-filtri-dentro" id="arFiltriDentro"></div></div>
+        <div class="ar-conta" id="arConta"></div>
         <div class="ar-casi" id="arCasi"></div>
       </div>
       <section class="ar-vista" id="arVista"></section>
@@ -7114,19 +7151,68 @@ $id('btnSalva').addEventListener('click', async () => {
   const chiaveRef = (c, r) => c.nome + '/' + r;
   const messaggio = (html) => { $id('arVista').innerHTML = `<div class="ar-vuoto">${html}</div>`; };
 
+  /* ── il filtro per stage finale ──
+     Le variabili dello stage stanno nel nome del file (esame, risposta, T,
+     N, MRF, EMVI): per ognuna si propongono i valori che nell'archivio ci
+     sono davvero. Più valori della stessa variabile si sommano (cT3c
+     oppure cT3d); variabili diverse si restringono a vicenda (cT3c e
+     EMVI+). Vale insieme alla ricerca per testo. */
+  const VARIABILI = [['tipo', 'Esame'], ['risposta', 'Risposta'], ['t', 'T'], ['n', 'N'], ['mrf', 'MRF'], ['emvi', 'EMVI']];
+  const filtri = Object.fromEntries(VARIABILI.map(([k]) => [k, new Set()]));
+  const attivi = () => VARIABILI.reduce((a, [k]) => a + filtri[k].size, 0);
+  function stage(nome){
+    const p = nome.replace(/\.txt$/, '').split('_');
+    if (p.length > 4 && /^\d+$/.test(p[p.length - 1])) p.pop();          // «_2» di un secondo salvataggio
+    const o = { tipo: /^Ristad/i.test(p[2] || '') ? 'Ristadiazione' : 'Stadiazione', risposta: '', t: '', n: '', mrf: '', emvi: '' };
+    p.slice(4).forEach((x) => {
+      if (/^(yc|c)T\d/.test(x)) o.t = x;
+      else if (/^(yc|c)N/.test(x)) o.n = x.replace(/-/g, ' ');
+      else if (/^MRF[+-]$/.test(x)) o.mrf = x;
+      else if (/^EMVI[+-]$/.test(x)) o.emvi = x;
+      else if (/^(near-)?cCR$/.test(x)) o.risposta = x;
+      else if (/^malattia-residua-/.test(x)) o.risposta = x.replace(/^malattia-residua-/, 'residuo ');
+    });
+    return o;
+  }
+  const passaStage = (nome) => { const s = stage(nome); return VARIABILI.every(([k]) => !filtri[k].size || filtri[k].has(s[k])); };
+  function disegnaFiltri(){
+    const conta = Object.fromEntries(VARIABILI.map(([k]) => [k, new Map()]));
+    casi.forEach((c) => c.referti.forEach((r) => { const s = stage(r); VARIABILI.forEach(([k]) => { if (s[k]) conta[k].set(s[k], (conta[k].get(s[k]) || 0) + 1); }); }));
+    $id('arFiltriDentro').innerHTML = VARIABILI.filter(([k]) => conta[k].size).map(([k, nome]) => `<div class="ar-gruppo"><span>${nome}</span><div class="ar-chips">`
+      + Array.from(conta[k].keys()).sort((a, b) => a.localeCompare(b, 'it', { numeric: true })).map((v) =>
+        `<button type="button" class="ar-chip" aria-pressed="${filtri[k].has(v)}" data-ar-f="${escH(k + ':' + v)}">${escH(v)}<i>${conta[k].get(v)}</i></button>`).join('')
+      + '</div></div>').join('') + '<div class="ar-filtri-piede"><button type="button" data-ar="azzera-filtri">Togli tutti i filtri</button></div>';
+    segnaFiltri();
+  }
+  function segnaFiltri(){
+    const n = attivi(), b = $id('arFiltriBtn'), e = $id('arFiltriN');
+    e.hidden = !n; e.textContent = n;
+    b.classList.toggle('attivo', !!n);
+    const piede = $id('arFiltriDentro').querySelector('.ar-filtri-piede'); if (piede) piede.hidden = !n;
+  }
+  function apriFiltri(si){
+    $id('arFiltri').classList.toggle('aperti', si);
+    $id('arFiltriBtn').setAttribute('aria-expanded', String(si));
+  }
+
   function filtrati(){
     const q = $id('arCerca').value.trim().toLowerCase().replace(/\s+/g, ' ');
-    if (!q) return casi;
     const dentro = (t) => String(t).toLowerCase().includes(q);
     return casi.map((c) => {
-      if (dentro(c.codice) || dentro(dataIt(c.data))) return c;
-      const referti = c.referti.filter((r) => { const x = leggiNomeReferto(r); return dentro(x.accesso) || dentro(dataIt(x.data)) || dentro(x.tipo) || dentro(x.sintesi); });
+      const delCaso = !q || dentro(c.codice) || dentro(dataIt(c.data));
+      const referti = c.referti.filter((r) => {
+        if (!passaStage(r)) return false;
+        if (delCaso) return true;
+        const x = leggiNomeReferto(r); return dentro(x.accesso) || dentro(dataIt(x.data)) || dentro(x.tipo) || dentro(x.sintesi);
+      });
       return referti.length ? Object.assign({}, c, { referti }) : null;
     }).filter(Boolean);
   }
   function disegnaLista(){
     const l = filtrati();
-    $id('arCasi').innerHTML = !casi.length ? '' : !l.length ? '<div class="ar-vuoto">Nessun referto con questo testo.</div>'
+    const n = l.reduce((a, c) => a + c.referti.length, 0), tutti = casi.reduce((a, c) => a + c.referti.length, 0);
+    $id('arConta').textContent = casi.length && (attivi() || $id('arCerca').value.trim()) ? `${n} ${n === 1 ? 'referto' : 'referti'} su ${tutti}` : '';
+    $id('arCasi').innerHTML = !casi.length ? '' : !l.length ? '<div class="ar-vuoto">Nessun referto con questi criteri.</div>'
       : l.map((c, i) => `<div class="ar-caso" style="--i:${Math.min(i, 12)}">
           <div class="ar-caso-testa"><span class="caso-cod">${escH(c.codice)}</span><span>caso del ${escH(dataIt(c.data))}</span></div>
           ${c.referti.map((r) => { const x = leggiNomeReferto(r), ris = /^Ristad/i.test(x.tipo);
@@ -7159,6 +7245,8 @@ $id('btnSalva').addEventListener('click', async () => {
     if (!(await chiediPermesso())) { apriPannello(true); statoAccesso('Permesso negato: premi «Riattiva» per rileggere la tua cartella.', 'ko'); return; }
     apriPannello(false);
     casi = []; scelto = '';
+    VARIABILI.forEach(([k]) => filtri[k].clear());
+    apriFiltri(false); $id('arFiltriDentro').innerHTML = ''; segnaFiltri(); $id('arConta').textContent = '';
     $id('arCerca').value = '';
     $id('arSub').textContent = 'I referti di ' + Canale.nomeCortese(sessione.profilo);
     $id('arCasi').innerHTML = '';
@@ -7173,6 +7261,7 @@ $id('btnSalva').addEventListener('click', async () => {
     }
     const n = casi.reduce((a, c) => a + c.referti.length, 0);
     $id('arSub').textContent = `I referti di ${Canale.nomeCortese(sessione.profilo)} · ${n} ${n === 1 ? 'referto' : 'referti'} in ${casi.length} ${casi.length === 1 ? 'caso' : 'casi'}`;
+    disegnaFiltri();
     disegnaLista();
     messaggio(n ? '<b>Scegli un referto</b> a sinistra per rileggerlo.' : 'Nella tua cartella non ci sono ancora referti.');
     if (n) $id('arCerca').focus();
@@ -7184,7 +7273,21 @@ $id('btnSalva').addEventListener('click', async () => {
   overlay.addEventListener('click', async (ev) => {
     const r = ev.target.closest('[data-ar-ref]');
     if (r) { mostra(r.dataset.arRef); return; }
+    if (ev.target.closest('#arFiltriBtn')) { apriFiltri(!$id('arFiltri').classList.contains('aperti')); return; }
+    const f = ev.target.closest('[data-ar-f]');
+    if (f) {
+      // il valore si accende o si spegne sul posto: così la pillola cambia colore con la sua animazione
+      const i = f.dataset.arF.indexOf(':'), k = f.dataset.arF.slice(0, i), v = f.dataset.arF.slice(i + 1);
+      filtri[k].has(v) ? filtri[k].delete(v) : filtri[k].add(v);
+      f.setAttribute('aria-pressed', String(filtri[k].has(v)));
+      segnaFiltri(); disegnaLista(); return;
+    }
     const a = ev.target.closest('[data-ar]'); if (!a) return;
+    if (a.dataset.ar === 'azzera-filtri') {
+      VARIABILI.forEach(([k]) => filtri[k].clear());
+      overlay.querySelectorAll('[data-ar-f]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+      segnaFiltri(); disegnaLista(); return;
+    }
     if (a.dataset.ar === 'chiudi') chiudi();
     if (a.dataset.ar === 'copia') {
       try { await navigator.clipboard.writeText($id('arTesto').textContent); a.textContent = 'Copiato'; }

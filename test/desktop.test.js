@@ -261,6 +261,7 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   }
 
   // ── «Mostra archivio»: i referti del medico, riletti dalla sua cartella ──
+  await pc.click('input[name=p_ct][value=cT2]'); await pc.fill('#arcAccesso', 'D111'); await salva();     // un referto con uno stadio diverso dagli altri
   const miei = albero().filter((x) => /^Neri Marco\/\d{4}\/.*\.txt$/.test(x));
   await pc.click('#profiloBtn'); await pc.click('#ppArchivio'); await pc.waitForTimeout(700);
   check(await pc.isVisible('#arOverlay.open') && miei.length > 2 && await pc.locator('#arCasi .ar-ref').count() === miei.length
@@ -278,6 +279,18 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
     'cliccando un referto lo si rilegge dal disco, con il suo percorso');
   await pc.fill('#arCerca', 'zzz');
   check(/Nessun referto/.test(await pc.textContent('#arCasi')), 'una ricerca senza esito lo dice');
+  // il filtro per stage finale: più variabili, i valori sono quelli che nell'archivio ci sono
+  await pc.fill('#arCerca', '');
+  await pc.click('#arFiltriBtn'); await pc.waitForTimeout(450);
+  check(await pc.isVisible('[data-ar-f="t:cT2"]') && await pc.isVisible('[data-ar-f="mrf:MRF-"]') && await pc.locator('[data-ar-f^="tipo:"]').count() === 1,
+    'il filtro propone le variabili dello stage con i valori presenti (qui solo stadiazioni)');
+  await pc.click('[data-ar-f="t:cT2"]');
+  check(await pc.locator('#arCasi .ar-ref').count() === 1 && /_D111_/.test(await pc.getAttribute('#arCasi .ar-ref', 'data-ar-ref')) && await pc.textContent('#arConta') === `1 referto su ${miei.length}` && await pc.textContent('#arFiltriN') === '1',
+    'T = cT2 lascia il solo referto con quello stadio, e dice quanti su quanti');
+  await pc.click('[data-ar-f="mrf:MRF-"]');
+  check(await pc.locator('#arCasi .ar-ref').count() === 1 && await pc.textContent('#arFiltriN') === '2', 'una seconda variabile restringe ancora');
+  await pc.click('[data-ar="azzera-filtri"]');
+  check(await pc.locator('#arCasi .ar-ref').count() === miei.length && await pc.locator('.ar-chip[aria-pressed="true"]').count() === 0 && await pc.isHidden('#arFiltriN'), '«Togli tutti i filtri» riporta l\'elenco intero');
   await pc.keyboard.press('Escape'); await pc.waitForTimeout(350);
   check(!(await pc.isVisible('#arOverlay.open')), 'Esc chiude l\'archivio');
 
