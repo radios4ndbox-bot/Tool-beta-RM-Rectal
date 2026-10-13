@@ -183,6 +183,37 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
     'i suoi referti e il suo indice vanno nella sua cartella');
   console.log(albero().join('\n'));
 
+  // ── memoria e stile sono del medico, e stanno nella sua cartella ──
+  const leggiJson = (f) => { try { return JSON.parse(fs.readFileSync(path.join(COMUNE, f), 'utf8')); } catch (_) { return null; } };
+  const haFrase = () => pc.evaluate(() => EsgarMemoria.gestione.voci('p_ctNote').some((v) => v.testo === 'frase di Neri'));
+  await pc.evaluate(() => EsgarMemoria.gestione.aggiungi('p_ctNote', 'frase di Neri'));
+  await pc.click('.rail-btn[data-pan=stile]'); await pc.waitForTimeout(500);
+  check(/Neri/.test(await pc.textContent('#stChi')) && await pc.isVisible('#stCorpo'), 'Stile personale: è quello di Dr. Neri');
+  await pc.click('[data-st-titoli=iniziale]');
+  await pc.fill('#stChiusura', 'Si resta a disposizione.'); await pc.waitForTimeout(700);
+  await pc.click('[data-st-ometti="primaria:td"]'); await pc.waitForTimeout(300);
+  let ref = await pc.inputValue('#output');
+  check(/^Stage finale:/m.test(ref) && !/STAGE FINALE/.test(ref) && /Si resta a disposizione\.\n\nReferto redatto/.test(ref) && !/Tumor deposit:/i.test(ref),
+    'il referto prende lo stile: titoli con l\'iniziale, chiusura, sezione omessa');
+  await pc.click('.rail-btn[data-pan=stile]'); await pc.waitForTimeout(1700);
+  check((leggiJson('Neri Marco/memoria-esgar.json') || { campi: {} }).campi.p_ctNote && leggiJson('Neri Marco/stile-esgar.json').titoli === 'iniziale',
+    'memoria e stile sono nella cartella del medico: memoria-esgar.json, stile-esgar.json');
+  // un altro medico ha i suoi
+  await pc.click('#profiloBtn'); await pc.click('#ppEsci'); await accedi(tel);
+  ref = await pc.inputValue('#output');
+  check(!(await haFrase()) && /^STAGE FINALE/m.test(ref) && !/Si resta a disposizione/.test(ref), 'entra Bianchi: la memoria e lo stile di Neri non sono i suoi');
+  // su un altro PC il browser non sa niente: memoria e stile tornano dalla cartella
+  await pc.click('#ppEsci');
+  await pc.evaluate(() => Object.keys(localStorage).filter((k) => /esgar\.(memoria|stile)/.test(k)).forEach((k) => localStorage.removeItem(k)));
+  await accedi(tel2); await pc.waitForTimeout(500);
+  ref = await pc.inputValue('#output');
+  check(await haFrase() && /^Stage finale:/m.test(ref) && /Si resta a disposizione/.test(ref), 'Neri su un PC nuovo: memoria e stile tornano dalla sua cartella');
+  await pc.click('.rail-btn[data-pan=stile]'); await pc.waitForTimeout(400);
+  await pc.click('[data-st-ometti="primaria:td"]'); await pc.click('[data-st-titoli=maiuscolo]'); await pc.fill('#stChiusura', ''); await pc.waitForTimeout(700);
+  await pc.click('.rail-btn[data-pan=stile]'); await pc.waitForTimeout(1700);
+  if (await pc.isVisible('#pannelloProfilo')) await pc.click('#profiloBtn');
+
+  await salva(); await pc.waitForTimeout(1700);          // il referto appena salvato entra nella memoria, e la memoria nel file
   check(!albero().some((x) => /\.tmp-/.test(x)), 'nessun file provvisorio rimasto nella cartella comune');
 
   // ── un indice con le colonne di prima: si rinomina, e ne nasce uno nuovo ──

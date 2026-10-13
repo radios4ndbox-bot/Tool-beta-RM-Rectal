@@ -994,6 +994,86 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 .mg-kpi div{padding:12px 14px; border:1px solid var(--border); border-radius:12px; background:var(--surface2);}
 .mg-kpi b{display:block; font-family:var(--mono); font-size:24px; font-weight:500; color:var(--accent); line-height:1.1;}
 .mg-kpi span{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
+/* ── la mappa: l'encefalo al centro, una sinapsi per ogni passo del referto ── */
+.pg-corpo.mappa{grid-template-columns:1fr;}
+.pg-corpo.mappa .pg-nav{display:none;}
+.pg-corpo.mappa .pg-sezione{padding:0;}
+.mp{position:relative; min-height:100%; display:flex; flex-direction:column; align-items:center; padding:54px 22px 18px;
+  background:radial-gradient(620px 300px at 50% 0%, var(--accent-bg) 0%, transparent 72%);}
+.mp-sinapsi{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible;}
+.mp-sinapsi path{fill:none; stroke:var(--border2); stroke-width:1.2; stroke-dasharray:2 5; stroke-linecap:round;}
+.mp-sinapsi path.attiva{stroke:var(--accent); stroke-dasharray:none; opacity:.55;}
+.mp-sinapsi path.accesa{stroke:var(--rose); opacity:1;}
+.mp-sinapsi circle{fill:var(--red-light);}
+.mp-sinapsi.disegna path{stroke-dasharray:1; stroke-dashoffset:1; animation:mpTraccia .7s cubic-bezier(.22,1,.36,1) calc(var(--i, 0) * 45ms) forwards;}
+@keyframes mpTraccia{to{stroke-dashoffset:0;}}
+.mp-centro{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center;}
+.mp-encefalo{width:104px; height:104px; border-radius:50%; display:grid; place-items:center; color:var(--red-light);
+  background:radial-gradient(circle at 32% 26%, #4A1220 0%, var(--ink) 72%);
+  box-shadow:0 0 0 6px rgba(123,30,52,.08), 0 0 0 14px rgba(123,30,52,.04), 0 18px 34px -16px rgba(26,12,17,.7);
+  animation:popSection .5s var(--molla) both;}
+.mp-encefalo svg{width:52px; height:52px;}
+.mp-nome{margin-top:14px; font-size:19px; font-weight:600; letter-spacing:-.01em; color:var(--text);}
+.mp-sub{margin-top:3px; font-family:var(--mono); font-size:11px; color:var(--muted);}
+.mp-sub b{font-weight:500; color:var(--accent);}
+.mp-modi{position:absolute; top:16px; right:18px; z-index:1; display:flex; gap:2px; padding:3px; border-radius:999px; border:1px solid var(--border); background:var(--surface);}
+.mp-modi button{padding:5px 14px; border:none; border-radius:999px; background:transparent; font-family:var(--sans); font-size:11.5px; font-weight:500; color:var(--muted); cursor:pointer; transition:background-color .15s, color .15s;}
+.mp-modi button[aria-selected="true"]{background:var(--accent); color:#fff;}
+.mp-nodi{position:relative; z-index:1; display:flex; flex-wrap:wrap; justify-content:center; gap:26px 6px; margin-top:150px; max-width:100%;}
+.mp-nodo{position:relative; width:84px; display:flex; flex-direction:column; align-items:center; gap:7px; padding:0; border:none; background:transparent; font-family:var(--sans); color:var(--text); cursor:pointer;
+  animation:popSection .45s var(--molla) calc(180ms + var(--i, 0) * 45ms) both;}
+.mp-ico{width:50px; height:50px; border-radius:50%; display:grid; place-items:center; color:var(--faint); background:var(--surface); border:1.5px dashed var(--border2);
+  transition:transform .25s var(--molla), border-color .15s, color .15s, box-shadow .2s;}
+.mp-ico svg{width:22px; height:22px;}
+.mp-nodo.attivo .mp-ico{color:var(--accent); border-style:solid; border-color:var(--accent-line); background:var(--accent-bg);}
+.mp-nodo:hover .mp-ico, .mp-nodo:focus-visible .mp-ico{transform:translateY(-3px) scale(1.06); color:#fff; background:var(--accent); border-style:solid; border-color:var(--accent); box-shadow:0 12px 22px -12px rgba(123,30,52,.8);}
+.mp-nodo:focus-visible{outline:none;}
+.mp-etichetta{padding:0 2px; font-size:11px; line-height:1.25; font-weight:500; text-align:center; color:var(--muted); background:var(--surface); border-radius:4px;}
+.mp-nodo.attivo .mp-etichetta{color:var(--text); font-weight:600;}
+.mp-conta{position:absolute; top:-5px; left:calc(50% + 12px); min-width:19px; padding:1px 5px; border-radius:999px; font-family:var(--mono); font-size:10px; font-weight:600; line-height:1.5; color:#fff; background:var(--accent); box-shadow:0 0 0 2px var(--surface);}
+.mp-piede{position:relative; z-index:1; margin-top:auto; padding-top:26px; width:100%; display:flex; flex-direction:column; align-items:center; gap:6px;}
+.mp-piede .mg-azioni{justify-content:center;}
+.mp-piede .btn-secondary, .mp-piede .btn-ghost{padding:6px 13px; font-size:11.5px;}
+.mp-dove{font-size:11px; color:var(--faint);}
+.mp-indietro{grid-template-columns:auto 1fr; align-items:center; margin-bottom:4px; color:var(--accent);}
+.mp-indietro svg{width:15px; height:15px;}
+.reduce-motion .mp-nodo, .reduce-motion .mp-encefalo{animation:none;}
+.reduce-motion .mp-sinapsi.disegna path{animation:none; stroke-dashoffset:0;}
+
+/* ── Stile personale (pannello delle impostazioni) ── */
+.st-gruppo{display:block; margin:0 0 16px;}
+.st-lab{display:block; margin-bottom:6px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);}
+.st-seg{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+.st-seg button{padding:9px 8px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface); font-family:var(--mono); font-size:11.5px; color:var(--muted); cursor:pointer; transition:border-color .15s, background-color .15s, color .15s;}
+.st-seg button[aria-checked="true"]{border-color:var(--accent); background:var(--accent-bg); color:var(--accent); font-weight:600;}
+.st-gruppo textarea{width:100%; min-height:58px; resize:vertical; padding:8px 11px; border:1.5px solid var(--border); border-radius:7px; background:var(--bg); outline:none;
+  font-family:var(--sans); font-size:12.5px; line-height:1.5; color:var(--text);}
+.st-gruppo textarea:focus{border-color:var(--accent); background:#fff; box-shadow:0 0 0 3px rgba(123,30,52,.09);}
+.st-sotto{margin:10px 0 6px; font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent);}
+#stOmetti .pan-voce{padding-top:7px; padding-bottom:7px;}
+
+/* ── Cancello: l'accesso con il telefono prima di tutto ── */
+.cancello{position:fixed; inset:0; z-index:800; display:grid; place-items:center; padding:24px;
+  background:rgba(18,7,10,.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+  animation:cancelloVelo .45s ease both;}
+@keyframes cancelloVelo{from{background-color:rgba(18,7,10,0); backdrop-filter:blur(0); -webkit-backdrop-filter:blur(0);}}
+.cancello[hidden]{display:none;}
+.cancello-carta{width:min(400px, 100%); overflow:hidden; border-radius:18px; background:var(--surface); box-shadow:0 40px 90px -30px rgba(0,0,0,.75); animation:popSection .4s var(--molla) both;}
+.cancello-testa{position:relative; padding:22px 24px 18px 28px; background:var(--ink); color:#fff;}
+.cancello-testa::before{content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:linear-gradient(180deg, var(--red-light), var(--rose) 40%, var(--accent) 72%, var(--wine));}
+.cancello-testa h1{margin:6px 0 6px; font-size:21px; font-weight:600; letter-spacing:-.01em;}
+.cancello-testa p{margin:0; font-size:12.5px; line-height:1.55; color:#D4C4C9;}
+.cancello-corpo{padding:16px 24px 6px; text-align:center;}
+.cancello-corpo .qr-box{margin-top:2px;}
+.cancello-corpo .qr-box canvas{width:232px; height:232px;}
+.cancello-corpo .pp-azioni{justify-content:center;}
+.cancello-corpo #ppAnnulla{display:none;}      /* qui si esce con «Continua senza accesso» */
+.cancello-corpo .pp-stato{min-height:1.5em;}
+.cancello-piede{display:flex; flex-direction:column; align-items:center; gap:5px; padding:12px 24px 18px; border-top:1px solid var(--border); background:var(--surface2); text-align:center;}
+.cancello-piede span{font-size:10.5px; line-height:1.5; color:var(--faint);}
+.cancello-senza{border:none; background:transparent; padding:4px 8px; font-family:var(--sans); font-size:12.5px; font-weight:500; color:var(--accent); text-decoration:underline; text-underline-offset:3px; cursor:pointer;}
+.cancello-senza:hover{color:var(--accent-hover);}
+
 .mg-blocco h4{margin:0 0 7px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);}
 .mg-nota{margin:0 0 8px; font-size:12px; line-height:1.55; color:var(--muted);}
 .mg-azioni{display:flex; gap:8px; flex-wrap:wrap;}
@@ -2225,8 +2305,12 @@ function buildStageFinalePrimaria(){
 const ATTRIBUZIONE_PRIMARIA = 'Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).';
 const ATTRIBUZIONE_RISTAD = 'Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026, doi:10.1007/s00330-025-12275-9).';
 
+/* lo Stile Personale del medico (titoli, apertura e chiusura, sezioni da
+   omettere) veste il referto appena composto: vedi EsgarStile */
+function vesti(o, modo){ return window.EsgarStile ? window.EsgarStile.vesti(o, modo) : o; }
+
 function computeSectionsPrimaria(){
-  return {
+  return vesti({
     intro: buildIntroPrimaria(),
     sections: {
       morfologia: buildMorfologia(),
@@ -2241,7 +2325,7 @@ function computeSectionsPrimaria(){
       stagefinale: trimTrail(buildStageFinalePrimaria())
     },
     tail: ATTRIBUZIONE_PRIMARIA
-  };
+  }, 'primaria');
 }
 
 const SECTION_HEADERS_PRIMARIA = [
@@ -2451,7 +2535,7 @@ function buildStageFinaleRistad(){
 }
 
 function computeSectionsRistad(){
-  return {
+  return vesti({
     intro: buildIntroRistad(),
     sections: {
       statolocale: buildStatoLocaleRistad(),
@@ -2463,7 +2547,7 @@ function computeSectionsRistad(){
       stagefinale: trimTrail(buildStageFinaleRistad())
     },
     tail: ATTRIBUZIONE_RISTAD
-  };
+  }, 'ristad');
 }
 
 const SECTION_HEADERS_RISTAD = [
@@ -2634,6 +2718,10 @@ liveUpdate();
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg>
       <span class="rail-eco">Memoria</span>
     </button>
+    <button type="button" class="rail-btn" data-pan="stile" role="tab" aria-selected="false" title="Stile personale: come vuoi il tuo referto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4c-7 0-12 4-13 11l-2 5"/><path d="M20 4c0 6-3 10-9 11"/><path d="M9 13h5"/></svg>
+      <span class="rail-eco">Stile</span>
+    </button>
     <button type="button" class="rail-btn" data-pan="aspetto" role="tab" aria-selected="false" title="Aspetto">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg>
       <span class="rail-eco">Aspetto</span>
@@ -2663,6 +2751,29 @@ liveUpdate();
         <svg class="pan-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         <span><strong>Azzera la memoria</strong><em>I referti salvati restano</em></span>
       </button>
+    </section>
+
+    <section class="pan" data-pan="stile">
+      <h3 class="pan-tit">Stile personale</h3>
+      <p class="pan-desc" id="stChi"></p>
+      <div id="stCorpo">
+        <div class="st-gruppo">
+          <span class="st-lab">Titoli delle sezioni</span>
+          <div class="st-seg" role="radiogroup" aria-label="Titoli delle sezioni">
+            <button type="button" role="radio" aria-checked="false" data-st-titoli="maiuscolo">MORFOLOGIA:</button>
+            <button type="button" role="radio" aria-checked="false" data-st-titoli="iniziale">Morfologia:</button>
+          </div>
+        </div>
+        <label class="st-gruppo"><span class="st-lab">Apertura</span>
+          <textarea id="stApertura" rows="2" maxlength="400" placeholder="Una frase fissa in testa al referto"></textarea></label>
+        <label class="st-gruppo"><span class="st-lab">Chiusura</span>
+          <textarea id="stChiusura" rows="2" maxlength="400" placeholder="Una frase fissa in coda al referto"></textarea></label>
+        <div class="st-gruppo">
+          <span class="st-lab">Sezioni da omettere</span>
+          <p class="pan-desc">Una sezione omessa non compare mai nel tuo referto, anche se nel form è compilata.</p>
+          <div id="stOmetti"></div>
+        </div>
+      </div>
     </section>
 
     <section class="pan" data-pan="aspetto">
@@ -2756,14 +2867,30 @@ liveUpdate();
     <div class="pg-testa">
       <div class="pg-icona" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/></svg></div>
       <div>
-        <div class="pg-titolo" id="mgTitolo">Memoria del tool</div>
-        <div class="pg-sub">Frasi imparate &middot; su questo PC</div>
+        <div class="pg-titolo" id="mgTitolo">Memoria</div>
+        <div class="pg-sub" id="mgSub">Frasi imparate</div>
       </div>
       <button type="button" class="pg-x" data-mg-chiudi aria-label="Chiudi">&times;</button>
     </div>
     <div class="pg-corpo">
       <div class="pg-nav" id="mgNav" role="tablist" aria-label="Campi"></div>
       <section class="pg-sezione" id="mgCorpo"></section>
+    </div>
+  </div>
+</div>
+
+<!-- Cancello: all'avvio, prima di tutto, l'accesso con il telefono -->
+<div class="cancello" id="cancello" role="dialog" aria-modal="true" aria-labelledby="cancelloTitolo" hidden>
+  <div class="cancello-carta">
+    <div class="cancello-testa">
+      <div class="pp-kicker">StructuRad × ESGAR — RM Retto</div>
+      <h1 id="cancelloTitolo">Accedi con il telefono</h1>
+      <p>Inquadra il codice: il telefono fa da chiave. La memoria delle frasi e il tuo stile ti seguono su ogni PC.</p>
+    </div>
+    <div class="cancello-corpo" id="cancelloPosto"></div>
+    <div class="cancello-piede">
+      <button type="button" class="cancello-senza" id="cancelloSenza">Continua senza accesso</button>
+      <span>Senza accesso non si salva nell'archivio e non ci sono memoria e stile personali.</span>
     </div>
   </div>
 </div>
@@ -6070,6 +6197,52 @@ $id('ppEsci').addEventListener('click', () => {
   nuovoPaziente();                 // il caso aperto era di chi è uscito
   statoAccesso(`${escH(nome)} è uscito da questo PC.`, 'ok');
   disegnaProfilo(); disegnaArchivioRow();
+  annunciaSessione();
+});
+
+// ============================================================
+// CANCELLO — la prima cosa che il tool chiede è l'accesso
+//
+// Il tool si apre come sempre, con la sua intro; poi, senza una sessione
+// valida, la finestra di accesso compare in sovraimpressione, con il
+// tool opacizzato dietro, e mostra subito il QR. L'accesso è quello del profilo: pulsanti, QR e
+// messaggi si spostano qui dentro e tornano al loro posto alla chiusura.
+// «Continua senza accesso» è l'uscita di emergenza (telefono scarico,
+// rete assente): vale finché la scheda resta aperta. A tool aperto la
+// sessione che scade non richiama il cancello: non si interrompe un
+// referto. Con ?nointro (i test) il cancello non compare.
+// ============================================================
+const SENZA_ACCESSO = 'structurad.esgar.senza-accesso';
+const DIETRO_IL_CANCELLO = ['nav', '#viewsPort', '#sideRail'];
+function apriCancello(){
+  const c = $id('cancello');
+  if (!c || !c.hidden || sessioneValida() || /[?&]nointro\b/.test(location.search)) return;
+  try { if (sessionStorage.getItem(SENZA_ACCESSO)) return; } catch (_) {}
+  // il tool si apre come sempre: la finestra di accesso arriva a intro finita
+  const intro = $id('splashScreen');
+  if (intro) {
+    new MutationObserver((_, o) => { if (!document.getElementById('splashScreen')) { o.disconnect(); setTimeout(apriCancello, 350); } })
+      .observe(intro.parentNode, { childList: true });
+    return;
+  }
+  $id('cancelloPosto').append($id('ppFuori'), $id('ppAccessoStato'));
+  DIETRO_IL_CANCELLO.forEach((s) => { const e = document.querySelector(s); if (e) e.inert = true; });
+  c.hidden = false;
+  $id('ppAccedi').click();
+}
+function chiudiCancello(){
+  const c = $id('cancello');
+  if (!c || c.hidden) return;
+  const sez = $id('ppDentro').parentNode;
+  sez.prepend($id('ppFuori')); sez.append($id('ppAccessoStato'));
+  DIETRO_IL_CANCELLO.forEach((s) => { const e = document.querySelector(s); if (e) e.inert = false; });
+  c.hidden = true;
+}
+document.addEventListener('esgar:sessione', () => { if (sessione) chiudiCancello(); });
+$id('cancelloSenza').addEventListener('click', () => {
+  try { sessionStorage.setItem(SENZA_ACCESSO, '1'); } catch (_) {}
+  chiudiAccesso(); statoAccesso('');
+  chiudiCancello(); disegnaProfilo();
 });
 
 /* ═══ disegno del codice QR ═══ */
@@ -6230,6 +6403,7 @@ async function dopoAccesso(){
   }
   disegnaProfilo();
   statoAccesso(msg, 'ok');
+  annunciaSessione();
 }
 
 /* da chiamare dentro un clic: la finestra di scelta si apre solo così */
@@ -6320,7 +6494,7 @@ async function chiediPermesso(){
   if (!radice) return false;
   if (!radice.requestPermission) return true;
   try { permesso = await radice.requestPermission({ mode: 'readwrite' }); } catch (_) { permesso = 'denied'; }
-  if (permesso === 'granted') segnaRadice();
+  if (permesso === 'granted') { segnaRadice(); annunciaSessione(); }
   disegnaCartella();
   return permesso === 'granted';
 }
@@ -6699,6 +6873,8 @@ $id('btnSalva').addEventListener('click', async () => {
   if (permesso === 'granted') segnaRadice();
   disegnaProfilo();
   disegnaCaso();
+  annunciaSessione();
+  apriCancello();
 })();
 
 /* solo per i test: relay finto e cartella finta */
@@ -6713,6 +6889,67 @@ window.EsgarTest = {
   amministratori: ADMIN_DISPOSITIVI,
   sessione: () => sessione
 };
+
+// ============================================================
+// PERSONALE — memoria e stile sono del medico che ha fatto l'accesso
+//
+// Ogni dato personale (la memoria delle frasi, lo Stile Personale) sta
+// due volte: nel browser di questo PC, sotto una chiave con l'id del
+// medico, e in un file nella sua cartella dentro la cartella comune
+// (memoria-esgar.json, stile-esgar.json), così lo ritrova su ogni PC che
+// usa la stessa cartella. A ogni accesso vince la copia più recente.
+// Senza accesso si lavora con i dati del PC, come prima.
+// «esgar:sessione» avvisa che è cambiato chi è entrato, o che la
+// cartella è diventata leggibile.
+// ============================================================
+window.EsgarPersonale = (function(){
+  const idMedico = () => (sessioneValida() && sessione.profilo.id) || '';
+  const chiave = (base) => { const id = idMedico(); return id ? base + ':' + id : base; };
+  async function cartella(crea){
+    try { return radice && permesso === 'granted' && idMedico() ? await dirMedico(crea) : null; } catch (_) { return null; }
+  }
+  async function leggiFile(nome){
+    const d = await cartella(false);
+    try { return d ? JSON.parse(await (await (await d.getFileHandle(nome)).getFile()).text()) : null; } catch (_) { return null; }
+  }
+  async function scriviFile(nome, oggetto){
+    const d = await cartella(true);
+    if (!d) return false;
+    try { const w = await (await d.getFileHandle(nome, { create: true })).createWritable(); await w.write(JSON.stringify(oggetto)); await w.close(); return true; }
+    catch (_) { return false; }
+  }
+  const leggiLocale = (k, valido) => { try { const x = JSON.parse(localStorage.getItem(k) || 'null'); return x && valido(x) ? x : null; } catch (_) { return null; } };
+
+  /* un dato personale: { base, file, vuoto(), valido(x), ereditaDalPc, dopo() } */
+  function dato(o){
+    let v = carica(), timer = null, inCorso = Promise.resolve();
+    function carica(){
+      // la prima volta di un medico su questo PC si parte da quello che il PC ha già imparato
+      return leggiLocale(chiave(o.base), o.valido) || (idMedico() && o.ereditaDalPc && leggiLocale(o.base, o.valido)) || o.vuoto();
+    }
+    function salvaLocale(){ try { localStorage.setItem(chiave(o.base), JSON.stringify(v)); return true; } catch (_) { return false; } }
+    const suFile = () => (inCorso = inCorso.then(() => idMedico() ? scriviFile(o.file, v) : false));
+    function salva(){
+      v.agg = Date.now();
+      const ok = salvaLocale();
+      clearTimeout(timer); timer = setTimeout(suFile, 1200);
+      return ok;
+    }
+    async function allinea(){
+      clearTimeout(timer);
+      v = carica(); o.dopo && o.dopo();
+      if (!idMedico()) return;
+      const io = idMedico(), f = await leggiFile(o.file);
+      if (io !== idMedico()) return;                       // nel frattempo è entrato un altro
+      if (f && o.valido(f) && (f.agg || 0) > (v.agg || 0)) { v = f; salvaLocale(); o.dopo && o.dopo(); }
+      else if ((v.agg || 0) > ((f && f.agg) || 0)) await scriviFile(o.file, v);   // non suFile: siamo già nella coda
+    }
+    document.addEventListener('esgar:sessione', () => { inCorso = inCorso.then(allinea, allinea); });
+    return { get: () => v, set: (x) => { v = x; }, salva, salvaLocale, pronto: () => inCorso };
+  }
+  return { idMedico, dato, nelFile: () => !!(radice && permesso === 'granted' && idMedico()) };
+})();
+const annunciaSessione = () => document.dispatchEvent(new CustomEvent('esgar:sessione'));
 </script>
 <script>
 // ============================================================
@@ -6775,15 +7012,16 @@ window.EsgarTest = {
   const parole = (t) => norm(t).split(' ').filter((p) => p && !PAROLE_VUOTE.has(p)).map(radice);
 
   /* ── memoria ── */
-  let mem = carica();
-  function carica(){
-    try {
-      const m = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (m && m.v === 1 && m.campi) return m;
-    } catch (_) {}
-    return { v: 1, campi: {}, visti: [] };
-  }
-  function salva(){ try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (_) { /* spazio esaurito: si sfoltisce */ sfoltisci(true); } }
+  // la memoria è del medico che ha fatto l'accesso (EsgarPersonale): sul PC
+  // e nella sua cartella. Senza accesso è quella del PC.
+  const D = window.EsgarPersonale.dato({
+    base: KEY, file: 'memoria-esgar.json', ereditaDalPc: true,
+    vuoto: () => ({ v: 1, campi: {}, visti: [] }),
+    valido: (m) => m.v === 1 && !!m.campi,
+    dopo: () => { mem = D.get(); document.dispatchEvent(new CustomEvent('esgar:memoria')); }
+  });
+  let mem = D.get();
+  function salva(){ if (!D.salva()) { /* spazio esaurito: si sfoltisce */ sfoltisci(true); } }
   function campoMem(k){ return mem.campi[k] || (mem.campi[k] = { n: 0, ctx: {}, voci: [] }); }
 
   /* il contesto: le scelte fatte nel pannello del campo (radio, caselle,
@@ -6859,7 +7097,7 @@ window.EsgarTest = {
       cm.voci.sort((a, b) => valore(b, ora) - valore(a, ora));
       cm.voci = cm.voci.slice(0, lim);
     });
-    if (forte) try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (_) {}
+    if (forte) D.salvaLocale();
   }
   const valore = (v, ora) => (v.f ? 1000 : 0) + Math.log(1 + v.n) + gradimento(v) + 0.5 * Math.max(0, 1 - (ora - v.u) / SEI_MESI);
   /* scelte e scavalcamenti, con una stima prudente all'inizio */
@@ -7170,9 +7408,139 @@ window.EsgarTest = {
 
   window.EsgarMemoria = {
     impara: imparaDalReferto, suggerimenti: (el) => suggerimenti(el).map((x) => ({ testo: x.testo, punti: +x.punti.toFixed(3), n: x.v.n, motivo: x.motivo })),
-    stato: () => mem, azzera: () => { mem = { v: 1, campi: {}, visti: [] }; salva(); },
+    stato: () => mem, azzera: () => { mem = { v: 1, campi: {}, visti: [] }; D.set(mem); salva(); },
+    pronto: () => D.pronto(),
     gestione
   };
+})();
+</script>
+<script>
+// ============================================================
+// STILE PERSONALE — come il medico vuole il suo referto
+//
+// Tre regolazioni, che restano del medico (EsgarPersonale: sul PC e nel
+// file stile-esgar.json della sua cartella):
+//   · titoli delle sezioni: MAIUSCOLO come li scrive il tool, oppure
+//     con la sola iniziale maiuscola (le sigle restano sigle);
+//   · una frase fissa di apertura e una di chiusura;
+//   · sezioni da omettere: non compaiono mai nel suo referto.
+// Lo stile veste il referto appena composto (vesti, chiamata dal motore
+// a sezioni) e cambia i titoli negli elenchi SECTION_HEADERS_*, così
+// tutto quello che legge il referto per titoli continua a funzionare.
+// Senza accesso il referto è quello del tool, senza stile.
+// ============================================================
+window.EsgarStile = (function(){
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const MODI = ['primaria', 'ristad'];
+  const DEFS = { primaria: SECTION_HEADERS_PRIMARIA, ristad: SECTION_HEADERS_RISTAD };
+  const ORIG = { primaria: DEFS.primaria.map((d) => d[1]), ristad: DEFS.ristad.map((d) => d[1]) };
+  const SEMPRE = ['stagefinale'];      // la sintesi finale non si omette
+  const vuoto = () => ({ v: 1, titoli: 'maiuscolo', apertura: '', chiusura: '', ometti: { primaria: [], ristad: [] } });
+
+  /* «cT STAGE:» → «cT stage:»; le sigle restano sigle */
+  const iniziale = (h) => h.split(' ').map((w, i) => {
+    if (/^(MRF|EMVI|ycMRF|ycEMVI|TD|TNM|cT|ycT|cN|ycN)$/.test(w.replace(/[():]/g, ''))) return w;
+    const l = w.toLowerCase();
+    return i === 0 ? l.charAt(0).toUpperCase() + l.slice(1) : l;
+  }).join(' ');
+
+  const D = window.EsgarPersonale.dato({
+    base: 'structurad.esgar.stile.v1', file: 'stile-esgar.json',
+    vuoto, valido: (s) => s.v === 1, dopo: () => applica()
+  });
+  const attivo = () => !!window.EsgarPersonale.idMedico();
+  function stile(){
+    const s = attivo() ? D.get() : vuoto();
+    if (s.titoli !== 'iniziale') s.titoli = 'maiuscolo';
+    s.apertura = String(s.apertura || ''); s.chiusura = String(s.chiusura || '');
+    if (!s.ometti) s.ometti = {};
+    MODI.forEach((m) => { if (!Array.isArray(s.ometti[m])) s.ometti[m] = []; });
+    return s;
+  }
+  const impronta = (s) => JSON.stringify([s.titoli, s.apertura.trim(), s.chiusura.trim(), s.ometti.primaria, s.ometti.ristad]);
+
+  /* il referto appena composto { intro, sections, tail } con lo stile del medico */
+  function vesti(o, modo){
+    const s = stile();
+    DEFS[modo].forEach((d, i) => {
+      const t = o.sections[d[0]];
+      if (!t) return;
+      if (s.ometti[modo].includes(d[0]) && !SEMPRE.includes(d[0])) { o.sections[d[0]] = ''; return; }
+      const h = ORIG[modo][i];
+      if (d[1] !== h && t.startsWith(h)) o.sections[d[0]] = d[1] + t.slice(h.length);
+    });
+    if (s.apertura.trim()) o.intro = s.apertura.trim() + (o.intro ? '\n\n' + o.intro : '');
+    if (s.chiusura.trim()) o.tail = s.chiusura.trim() + (o.tail ? '\n\n' + o.tail : '');
+    return o;
+  }
+
+  /* lo stile in vigore cambia (accesso, uscita, una regolazione): i titoli
+     si aggiornano e il referto riparte dal form, perché quello a schermo
+     ha i titoli di prima */
+  let inVigore = impronta(vuoto());
+  function applica(){
+    const s = stile();
+    MODI.forEach((m) => DEFS[m].forEach((d, i) => { d[1] = s.titoli === 'iniziale' ? iniziale(ORIG[m][i]) : ORIG[m][i]; }));
+    const ora = impronta(s);
+    if (ora !== inVigore) {
+      inVigore = ora;
+      lastGenPrimariaRef.value = null; lastGenRistadRef.value = null;
+      $('output').value = '';
+      liveUpdate();
+    }
+    disegna();
+  }
+
+  function disegna(){
+    const chi = $('stChi'); if (!chi) return;
+    const s = stile(), p = attivo() && sessione.profilo;
+    chi.innerHTML = p
+      ? `Il referto come lo vuole <b>${esc(Canale.nomeCortese(p))}</b>. ${window.EsgarPersonale.nelFile() ? 'Resta nella tua cartella: lo ritrovi su ogni PC.' : 'Resta su questo PC.'}`
+      : 'Lo stile è personale: <b>accedi con il telefono</b> per impostare il tuo.';
+    $('stCorpo').hidden = !p;
+    if (!p) return;
+    document.querySelectorAll('[data-st-titoli]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.stTitoli === s.titoli)));
+    ['stApertura', 'stChiusura'].forEach((id) => { const e = $(id), v = id === 'stApertura' ? s.apertura : s.chiusura; if (document.activeElement !== e && e.value !== v) e.value = v; });
+    $('stOmetti').innerHTML = MODI.map((m) => `<div class="st-sotto">${m === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}</div>`
+      + DEFS[m].map((d, i) => SEMPRE.includes(d[0]) ? '' : `<button type="button" class="pan-voce pan-toggle" role="switch" aria-checked="${s.ometti[m].includes(d[0])}" data-st-ometti="${m}:${d[0]}">
+          <span><strong>${esc(iniziale(ORIG[m][i]).replace(/:$/, ''))}</strong></span><span class="pan-pill" aria-hidden="true"></span></button>`).join('')).join('');
+  }
+
+  function cambia(fn){
+    if (!attivo()) return;
+    const s = stile();
+    fn(s);
+    D.set(s); D.salva();
+    applica();
+  }
+  const pan = document.querySelector('.pan[data-pan=stile]');
+  let attesa = null;
+  if (pan) {
+    pan.addEventListener('click', (ev) => {
+      const t = ev.target.closest('[data-st-titoli]');
+      if (t) { cambia((s) => { s.titoli = t.dataset.stTitoli; }); return; }
+      const o = ev.target.closest('[data-st-ometti]');
+      if (o) {
+        const [m, k] = o.dataset.stOmetti.split(':');
+        cambia((s) => { s.ometti[m] = s.ometti[m].includes(k) ? s.ometti[m].filter((x) => x !== k) : s.ometti[m].concat(k); });
+      }
+    });
+    // mentre si scrive il referto non si rigenera a ogni lettera
+    pan.addEventListener('input', (ev) => {
+      if (ev.target.id !== 'stApertura' && ev.target.id !== 'stChiusura') return;
+      clearTimeout(attesa);
+      attesa = setTimeout(() => cambia((s) => { s.apertura = $('stApertura').value.slice(0, 400); s.chiusura = $('stChiusura').value.slice(0, 400); }), 450);
+    });
+  }
+  const railStile = document.querySelector('.rail-btn[data-pan=stile]');
+  if (railStile) railStile.addEventListener('click', disegna);
+
+  const api = { vesti, stato: () => stile(), pronto: () => D.pronto(), titolo: (h) => iniziale(h) };
+  window.EsgarStile = api;       // applica() rigenera il referto, che passa da vesti
+  applica();
+  return api;
 })();
 </script>
 <script>
@@ -7433,7 +7801,9 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const G = () => window.EsgarMemoria.gestione;
   const data = (t) => t ? new Date(t).toLocaleDateString('it-IT') : '—';
-  let campo = null;          // campo mostrato, o null per la panoramica
+  let passo = null;          // passo aperto { modo, i }, o null per la mappa
+  let modoMappa = 'primaria';
+  let campo = null;          // campo mostrato nel passo
   let ordine = 'punteggio';
   let inModifica = null;
 
@@ -7453,13 +7823,6 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
       });
     });
     out.push({ k: 'td.sede', nome: 'Sede', scheda: 'Tumor deposit', modo: 'primaria' });
-    // le sezioni del referto in cui il medico aggiunge o riformula
-    G().sezioniStruttura().forEach((x) => {
-      const [modo, sez] = x.split(':');
-      const defs = modo === 'ristad' ? SECTION_HEADERS_RISTAD : SECTION_HEADERS_PRIMARIA;
-      const h = sez === 'intro' ? 'Apertura' : ((defs.find(([d]) => d === sez) || [])[1] || sez).replace(/:$/, '');
-      out.push({ k: 'ref:' + x, nome: sez === 'intro' ? h : window.EsgarSezione(h), scheda: modo === 'ristad' ? 'Referto di ristadiazione' : 'Referto di stadiazione', modo: 'struttura', sez, modoRef: modo });
-    });
     return out;
   }
   const contaVoci = (k) => {
@@ -7468,55 +7831,125 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     return (c ? c.voci : 0) + sos;
   };
 
+  /* ── i passi del referto: le schede del form, più lo stage finale ──
+     Ogni passo raccoglie i campi liberi della sua scheda e le frasi che
+     il medico aggiunge o riscrive nella sezione corrispondente del referto. */
+  const SEZ = {
+    primaria: ['intro', 'morfologia', 'localizzazione', 'mrf', 'organi', 'ct', 'emvi', 'linfonodi', 'td', 'meta'],
+    ristad: ['intro', 'statolocale', 'emvisfint', 'ycmrf', 'linfonodi', 'td', 'meta']
+  };
+  const ICONE = {
+    intro: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>',
+    morfologia: '<path d="M12 4c4 0 7 2.5 7 6.5 0 2.5-1.5 3.5-1.5 5.5S15 20 12 20s-7-2-7-6c0-2 1-3 1-5s2-5 6-5Z"/>',
+    localizzazione: '<path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/>',
+    mrf: '<circle cx="12" cy="12" r="9" stroke-dasharray="3 2.6"/><circle cx="12" cy="12" r="4.5"/>',
+    organi: '<circle cx="8" cy="9" r="3.5"/><circle cx="16" cy="9" r="3.5"/><path d="M6 17c2 2.2 10 2.2 12 0"/>',
+    ct: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/>',
+    emvi: '<path d="M6 3v6c0 3 6 3 6 6v6"/><path d="M18 3v4c0 3-6 3-6 6"/>',
+    linfonodi: '<circle cx="7" cy="8" r="2.5"/><circle cx="16" cy="6.5" r="2"/><circle cx="14" cy="15" r="3"/><circle cx="6.5" cy="17" r="1.5"/>',
+    td: '<circle cx="9" cy="10" r="3.2"/><path d="m11.5 12.5 6 6"/><circle cx="18.5" cy="6" r="1.5"/>',
+    meta: '<circle cx="12" cy="12" r="2.2"/><circle cx="5" cy="6" r="1.6"/><circle cx="19" cy="7" r="1.6"/><circle cx="18" cy="18" r="1.6"/><path d="m10.3 10.5-4-3.4M13.9 10.9l3.8-2.9M13.6 13.6l3.2 3.3"/>',
+    statolocale: '<path d="M3 12h4l2.5-6 4 12 2.5-6h5"/>',
+    stagefinale: '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>'
+  };
+  ICONE.emvisfint = ICONE.emvi; ICONE.ycmrf = ICONE.mrf;
+  const svg = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ENCEFALO = '<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M12 5v13"/>';
+
+  function passi(modo){
+    const tutti = campiForm();
+    const crea = (i, titolo, sez) => {
+      const campi = tutti.filter((c) => c.modo === modo && c.scheda === titolo);
+      if (sez) campi.push({ k: `ref:${modo}:${sez}`, nome: 'Frasi del referto', scheda: 'Struttura del referto', modo: 'struttura', sez, modoRef: modo });
+      return { modo, i, titolo, sez, campi, n: campi.reduce((a, c) => a + contaVoci(c.k), 0) };
+    };
+    const out = Array.from($(modo === 'ristad' ? 'panel-ristad' : 'panel-primaria').querySelectorAll('.card'))
+      .map((card, i) => crea(i, card.querySelector('.card-title').textContent.trim(), SEZ[modo][i]));
+    out.push(crea(out.length, 'Stage finale', 'stagefinale'));
+    return out;
+  }
+  const tuttiIPassi = () => passi('primaria').concat(passi('ristad'));
+  const passoDi = (k) => tuttiIPassi().find((p) => p.campi.some((c) => c.k === k)) || null;
+  const passoAttuale = () => passo && passi(passo.modo)[passo.i] || null;
+  const trovaCampo = (k) => { const p = passoDi(k); return p ? Object.assign({ passo: p.titolo }, p.campi.find((c) => c.k === k)) : { k, nome: k, scheda: '' }; };
+
+  /* nel passo: a sinistra i suoi campi, e il ritorno alla mappa */
   function disegnaNav(){
-    const campi = campiForm();
-    const gruppo = (modo, titolo) => `<div class="mg-gruppo">${titolo}</div>` + campi.filter((c) => c.modo === modo).map((c) => {
-      const n = contaVoci(c.k);
-      return `<button type="button" class="pg-tab${n ? '' : ' vuoto'}" role="tab" data-campo="${esc(c.k)}" aria-selected="${campo === c.k}">
-        <span class="pg-tab-nome">${esc(c.nome)}</span><span class="pg-conta">${n}</span>
-        <span class="pg-tab-desc">${esc(c.scheda)}</span></button>`;
-    }).join('');
-    $('mgNav').innerHTML = `<button type="button" class="pg-tab" role="tab" data-campo="" aria-selected="${campo === null}">
-        <span class="pg-tab-nome">Panoramica</span><span class="pg-conta">${G().campi().reduce((a, c) => a + c.voci, 0)}</span>
-        <span class="pg-tab-desc">Esporta e importa</span></button>`
-      + gruppo('primaria', 'Stadiazione primaria') + gruppo('ristad', 'Ristadiazione')
-      + (campi.some((c) => c.modo === 'struttura') ? gruppo('struttura', 'Struttura del referto') : '');
+    const p = passoAttuale();
+    if (!p) { $('mgNav').innerHTML = ''; return; }
+    $('mgNav').innerHTML = `<button type="button" class="pg-tab mp-indietro" data-campo="">
+        ${svg('<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>')}<span class="pg-tab-nome">Mappa</span></button>
+      <div class="mg-gruppo">${esc(p.titolo)} · ${p.modo === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}</div>`
+      + p.campi.map((c) => {
+        const n = contaVoci(c.k);
+        return `<button type="button" class="pg-tab${n ? '' : ' vuoto'}" role="tab" data-campo="${esc(c.k)}" aria-selected="${campo === c.k}">
+          <span class="pg-tab-nome">${esc(c.nome)}</span><span class="pg-conta">${n}</span>
+          <span class="pg-tab-desc">${esc(c.modo === 'struttura' ? c.scheda : 'Campo del form')}</span></button>`;
+      }).join('');
   }
 
-  function disegnaPanoramica(){
+  /* la mappa: l'encefalo, il medico, e una sinapsi per ogni passo */
+  function disegnaMappa(){
     const m = window.EsgarMemoria.stato();
     const campi = G().campi().filter((c) => c.voci);
     const frasi = campi.reduce((a, c) => a + c.voci, 0);
     const pref = campi.reduce((a, c) => a + G().voci(c.k).filter((v) => v.preferita).length, 0);
-    const nomi = new Map(campiForm().map((c) => [c.k, c]));
-    const top = campi.slice().sort((a, b) => b.voci - a.voci).slice(0, 6);
-    $('mgCorpo').innerHTML = `
-      <div class="pg-sez-testa"><h3>Cosa ha imparato il tool</h3></div>
-      <div class="mg-kpi">
-        <div><b>${frasi}</b><span>frasi</span></div>
-        <div><b>${campi.length}</b><span>campi</span></div>
-        <div><b>${(m.visti || []).length}</b><span>referti letti</span></div>
-        <div><b>${pref}</b><span>preferite</span></div>
+    const p = sessione && sessione.profilo;
+    const lista = passi(modoMappa);
+    $('mgCorpo').innerHTML = `<div class="mp" id="mpMappa">
+      <svg class="mp-sinapsi" id="mpSinapsi" aria-hidden="true"></svg>
+      <div class="mp-centro">
+        <div class="mp-encefalo">${svg(ENCEFALO)}</div>
+        <div class="mp-nome">${esc(p ? Canale.nomeCortese(p) : 'Questo PC')}</div>
+        <div class="mp-sub"><b>${frasi}</b> ${frasi === 1 ? 'frase' : 'frasi'} · <b>${(m.visti || []).length}</b> referti letti · <b>${pref}</b> preferite</div>
       </div>
-      ${top.length ? `<div class="mg-blocco"><h4>Campi con più frasi</h4><div class="mg-top">${top.map((c) => {
-        const n = nomi.get(c.k);
-        return `<button type="button" class="mg-top-voce" data-campo="${esc(c.k)}"><span>${esc(n ? n.nome : c.k)}<em>${esc(n ? n.scheda : '')}</em></span><b>${c.voci}</b></button>`;
-      }).join('')}</div></div>` : ''}
-      <div class="mg-blocco"><h4>Su un altro PC</h4>
+      <div class="mp-modi" role="tablist" aria-label="Tipo di esame">
+        <button type="button" role="tab" data-mp-modo="primaria" aria-selected="${modoMappa === 'primaria'}">Stadiazione primaria</button>
+        <button type="button" role="tab" data-mp-modo="ristad" aria-selected="${modoMappa === 'ristad'}">Ristadiazione</button>
+      </div>
+      <div class="mp-nodi">${lista.map((x, i) => `<button type="button" class="mp-nodo${x.n ? ' attivo' : ''}" style="--i:${i}" data-passo="${x.modo}:${x.i}" data-campi="${esc(x.campi.map((c) => c.k).join(' '))}"
+          title="${esc(x.titolo)}: ${x.n ? x.n + (x.n === 1 ? ' frase imparata' : ' frasi imparate') : 'ancora niente'}">
+          <span class="mp-ico">${svg(ICONE[x.sez] || ICONE.morfologia)}</span><span class="mp-etichetta">${esc(x.titolo.replace(/\s*\(.*\)$/, ''))}</span>${x.n ? `<span class="mp-conta">${x.n}</span>` : ''}</button>`).join('')}</div>
+      <div class="mp-piede">
         <div class="mg-azioni">
           <button type="button" class="btn-secondary" data-mg="esporta">Esporta la memoria</button>
           <label class="btn-secondary mg-file">Importa da file<input type="file" id="mgImporta" accept="application/json,.json" hidden></label>
           <button type="button" class="btn-ghost" data-mg="azzera">Azzera tutto</button>
         </div>
+        <div class="mp-dove">${p ? (window.EsgarPersonale.nelFile() ? 'La tua memoria resta nella tua cartella: la ritrovi su ogni PC.' : 'La tua memoria resta su questo PC.') : 'Senza accesso: è la memoria di questo PC.'}</div>
         <div class="pp-stato" id="mgStato"></div>
-      </div>`;
+      </div></div>`;
+    tracciaSinapsi(true);
   }
+  /* le sinapsi: una curva dall'encefalo a ogni passo; piena se il passo ha
+     imparato qualcosa, con un impulso che la percorre */
+  function tracciaSinapsi(nuova){
+    const mp = $('mpMappa'), s = $('mpSinapsi');
+    if (!mp || !s) return;
+    // posizioni dal layout, non dallo schermo: le animazioni d'ingresso non le spostano
+    const posto = (el) => { let x = 0, y = 0; for (let n = el; n && n !== mp; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; } return { x, y, w: el.offsetWidth, h: el.offsetHeight }; };
+    const c = posto(mp.querySelector('.mp-centro'));
+    const x0 = c.x + c.w / 2, y0 = c.y + c.h + 12;
+    const fermo = document.body.classList.contains('reduce-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let h = `<circle cx="${x0}" cy="${y0}" r="3.2"/>`;
+    mp.querySelectorAll('.mp-nodo').forEach((n, i) => {
+      const b = posto(n.querySelector('.mp-ico'));
+      const x = b.x + b.w / 2, y = b.y - 4;
+      const d = `M${x0.toFixed(1)} ${y0.toFixed(1)} C${x0.toFixed(1)} ${(y0 + (y - y0) * .62).toFixed(1)} ${x.toFixed(1)} ${(y0 + (y - y0) * .38).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      const attiva = n.classList.contains('attivo');
+      h += `<path d="${d}" class="${attiva ? 'attiva' : ''}" data-per="${n.dataset.passo}" style="--i:${i + 1}" ${attiva ? 'pathLength="1"' : ''}/>`;
+      if (attiva && !fermo) h += `<circle r="2.4"><animateMotion dur="${(2.4 + (i % 4) * .5).toFixed(1)}s" begin="${(.9 + i * .23).toFixed(2)}s" repeatCount="indefinite" path="${d}"/></circle>`;
+    });
+    s.classList.toggle('disegna', !!nuova && !fermo);
+    s.innerHTML = h;
+  }
+  window.addEventListener('resize', () => { if ($('mgOverlay').classList.contains('open') && !passo) tracciaSinapsi(false); });
 
   function disegnaCampo(){
-    const c = campiForm().find((x) => x.k === campo) || { k: campo, nome: campo, scheda: '' };
+    const c = trovaCampo(campo);
     $('mgCorpo').innerHTML = `
       <div class="pg-sez-testa"><h3>${esc(c.nome)}</h3>
-        <p>${esc(c.scheda)}${c.modo === 'struttura' ? '' : ` · ${c.modo === 'ristad' ? 'Ristadiazione' : 'Stadiazione primaria'}`}</p></div>
+        <p>${esc(c.passo || c.scheda)}${c.modo === 'struttura' ? ' · quello che aggiungi o riscrivi in questa sezione del referto' : ' · campo del form'}</p></div>
       <div class="pg-prova">
         <label for="mgProva">Prova</label>
         <input id="mgProva" type="text" autocomplete="off" placeholder="Scrivi come nel campo">
@@ -7590,15 +8023,31 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   }
 
   function disegna(){
-    disegnaNav();
-    campo === null ? disegnaPanoramica() : disegnaCampo();
+    const p = sessione && sessione.profilo;
+    $('mgSub').textContent = p ? `Quello che il tool ha imparato da ${Canale.nomeCortese(p)}` : 'Quello che il tool ha imparato su questo PC';
+    $('mgOverlay').querySelector('.pg-corpo').classList.toggle('mappa', !passo);
     const corpo = $('mgCorpo');
-    corpo.classList.remove('pg-entra'); void corpo.offsetWidth; corpo.classList.add('pg-entra');
+    disegnaNav();
+    if (passo) {
+      disegnaCampo();
+      corpo.classList.remove('pg-entra'); void corpo.offsetWidth; corpo.classList.add('pg-entra');
+    } else { corpo.classList.remove('pg-entra'); disegnaMappa(); }
   }
   function aggiorna(){ disegnaNav(); disegnaLista(); disegnaProva(); }
+  /* apre un passo sul primo campo che ha imparato qualcosa */
+  function apriPasso(modo, i, k){
+    const p = passi(modo)[i]; if (!p) return;
+    passo = { modo, i };
+    campo = k || (p.campi.find((c) => contaVoci(c.k)) || p.campi[0]).k;
+    inModifica = null;
+    disegna();
+  }
 
   function apri(k){
-    campo = k === undefined ? null : k;
+    modoMappa = typeof mode !== 'undefined' && mode === 'ristad' ? 'ristad' : 'primaria';
+    const p = k ? passoDi(k) : null;
+    passo = p ? { modo: p.modo, i: p.i } : null;
+    campo = p ? k : null;
     $('mgOverlay').classList.add('open');
     $('railMemoria').setAttribute('aria-expanded', 'true');
     disegna();
@@ -7612,8 +8061,16 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   $('mgOverlay').addEventListener('mousedown', (ev) => { if (ev.target === $('mgOverlay')) chiudi(); });
   $('mgOverlay').addEventListener('click', (ev) => {
     if (ev.target.closest('[data-mg-chiudi]')) { chiudi(); return; }
+    const nodo = ev.target.closest('[data-passo]');
+    if (nodo) { const [m, i] = nodo.dataset.passo.split(':'); apriPasso(m, +i); return; }
+    const md = ev.target.closest('[data-mp-modo]');
+    if (md) { modoMappa = md.dataset.mpModo; disegna(); return; }
     const tab = ev.target.closest('[data-campo]');
-    if (tab) { campo = tab.dataset.campo || null; inModifica = null; disegna(); return; }
+    if (tab) {
+      campo = tab.dataset.campo || null; inModifica = null;
+      if (!campo) passo = null;                 // «Mappa»
+      disegna(); return;
+    }
     const b = ev.target.closest('[data-mg]'); if (!b) return;
     const voce = b.closest('.mg-voce'); const c = voce && voce.dataset.chiave;
     switch (b.dataset.mg) {
@@ -7674,6 +8131,13 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     if (ev.key === 'Escape' && $('mgOverlay').classList.contains('open') && !document.querySelector('.sel-wrap.aperto')) chiudi();
   });
   $('railMemoria').addEventListener('click', () => ($('mgOverlay').classList.contains('open') ? chiudi() : apri()));
+  // è cambiato chi è entrato, o è arrivata la memoria dalla cartella: la mappa è la sua
+  document.addEventListener('esgar:memoria', () => { if ($('mgOverlay').classList.contains('open')) { passo = null; campo = null; disegna(); } });
+  // al passaggio su un passo la sua sinapsi si accende
+  $('mgOverlay').addEventListener('pointerover', (ev) => {
+    const n = ev.target.closest('.mp-nodo'), s = $('mpSinapsi');
+    if (s) s.querySelectorAll('path[data-per]').forEach((p) => p.classList.toggle('accesa', !!n && p.dataset.per === n.dataset.passo));
+  });
 
   window.EsgarMemoriaPagina = { apri, chiudi };
 })();

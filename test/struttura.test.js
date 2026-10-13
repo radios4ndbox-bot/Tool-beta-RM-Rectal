@@ -62,7 +62,8 @@ const RISCRITTA = '- fascia mesorettale indenne';
 
   // la pagina Memoria mostra la struttura imparata
   await p.click('#railMemoria'); await p.waitForTimeout(400);
-  check(/Struttura del referto/.test(await p.textContent('#mgNav')), 'Memoria: gruppo «Struttura del referto»');
+  await p.click('[data-passo][data-campi~="ref:primaria:mrf"]'); await p.waitForTimeout(300);
+  check(/Struttura del referto/.test(await p.textContent('#mgNav')), 'Memoria, passo MRF: le frasi del referto');
   await p.click('#mgNav [data-campo="ref:primaria:mrf"]'); await p.waitForTimeout(300);
   check(/riconoscibile/.test(await p.textContent('#mgLista')) && /al posto di «- non coinvolta»/.test(await p.textContent('#mgSost')), 'sezione MRF: aggiunta e riformulazione');
   await p.screenshot({ path: SHOTS + '/struttura_memoria.png' });
