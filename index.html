@@ -1080,6 +1080,28 @@ html.vt-passo.indietro::view-transition-new(mg-corpo){animation:mpTorna .34s eas
 .reduce-motion .mp-nodo, .reduce-motion .mp-encefalo{animation:none;}
 .reduce-motion .mp-sinapsi.disegna path{animation:none; stroke-dashoffset:0;}
 
+/* ── Archivio: i referti del medico, riletti dalla sua cartella ── */
+.ar-corpo{flex:1; min-height:0; display:grid; grid-template-columns:370px 1fr;}
+.ar-lista{min-height:0; display:flex; flex-direction:column; gap:10px; padding:14px 12px 0; border-right:1px solid var(--border); background:var(--surface2);}
+.ar-lista input{width:100%; background:#fff;}
+.ar-casi{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px 2px 14px;}
+.ar-caso{border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:hidden; animation:panVoce .4s cubic-bezier(.22,1,.36,1) calc(var(--i, 0) * 30ms) both;}
+.ar-caso-testa{display:flex; align-items:center; gap:8px; padding:8px 11px; border-bottom:1px solid var(--border); background:var(--surface2); font-size:11.5px; color:var(--muted);}
+.ar-ref{display:grid; grid-template-columns:auto 1fr; gap:1px 9px; width:100%; padding:8px 11px; border:none; border-top:1px solid var(--border); background:transparent; text-align:left; font-family:var(--sans); color:var(--text); cursor:pointer; transition:background-color .15s;}
+.ar-ref:first-of-type{border-top:none;}
+.ar-ref:hover{background:var(--accent-bg);}
+.ar-ref[aria-selected="true"]{background:var(--accent-bg); box-shadow:inset 3px 0 0 var(--accent);}
+.ar-tipo{grid-row:1 / 3; align-self:center; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-family:var(--mono); font-size:10.5px; font-weight:600; color:#fff; background:var(--accent);}
+.ar-tipo.ris{background:var(--muted);}
+.ar-ref b{font-size:12.5px; font-weight:600;}
+.ar-ref span.ar-det{font-family:var(--mono); font-size:10.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.ar-vista{min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding:18px 22px 22px;}
+.ar-vista-testa{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+.ar-vista-testa h3{margin:0 0 3px; font-size:15px; font-weight:600;}
+.ar-vista-testa p{margin:0; font-family:var(--mono); font-size:10.5px; line-height:1.5; color:var(--muted); word-break:break-all;}
+.ar-testo{margin:0; padding:16px 18px; border:1px solid var(--border); border-radius:12px; background:var(--surface2); font-family:var(--mono); font-size:12.5px; line-height:1.6; color:var(--text); white-space:pre-wrap; animation:panVoce .35s cubic-bezier(.22,1,.36,1) both;}
+.ar-vuoto{margin:auto; max-width:340px; text-align:center; font-size:13px; line-height:1.6; color:var(--muted);}
+
 /* ── Stile personale: il referto con le parti da cliccare ── */
 .st-barra{display:flex; align-items:center; gap:18px; flex-wrap:wrap; flex-shrink:0; padding:10px 20px; border-bottom:1px solid var(--border); background:var(--surface2);}
 .st-barra:empty{display:none;}
@@ -1380,7 +1402,10 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
             </div>
           </div>
           <div id="ppDentro" hidden>
-            <div class="pp-azioni"><button type="button" class="btn-secondary" id="ppEsci">Esci</button></div>
+            <div class="pp-azioni">
+              <button type="button" class="btn-primary" id="ppArchivio" hidden>Mostra archivio</button>
+              <button type="button" class="btn-secondary" id="ppEsci">Esci</button>
+            </div>
             <div class="pp-avviso" id="ppSenzaCodice" hidden>Accesso senza codice dispositivo: esci e accedi di nuovo con il QR.</div>
           </div>
           <div class="pp-stato" id="ppAccessoStato"></div>
@@ -2933,6 +2958,27 @@ liveUpdate();
     <div class="pg-corpo">
       <div class="pg-nav" id="mgNav" role="tablist" aria-label="Campi"></div>
       <section class="pg-sezione" id="mgCorpo"></section>
+    </div>
+  </div>
+</div>
+
+<!-- Archivio: i referti già salvati nella cartella di chi ha fatto l'accesso -->
+<div class="mg-overlay" id="arOverlay" role="dialog" aria-modal="true" aria-labelledby="arTitolo">
+  <div class="mg-pagina">
+    <div class="pg-testa">
+      <div class="pg-icona" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h5l2 2h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M3 10h18"/></svg></div>
+      <div>
+        <div class="pg-titolo" id="arTitolo">Archivio</div>
+        <div class="pg-sub" id="arSub"></div>
+      </div>
+      <button type="button" class="pg-x" data-ar="chiudi" aria-label="Chiudi">&times;</button>
+    </div>
+    <div class="ar-corpo">
+      <div class="ar-lista">
+        <input type="text" id="arCerca" placeholder="Cerca: codice caso, N. accesso, data, stadio" autocomplete="off" spellcheck="false">
+        <div class="ar-casi" id="arCasi"></div>
+      </div>
+      <section class="ar-vista" id="arVista"></section>
     </div>
   </div>
 </div>
@@ -6287,6 +6333,7 @@ function disegnaProfilo(){
   $id('ppAccedi').hidden = !!accesso;
   $id('ppAnnulla').hidden = !accesso;
   $id('qrBox').hidden = !accesso || !accesso.pronto;
+  $id('ppArchivio').hidden = !(p && radice && supportaCartelle);     // c'è una cartella da cui rileggere i referti
   disegnaCartella();
   disegnaArchivioRow();
 }
@@ -6813,19 +6860,30 @@ async function scansionaCasi(){
   const out = [];
   if (!radice) return out;
   for await (const [nMed, hMed] of radice.entries()) {
-    if (hMed.kind !== 'directory') continue;
-    for await (const [nAnno, hAnno] of hMed.entries()) {
-      if (hAnno.kind !== 'directory' || !/^\d{4}$/.test(nAnno)) continue;
-      for await (const [nCaso, hCaso] of hAnno.entries()) {
-        const m = hCaso.kind === 'directory' && nCaso.match(RE_DIR_CASO);
-        if (!m) continue;
-        const referti = [];
-        for await (const [nf, hf] of hCaso.entries()) if (hf.kind === 'file' && /\.txt$/.test(nf)) referti.push(nf);
-        referti.sort();
-        out.push({ codice: m[2], data: m[1], medico: nMed, anno: nAnno, nome: nCaso, dir: hCaso, referti });
-      }
+    if (hMed.kind === 'directory') await casiIn(nMed, hMed, out);
+  }
+  out.sort((x, y) => y.data.localeCompare(x.data) || x.codice.localeCompare(y.codice));
+  return out;
+}
+/* i casi dentro la cartella di un medico: anno / data_codice */
+async function casiIn(nMed, hMed, out){
+  for await (const [nAnno, hAnno] of hMed.entries()) {
+    if (hAnno.kind !== 'directory' || !/^\d{4}$/.test(nAnno)) continue;
+    for await (const [nCaso, hCaso] of hAnno.entries()) {
+      const m = hCaso.kind === 'directory' && nCaso.match(RE_DIR_CASO);
+      if (!m) continue;
+      const referti = [];
+      for await (const [nf, hf] of hCaso.entries()) if (hf.kind === 'file' && /\.txt$/.test(nf)) referti.push(nf);
+      referti.sort();
+      out.push({ codice: m[2], data: m[1], medico: nMed, anno: nAnno, nome: nCaso, dir: hCaso, referti });
     }
   }
+  return out;
+}
+/* solo la cartella di chi ha fatto l'accesso, dal più recente */
+async function casiMiei(){
+  const d = await dirMedico(false);
+  const out = await casiIn(cartellaMedico(sessione.profilo), d, []);
   out.sort((x, y) => y.data.localeCompare(x.data) || x.codice.localeCompare(y.codice));
   return out;
 }
@@ -7036,6 +7094,105 @@ $id('btnSalva').addEventListener('click', async () => {
     statoArchivio('Salvataggio non riuscito: ' + escH(e && e.message || e), 'ko');
   }
 });
+
+// ============================================================
+// MOSTRA ARCHIVIO — i referti già salvati, riletti dalla cartella
+//
+// Dal profilo, «Mostra archivio» apre una finestra con i casi della
+// cartella di chi ha fatto l'accesso (medico / anno / data_codice), dal
+// più recente: a sinistra i casi con i loro referti e la ricerca, a
+// destra il referto scelto, da rileggere e copiare. Si legge soltanto:
+// niente si modifica.
+// ============================================================
+(function(){
+  let casi = [], scelto = '';
+  const overlay = $id('arOverlay');
+  const aperto = () => overlay.classList.contains('open');
+  const chiaveRef = (c, r) => c.nome + '/' + r;
+  const messaggio = (html) => { $id('arVista').innerHTML = `<div class="ar-vuoto">${html}</div>`; };
+
+  function filtrati(){
+    const q = $id('arCerca').value.trim().toLowerCase().replace(/\s+/g, ' ');
+    if (!q) return casi;
+    const dentro = (t) => String(t).toLowerCase().includes(q);
+    return casi.map((c) => {
+      if (dentro(c.codice) || dentro(dataIt(c.data))) return c;
+      const referti = c.referti.filter((r) => { const x = leggiNomeReferto(r); return dentro(x.accesso) || dentro(dataIt(x.data)) || dentro(x.tipo) || dentro(x.sintesi); });
+      return referti.length ? Object.assign({}, c, { referti }) : null;
+    }).filter(Boolean);
+  }
+  function disegnaLista(){
+    const l = filtrati();
+    $id('arCasi').innerHTML = !casi.length ? '' : !l.length ? '<div class="ar-vuoto">Nessun referto con questo testo.</div>'
+      : l.map((c, i) => `<div class="ar-caso" style="--i:${Math.min(i, 12)}">
+          <div class="ar-caso-testa"><span class="caso-cod">${escH(c.codice)}</span><span>caso del ${escH(dataIt(c.data))}</span></div>
+          ${c.referti.map((r) => { const x = leggiNomeReferto(r), ris = /^Ristad/i.test(x.tipo);
+            return `<button type="button" class="ar-ref" data-ar-ref="${escH(chiaveRef(c, r))}" aria-selected="${scelto === chiaveRef(c, r)}">
+              <span class="ar-tipo${ris ? ' ris' : ''}" title="${ris ? 'Ristadiazione' : 'Stadiazione'}">${ris ? 'R' : 'S'}</span>
+              <b>${ris ? 'Ristadiazione' : 'Stadiazione'} · ${escH(dataIt(x.data))}</b>
+              <span class="ar-det">${escH([x.accesso === 'senza-accesso' ? 'senza N. accesso' : x.accesso, x.sintesi].filter(Boolean).join(' · '))}</span></button>`; }).join('')}
+        </div>`).join('');
+  }
+  async function mostra(k){
+    const c = casi.find((x) => k.startsWith(x.nome + '/')); if (!c) return;
+    const nome = k.slice(c.nome.length + 1), x = leggiNomeReferto(nome);
+    scelto = k; disegnaLista();
+    let testo;
+    try { testo = await (await (await c.dir.getFileHandle(nome)).getFile()).text(); }
+    catch (e) { messaggio('Il referto non si è potuto leggere: ' + escH(e && e.message || e)); return; }
+    if (scelto !== k) return;
+    $id('arVista').innerHTML = `<div class="ar-vista-testa">
+        <div><h3>${/^Ristad/i.test(x.tipo) ? 'Ristadiazione' : 'Stadiazione'} del ${escH(dataIt(x.data))} · caso ${escH(c.codice)}</h3>
+          <p>${escH(radice.name)}/${escH([c.medico, c.anno, c.nome, nome].join('/'))}</p></div>
+        <button type="button" class="btn-secondary" data-ar="copia">Copia</button></div>
+      <pre class="ar-testo" id="arTesto"></pre>`;
+    $id('arTesto').textContent = testo.replace(/\r\n/g, '\n');
+    $id('arVista').scrollTop = 0;
+  }
+  async function apri(){
+    if (!sessioneValida() || !radice) return;
+    if (!(await chiediPermesso())) { apriPannello(true); statoAccesso('Permesso negato: premi «Riattiva» per rileggere la tua cartella.', 'ko'); return; }
+    apriPannello(false);
+    casi = []; scelto = '';
+    $id('arCerca').value = '';
+    $id('arSub').textContent = 'I referti di ' + Canale.nomeCortese(sessione.profilo);
+    $id('arCasi').innerHTML = '';
+    messaggio('Lettura della tua cartella…');
+    overlay.classList.add('open');
+    try { casi = await casiMiei(); }
+    catch (e) {
+      // la cartella del medico non c'è ancora: non ha mai salvato
+      const manca = e && e.name === 'NotFoundError';
+      messaggio(manca ? 'Nella tua cartella non ci sono ancora referti.' : 'La cartella non si è potuta leggere: ' + escH(e && e.message || e));
+      return;
+    }
+    const n = casi.reduce((a, c) => a + c.referti.length, 0);
+    $id('arSub').textContent = `I referti di ${Canale.nomeCortese(sessione.profilo)} · ${n} ${n === 1 ? 'referto' : 'referti'} in ${casi.length} ${casi.length === 1 ? 'caso' : 'casi'}`;
+    disegnaLista();
+    messaggio(n ? '<b>Scegli un referto</b> a sinistra per rileggerlo.' : 'Nella tua cartella non ci sono ancora referti.');
+    if (n) $id('arCerca').focus();
+  }
+  function chiudi(){ overlay.classList.remove('open'); }
+
+  $id('ppArchivio').addEventListener('click', (ev) => { ev.stopPropagation(); apri(); });
+  overlay.addEventListener('mousedown', (ev) => { if (ev.target === overlay) chiudi(); });
+  overlay.addEventListener('click', async (ev) => {
+    const r = ev.target.closest('[data-ar-ref]');
+    if (r) { mostra(r.dataset.arRef); return; }
+    const a = ev.target.closest('[data-ar]'); if (!a) return;
+    if (a.dataset.ar === 'chiudi') chiudi();
+    if (a.dataset.ar === 'copia') {
+      try { await navigator.clipboard.writeText($id('arTesto').textContent); a.textContent = 'Copiato'; }
+      catch (_) { a.textContent = 'Copia non riuscita'; }
+      setTimeout(() => { a.textContent = 'Copia'; }, 1600);
+    }
+  });
+  overlay.addEventListener('input', (ev) => { if (ev.target.id === 'arCerca') disegnaLista(); });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && aperto()) chiudi(); });
+  // esce chi era entrato: l'archivio a schermo era il suo
+  document.addEventListener('esgar:sessione', () => { if (aperto() && !sessione) chiudi(); });
+  window.EsgarArchivio = { apri, chiudi };
+})();
 
 (async function avviaArchivio(){
   EsgarUI.impostaData($id('arcData'), dataIso(new Date()));

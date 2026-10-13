@@ -111,7 +111,7 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   const tel = await telefono('Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP1A) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36');
   await accedi(tel, { nome: 'Giulia', cognome: 'Bianchi', titolo: 'Dr.ssa' });
   const codiceTel = await tel.evaluate(() => EsgarTelefono.codice());
-  check(/la sceglie l'amministratore/.test(await pc.textContent('#ppCartellaTesto')) && await pc.locator('[data-cartella]').count() === 0,
+  check(/la sceglie l'amministratore/.test(await pc.textContent('#ppCartellaTesto')) && await pc.locator('[data-cartella]').count() === 0 && await pc.isHidden('#ppArchivio'),
     'senza cartella comune: la sceglie l\'amministratore, niente «Ricollega»');
 
   // ── l'amministratore sceglie la cartella dalla finestra di Windows ──
@@ -259,6 +259,22 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
     fs.chmodSync(idxNeri, 0o666);
     check(/^﻿Data esame;/.test(fs.readFileSync(idxNeri, 'utf8')) && !albero().some((x) => /\.tmp-/.test(x)), 'l\'indice di prima è intatto, nessun file provvisorio');
   }
+
+  // ── «Mostra archivio»: i referti del medico, riletti dalla sua cartella ──
+  const miei = albero().filter((x) => /^Neri Marco\/\d{4}\/.*\.txt$/.test(x));
+  await pc.click('#profiloBtn'); await pc.click('#ppArchivio'); await pc.waitForTimeout(700);
+  check(await pc.isVisible('#arOverlay.open') && miei.length > 2 && await pc.locator('#arCasi .ar-ref').count() === miei.length
+    && new RegExp('Neri · ' + miei.length + ' referti').test(await pc.textContent('#arSub')) && await pc.isHidden('#pannelloProfilo'),
+    '«Mostra archivio» apre la finestra con i ' + miei.length + ' referti della cartella di Neri, e solo quelli');
+  await pc.fill('#arCerca', 'b777');
+  check(await pc.locator('#arCasi .ar-ref').count() === 1, 'la ricerca trova il referto dal numero d\'accesso');
+  await pc.click('#arCasi .ar-ref'); await pc.waitForTimeout(400);
+  check(/Codice caso: RT\d{2}-/.test(await pc.textContent('#arTesto')) && /N\. accesso: B777/.test(await pc.textContent('#arTesto')) && /Neri Marco\/\d{4}\//.test(await pc.textContent('#arVista .ar-vista-testa')),
+    'cliccando un referto lo si rilegge dal disco, con il suo percorso');
+  await pc.fill('#arCerca', 'zzz');
+  check(/Nessun referto/.test(await pc.textContent('#arCasi')), 'una ricerca senza esito lo dice');
+  await pc.keyboard.press('Escape'); await pc.waitForTimeout(350);
+  check(!(await pc.isVisible('#arOverlay.open')), 'Esc chiude l\'archivio');
 
   // ── disco di rete scollegato: messaggio chiaro, nessun file perso ──
   const prima = albero().length;
