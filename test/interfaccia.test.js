@@ -120,7 +120,9 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await p.click('#railMemoria'); await p.waitForTimeout(500);
   check(await p.isVisible('#mgOverlay.open') && /referti letti/.test(await p.textContent('#mgCorpo')), 'Memoria: la pagina si apre sulla panoramica');
   await p.screenshot({ path: SHOTS + '/mem_panoramica.png' });
-  await p.click('#mgNav [data-campo=p_ctNote]'); await p.waitForTimeout(400);
+  check(await p.locator('#mpMappa .mp-nodo').count() === 11 && await p.locator('#mpSinapsi path[data-per]').count() === 11, 'la mappa: un passo e una sinapsi per ogni scheda, più lo stage finale');
+  await p.click('[data-passo][data-campi~="p_ctNote"]'); await p.waitForTimeout(400);
+  check(await p.getAttribute('#mgNav [data-campo=p_ctNote]', 'aria-selected') === 'true', 'dal passo si entra nel campo che ha imparato qualcosa');
   check(await p.locator('#mgLista .mg-voce').count() === 2, 'il campo cT4b mostra le sue due frasi');
   check(/usata \d+ volt[ae] · ultima \d{2}\/\d{2}\/\d{4}/.test(await p.textContent('#mgLista')), 'con usi e data dell\'ultimo uso');
   await p.fill('#mgProva', 'elev');
@@ -140,16 +142,18 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   check(unite.length === 1 && unite[0].n === usiPrima && unite[0].preferita, 'correggendo una frase uguale a un\'altra si uniscono (usi sommati, preferita)');
   await p.fill('#mgNuova', 'infiltrazione della parete posteriore della vescica'); await p.keyboard.press('Enter'); await p.waitForTimeout(200);
   check(await p.evaluate(() => EsgarMemoria.gestione.voci('p_ctNote').some((v) => v.manuale && v.preferita && /vescica/.test(v.testo))), 'Insegna: frase aggiunta a mano, già preferita');
-  p.once('dialog', (d) => d.accept());
-  await p.click('.mg-voce:has-text("vescica") [data-mg=elimina]'); await p.waitForTimeout(200);
+  await p.click('.mg-voce:has-text("vescica") [data-mg=elimina]');
+  check(await p.isVisible('#dialogo.open') && /Dimenticare questa frase/.test(await p.textContent('#dialogoTitolo')), 'la conferma è una finestra del tool, non di Windows');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(250);
+  check(!(await p.isVisible('#dialogo.open')) && await p.isVisible('#mgOverlay.open') && await p.locator('#mgLista .mg-voce').count() === 2, 'Esc annulla la conferma e lascia aperta la pagina sotto');
+  await p.click('.mg-voce:has-text("vescica") [data-mg=elimina]'); await p.click('#dialogo.open [data-dialogo=si]'); await p.waitForTimeout(200);
   check(await p.locator('#mgLista .mg-voce').count() === 1, 'Dimentica toglie la frase');
   // esporta, azzera, importa
   await p.click('#mgNav [data-campo=""]'); await p.waitForTimeout(300);
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('[data-mg=esporta]')]);
   const file = await dl.path();
   check(JSON.parse(require('fs').readFileSync(file, 'utf8')).memoria.campi.p_ctNote.voci.length === 1, 'Esporta: file JSON con la memoria');
-  p.once('dialog', (d) => d.accept());
-  await p.click('[data-mg=azzera]'); await p.waitForTimeout(200);
+  await p.click('[data-mg=azzera]'); await p.click('#dialogo.open [data-dialogo=si]'); await p.waitForTimeout(200);
   check(await p.evaluate(() => Object.keys(EsgarMemoria.stato().campi).length === 0), 'Azzera tutto');
   await p.setInputFiles('#mgImporta', file); await p.waitForTimeout(300);
   check(await p.evaluate(() => (EsgarMemoria.stato().campi.p_ctNote || { voci: [] }).voci.length === 1) && /importata/.test(await p.textContent('#mgStato')), 'Importa: la memoria torna dal file');
@@ -165,8 +169,7 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await p.click('.rail-btn[data-pan=archivio]'); await p.waitForTimeout(500);
   check(/ricorda <b>|ricorda \d|frasi/.test(await p.innerHTML('#impMemoria')) && /1 frase|\d+ frasi/.test(await p.textContent('#impMemoria')), 'Archivio: quante frasi ricorda: ' + (await p.textContent('#impMemoria')).slice(0, 70));
   await p.screenshot({ path: SHOTS + '/imp_archivio.png' });
-  p.once('dialog', (d) => d.accept());
-  await p.click('[data-imp=azzera]'); await p.waitForTimeout(200);
+  await p.click('[data-imp=azzera]'); await p.click('#dialogo.open [data-dialogo=si]'); await p.waitForTimeout(200);
   check(await p.evaluate(() => Object.keys(EsgarMemoria.stato().campi).length === 0), 'Azzera la memoria');
   await p.click('.rail-btn[data-pan=aspetto]'); await p.waitForTimeout(500);
   await p.click('[data-pref=dense]');
@@ -177,6 +180,17 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await p.click('.rail-btn[data-pan=aspetto]'); await p.click('[data-pref=skipIntro]');
   await p.goto(URL.replace('?nointro', '')); await p.waitForTimeout(500);
   check(await p.evaluate(() => !document.getElementById('splashScreen') && document.body.classList.contains('dense')), 'alla riapertura: niente intro, form compatto ricordato');
+  // ── il cancello: senza ?nointro la prima cosa è l'accesso con il telefono ──
+  await p.route('**/ntfy.sh/**', (r) => r.abort());          // il relay vero non si tocca
+  await p.reload(); await p.waitForTimeout(600);
+  check(await p.isVisible('#cancello') && await p.locator('#cancello #ppFuori').count() === 1 &&await p.evaluate(() => document.getElementById('viewsPort').inert), 'all\'avvio, senza sessione: il cancello chiede l\'accesso e il tool dietro è fermo');
+  await p.click('#cancelloSenza'); await p.waitForTimeout(200);
+  check(!(await p.isVisible('#cancello')) && await p.evaluate(() => !document.getElementById('viewsPort').inert && !!document.querySelector('#pannelloProfilo #ppFuori')), '«Continua senza accesso»: il tool si apre, e l\'accesso torna nel profilo');
+  await p.click('#railStile'); await p.waitForTimeout(400);
+  check(await p.isVisible('#stOverlay.open') && /accedi con il telefono/i.test(await p.textContent('#stFuori')) && await p.isHidden('#stFoglio') && await p.isHidden('#stSalva'), 'senza accesso lo Stile personale non si imposta');
+  await p.keyboard.press('Escape');
+  await p.reload(); await p.waitForTimeout(500);
+  check(!(await p.isVisible('#cancello')), 'nella stessa scheda il cancello non torna');
   check(errs.length === 0, 'nessun errore JS ' + errs.join(' | '));
   await b.close();
 })();

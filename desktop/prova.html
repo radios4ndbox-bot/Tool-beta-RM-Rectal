@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+<title>StructuRad ESGAR — Prova</title>
+<style>
+  :root{ --accent:#7B1E34; --bg:#F6F2F0; --surface:#fff; --text:#2A1A1F; --muted:#7A6A6F; --border:#E6DCDF; --ok:#1F7A4D; --ko:#B0213A; }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:"Segoe UI", system-ui, sans-serif; background:var(--bg); color:var(--text);}
+  header{background:linear-gradient(120deg,#9E2238,#4A0F1C 60%,#12070A); color:#fff; padding:22px 32px;}
+  header .k{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#E9BFC8;}
+  header h1{margin:4px 0 0; font-size:24px; font-weight:600;}
+  main{max-width:760px; margin:24px auto; padding:0 20px; display:grid; gap:16px;}
+  section{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px;}
+  h2{margin:0 0 10px; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent);}
+  .riga{display:grid; grid-template-columns:150px 1fr; gap:6px 12px; font-size:13px;}
+  .riga span:nth-child(odd){color:var(--muted);}
+  code{font-family:Consolas, monospace; font-size:12.5px; word-break:break-all;}
+  .azioni{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  button{font:inherit; font-size:13px; padding:8px 14px; border-radius:8px; cursor:pointer; border:1px solid var(--accent); background:#fff; color:var(--accent);}
+  button.primario{background:var(--accent); color:#fff;}
+  button:disabled{opacity:.45; cursor:default;}
+  ol{margin:8px 0 0; padding-left:20px; font-size:13px; line-height:1.7;}
+  .ok{color:var(--ok);} .ko{color:var(--ko);}
+</style>
+</head>
+<body>
+<header><div class="k">StructuRad × ESGAR — RM Retto</div><h1>Prova del programma</h1></header>
+<main>
+  <section>
+    <h2>Programma</h2>
+    <div class="riga" id="info"></div>
+  </section>
+  <section>
+    <h2>Cartella comune</h2>
+    <div class="riga"><span>Percorso</span><code id="cartella">—</code></div>
+    <div class="azioni">
+      <button class="primario" id="scegli">Scegli la cartella</button>
+      <button id="apri" disabled>Apri la cartella</button>
+    </div>
+  </section>
+  <section>
+    <h2>Prova di salvataggio</h2>
+    <div class="azioni"><button class="primario" id="prova" disabled>Esegui la prova</button></div>
+    <ol id="esito"></ol>
+  </section>
+  <section>
+    <h2>Il tool</h2>
+    <div class="azioni"><button id="tool">Apri il tool online</button></div>
+  </section>
+</main>
+<script>
+const D = window.EsgarDesktop;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+async function aggiorna(){
+  const s = await D.stato();
+  $('info').innerHTML = `<span>Versione</span><span>${esc(s.versione)}</span>`
+    + `<span>Utente Windows</span><span>${esc(s.utente)} · ${esc(s.pc)}</span>`
+    + `<span>Configurazione</span><code>${esc(s.config)}</code>`;
+  $('cartella').innerHTML = s.cartella
+    ? esc(s.cartella) + (s.raggiungibile ? '' : ' <span class="ko">— non raggiungibile</span>')
+    : 'non impostata';
+  $('apri').disabled = !s.raggiungibile;
+  $('prova').disabled = !s.raggiungibile;
+}
+
+$('scegli').addEventListener('click', async () => { await D.scegli(); aggiorna(); });
+$('apri').addEventListener('click', () => D.apriCartella());
+$('tool').addEventListener('click', () => D.apriTool());
+
+$('prova').addEventListener('click', async () => {
+  const out = $('esito'); out.innerHTML = '';
+  const passo = (ok, testo) => { out.insertAdjacentHTML('beforeend', `<li class="${ok ? 'ok' : 'ko'}">${ok ? '✓' : '✗'} ${testo}</li>`); return ok; };
+  const adesso = new Date();
+  const testo = `Prova StructuRad ESGAR\r\n${adesso.toLocaleString('it-IT')}\r\nàèéìòù — caratteri accentati\r\n`;
+  const rel = `_prova StructuRad/Rossi Mario/${adesso.getFullYear()}/prova.txt`;
+  try {
+    const scritto = await D.scrivi(rel, testo);
+    passo(true, `scritto <code>${esc(scritto)}</code>, con le sottocartelle`);
+    passo((await D.leggi(rel)) === testo, 'riletto, identico');
+    const voci = await D.elenca('_prova StructuRad/Rossi Mario');
+    passo(voci.some((v) => v.cartella), 'elenco delle cartelle');
+    try { await D.scrivi('../fuori.txt', 'no'); passo(false, 'un percorso fuori dalla cartella è stato accettato'); }
+    catch (_) { passo(true, 'un percorso fuori dalla cartella viene rifiutato'); }
+    passo(true, '<b>Prova riuscita.</b> Chiudi e riapri il programma: la cartella deve essere ancora quella.');
+  } catch (e) {
+    passo(false, 'errore: ' + esc(e.message || e));
+  }
+});
+aggiorna();
+</script>
+</body>
+</html>

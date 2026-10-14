@@ -46,6 +46,13 @@ const RISCRITTA = '- fascia mesorettale indenne';
   // nuovo referto: le proposte compaiono sopra il referto
   await p.reload(); await p.waitForTimeout(500);
   check(await p.isVisible('#proposteRef') && await p.locator('#proposteRef .pr-voce').count() === 2, 'riaprendo: due proposte sopra il referto');
+  // «Dai tuoi referti» è una riga che si apre: chiusa dice quante sono e non ruba spazio al referto
+  check(await p.textContent('#proposteRef .pr-n') === '2' && await p.isHidden('#proposteRef .pr-voce >> nth=0') && await p.evaluate(() => document.getElementById('proposteRef').offsetHeight < 44),
+    'chiusa occupa una riga e dice che le proposte sono due');
+  await p.click('#proposteRef .pr-testa'); await p.waitForTimeout(450);
+  check(await p.isVisible('#proposteRef .pr-voce >> nth=0') && await p.getAttribute('#proposteRef .pr-testa', 'aria-expanded') === 'true', 'un clic la apre');
+  check(await p.evaluate(() => { const c = document.querySelector('.report-card'), h = c.querySelector('.report-head'); return h.offsetHeight >= h.scrollHeight && c.scrollHeight <= c.clientHeight + 1; }),
+    'anche aperta, la testata del referto resta intera e niente esce dalla scheda');
   await p.screenshot({ path: SHOTS + '/struttura_proposte.png', clip: { x: 740, y: 60, width: 700, height: 560 } });
   await p.click('#proposteRef .pr-voce:has-text("indenne") button.btn-secondary');
   check((await out()).includes('MRF:\n' + RISCRITTA) && !(await out()).includes('- non coinvolta'), 'Sostituisci: riscrive la frase generata');
@@ -62,12 +69,12 @@ const RISCRITTA = '- fascia mesorettale indenne';
 
   // la pagina Memoria mostra la struttura imparata
   await p.click('#railMemoria'); await p.waitForTimeout(400);
-  check(/Struttura del referto/.test(await p.textContent('#mgNav')), 'Memoria: gruppo «Struttura del referto»');
+  await p.click('[data-passo][data-campi~="ref:primaria:mrf"]'); await p.waitForTimeout(300);
+  check(/Struttura del referto/.test(await p.textContent('#mgNav')), 'Memoria, passo MRF: le frasi del referto');
   await p.click('#mgNav [data-campo="ref:primaria:mrf"]'); await p.waitForTimeout(300);
   check(/riconoscibile/.test(await p.textContent('#mgLista')) && /al posto di «- non coinvolta»/.test(await p.textContent('#mgSost')), 'sezione MRF: aggiunta e riformulazione');
   await p.screenshot({ path: SHOTS + '/struttura_memoria.png' });
-  p.once('dialog', (d) => d.accept());
-  await p.click('#mgSost [data-mg=elimina-sost]'); await p.waitForTimeout(150);
+  await p.click('#mgSost [data-mg=elimina-sost]'); await p.click('#dialogo.open [data-dialogo=si]'); await p.waitForTimeout(150);
   check(await p.evaluate(() => EsgarMemoria.gestione.sostituzioni('primaria', 'mrf').length === 0), 'la riformulazione si può dimenticare');
   check(errs.length === 0, 'nessun errore JS ' + errs.join(' | '));
   await b.close();

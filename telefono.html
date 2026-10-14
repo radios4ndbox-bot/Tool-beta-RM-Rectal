@@ -268,7 +268,25 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
     <div class="chiave"><div class="av" id="kAv"></div><div><div class="nome" id="kNome"></div><div class="det" id="kDet"></div></div></div>
     <p style="margin-top:16px">Inquadra il QR sul PC.</p>
     <div class="codice"><span>Codice dispositivo</span><b data-codice>…</b></div>
-    <div class="azioni"><button type="button" class="btn btn-vuoto" id="kModifica">Modifica i tuoi dati</button></div>
+    <div class="stato" id="kAdmin"></div>
+    <div class="azioni">
+      <button type="button" class="btn btn-vuoto" id="kChiedi" hidden>Chiedi di diventare amministratore</button>
+      <button type="button" class="btn btn-vuoto" id="kModifica">Modifica i tuoi dati</button>
+    </div>
+  </section>
+
+  <!-- sul telefono di un amministratore: la richiesta di un collega -->
+  <section class="carta" id="vRichiesta" hidden>
+    <div class="kicker">Richiesta di amministratore</div>
+    <h1 id="rChi"></h1>
+    <p>Chiede di diventare amministratore: potrà scegliere la cartella comune dei referti su ogni PC.</p>
+    <div class="codice"><span>Il suo codice</span><b id="rCodice"></b></div>
+    <p style="margin-top:14px">Approva solo se conosci il collega e questo è il codice che legge sul suo telefono.</p>
+    <div class="azioni">
+      <button type="button" class="btn btn-pieno" id="rApprova">Approva</button>
+      <button type="button" class="btn btn-vuoto" id="rRifiuta">Rifiuta</button>
+    </div>
+    <div class="stato" id="rStato"></div>
   </section>
 
 </main>
@@ -418,11 +436,37 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
       return await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, k, b64u.a(firma), new TextEncoder().encode(testo));
     } catch (_) { return false; }
   }
+
+  /* ─── amministratori ───────────────────────────────────────────────
+     AMMINISTRATORI: i codici dei telefoni che lo sono da sempre, su ogni
+     PC. Un altro medico lo diventa con una DELEGA: dal suo telefono manda
+     una richiesta, che arriva come notifica (argomento RICHIESTE del
+     relay) al telefono di un amministratore della lista; se questi
+     approva, il suo telefono firma il codice del richiedente. Il medico
+     conserva la delega sul telefono e la presenta a ogni accesso: il PC
+     verifica che la firma sia di un amministratore della lista e che
+     riguardi proprio il telefono che sta entrando. Vale su ogni PC.
+     Una delega si ritira mettendo il codice in REVOCATI.
+     QUESTE TRE COSTANTI DEVONO ESSERE UGUALI in index.html e telefono.html. */
+  const AMMINISTRATORI = [
+    '9407-BEE0-7B5F-AED2'    // amministratore StructuRad
+  ];
+  const REVOCATI = [];
+  const RICHIESTE = 'esgar-richieste-8iz77g9q5m94r4iws5nrgv';
+  const RE_CODICE = /^[0-9A-F]{4}(-[0-9A-F]{4}){3}$/;
+  const testoDelega = codice => `structurad-esgar|amministratore|${codice}`;
+  /* la delega { pub, firma } vale per questo codice? */
+  async function delegaValida(delega, codice) {
+    if (!delega || !delega.pub || !delega.firma || !RE_CODICE.test(codice || '') || REVOCATI.includes(codice)) return false;
+    if (!AMMINISTRATORI.includes(await codiceDispositivo(delega.pub))) return false;
+    return verificaFirma(delega.pub, delega.firma, testoDelega(codice));
+  }
   root.Canale = {
     get RELAY() { return RELAY; }, usaRelay: u => { RELAY = u; },
     nuovoAbbinamento, daFrammento, frammento, valido, apri, cifra, decifra, invia, ascolta,
     casuale, TITOLI, nomeCortese, iniziali, profiloValido,
     testoFirma, codiceDispositivo, verificaFirma, b64u,
+    AMMINISTRATORI, REVOCATI, RICHIESTE, RE_CODICE, testoDelega, delegaValida,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -461,16 +505,18 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
     return { pub: c.pub, firma: Canale.b64u.da(sig) };
   }
   let codice = '';
-  chiaviDispositivo().then((c) => Canale.codiceDispositivo(c.pub)).then((k) => {
+  const codicePronto = chiaviDispositivo().then((c) => Canale.codiceDispositivo(c.pub)).then((k) => {
     codice = k;
     document.querySelectorAll('[data-codice]').forEach((e) => { e.textContent = k; });
-  }).catch(() => {});
-  const viste = ['vCrea', 'vAccesso', 'vFatto', 'vChiave'];
+    return k;
+  }).catch(() => '');
+  const viste = ['vCrea', 'vAccesso', 'vFatto', 'vChiave', 'vRichiesta'];
   const mostra = (v) => viste.forEach((x) => { $(x).hidden = x !== v; });
   const stato = (id, t, tono) => { const e = $(id); e.textContent = t || ''; e.className = 'stato ' + (tono || ''); };
 
   // l'abbinamento arriva dal QR nel frammento: si toglie subito dall'indirizzo
   let abb = Canale.daFrammento(location.hash);
+  let richiesta = richiestaDaFrammento(location.hash);   // sul telefono dell'amministratore, dalla notifica
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 
   function leggi(){ try { const p = JSON.parse(localStorage.getItem(CHIAVE) || 'null'); return Canale.profiloValido(p) ? p : null; } catch (_) { return null; } }
@@ -517,8 +563,125 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
     $(nome).textContent = Canale.nomeCortese(profilo);
     $(det).textContent = `${profilo.nome} ${profilo.cognome}`;
   }
-  function apriChiave(){ riempi('kAv', 'kNome', 'kDet'); mostra('vChiave'); }
+  function apriChiave(){ riempi('kAv', 'kNome', 'kDet'); mostra('vChiave'); disegnaAdmin(); aspettaRisposta(); }
   $('kModifica').addEventListener('click', apriCrea);
+
+  /* ── amministratore: richiesta, approvazione, delega ──
+     Chi chiede: «Chiedi di diventare amministratore» manda una notifica
+     all'argomento delle richieste, con il proprio codice e un canale
+     { t, k } su cui aspettare la risposta (il relay la tiene 12 ore).
+     Chi approva: apre la notifica su un telefono della lista, e questo
+     firma il codice del richiedente. La delega resta sul telefono di chi
+     l'ha chiesta e viaggia con ogni accesso. */
+  const DELEGA = 'structurad.esgar.delega', ATTESA = 'structurad.esgar.richiesta';
+  const DODICI_ORE = 12 * 3600 * 1000;
+  const json = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (_) { return null; } };
+  const leggiDelega = () => { const d = json(DELEGA); return d && d.pub && d.firma ? { pub: d.pub, firma: d.firma } : null; };
+  function inAttesa(){
+    const a = json(ATTESA);
+    if (a && Canale.valido(a) && Date.now() - a.dal < DODICI_ORE) return a;
+    if (a) localStorage.removeItem(ATTESA);
+    return null;
+  }
+  function richiestaDaFrammento(hash){
+    try {
+      const r = new URLSearchParams(String(hash || '').replace(/^#/, '')).get('r');
+      if (!r) return null;
+      const o = JSON.parse(new TextDecoder().decode(Canale.b64u.a(r)));
+      const p = { id: 'op-000000000000', nome: o.n, cognome: o.g, titolo: o.ti };
+      return Canale.valido(o) && Canale.RE_CODICE.test(o.c || '') && Canale.profiloValido(p) ? { t: o.t, k: o.k, codice: o.c, profilo: p } : null;
+    } catch (_) { return null; }
+  }
+
+  let adminNota = '';
+  async function disegnaAdmin(){
+    const k = await codicePronto, e = $('kAdmin'), b = $('kChiedi');
+    const attesa = inAttesa();
+    let testo = adminNota, chiedi = false;
+    if (Canale.AMMINISTRATORI.includes(k)) testo = 'Questo telefono è amministratore.';
+    else if (await Canale.delegaValida(leggiDelega(), k)) testo = 'Sei amministratore: puoi scegliere la cartella comune su ogni PC.';
+    else if (attesa) { testo = `Richiesta inviata alle ${new Date(attesa.dal).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}: in attesa dell'amministratore.`; }
+    else chiedi = !!k;
+    e.textContent = testo; e.className = 'stato' + (!testo ? '' : testo === adminNota ? ' ko' : ' ok');
+    b.hidden = !chiedi;
+  }
+
+  let chiudiAttesa = null;
+  async function aspettaRisposta(){
+    const a = inAttesa();
+    if (!a || chiudiAttesa) return;
+    try {
+      const sess = await Canale.apri(a);
+      chiudiAttesa = Canale.ascolta(sess, 'tel', {
+        messaggio: async (m) => {
+          if (!m || (m.tipo !== 'delega' && m.tipo !== 'rifiuto')) return;
+          if (m.tipo === 'delega') {
+            if (!(await Canale.delegaValida(m, await codicePronto))) return;   // non firmata da un amministratore, o non per questo telefono
+            localStorage.setItem(DELEGA, JSON.stringify({ pub: m.pub, firma: m.firma }));
+            adminNota = '';
+          } else adminNota = 'La richiesta non è stata approvata.';
+          localStorage.removeItem(ATTESA);
+          chiudiAttesa && chiudiAttesa(); chiudiAttesa = null;
+          disegnaAdmin();
+        }
+      });
+    } catch (_) {}
+  }
+  $('kChiedi').addEventListener('click', async () => {
+    const b = $('kChiedi'); b.disabled = true;
+    try {
+      const k = await codicePronto;
+      const a = await Canale.nuovoAbbinamento();
+      const dati = { t: a.t, k: a.k, c: k, n: profilo.nome, g: profilo.cognome, ti: profilo.titolo };
+      const r = await fetch(Canale.RELAY, { method: 'POST', cache: 'no-store', body: JSON.stringify({
+        topic: Canale.RICHIESTE,
+        title: 'StructuRad ESGAR: richiesta di amministratore',
+        message: `${Canale.nomeCortese(profilo)} (${profilo.nome} ${profilo.cognome}) chiede di diventare amministratore. Codice ${k}. Tocca per rispondere.`,
+        click: location.origin + location.pathname + '#r=' + Canale.b64u.da(new TextEncoder().encode(JSON.stringify(dati))),
+        tags: ['key']
+      }) });
+      if (!r.ok) throw new Error(r.status === 429 ? 'troppi invii ravvicinati, riprova fra un minuto' : 'relay: HTTP ' + r.status);
+      localStorage.setItem(ATTESA, JSON.stringify({ t: a.t, k: a.k, dal: Date.now() }));
+      adminNota = '';
+      aspettaRisposta();
+    } catch (e) {
+      adminNota = 'Richiesta non inviata: ' + (e instanceof TypeError ? 'rete non raggiungibile' : e.message);
+    }
+    b.disabled = false;
+    disegnaAdmin();
+  });
+
+  /* sul telefono dell'amministratore */
+  async function apriRichiesta(){
+    const p = richiesta.profilo;
+    $('rChi').textContent = `${Canale.nomeCortese(p)} (${p.nome} ${p.cognome})`;
+    $('rCodice').textContent = richiesta.codice;
+    $('rApprova').disabled = $('rRifiuta').disabled = true;
+    stato('rStato', '');
+    mostra('vRichiesta');
+    const io = Canale.AMMINISTRATORI.includes(await codicePronto);
+    if (io) $('rApprova').disabled = $('rRifiuta').disabled = false;
+    else stato('rStato', 'Solo un amministratore può rispondere: questo telefono non lo è.', 'ko');
+  }
+  async function rispondi(approva){
+    $('rApprova').disabled = $('rRifiuta').disabled = true;
+    stato('rStato', 'Invio della risposta…');
+    try {
+      const sess = await Canale.apri(richiesta);
+      const f = approva ? await firma(Canale.testoDelega(richiesta.codice)) : null;
+      await Canale.invia(sess, 'adm', approva ? { tipo: 'delega', pub: f.pub, firma: f.firma } : { tipo: 'rifiuto' });
+      $('fTitolo').textContent = approva ? 'Richiesta approvata' : 'Richiesta rifiutata';
+      $('fTesto').textContent = approva ? `${Canale.nomeCortese(richiesta.profilo)} è amministratore: lo vedrà riaprendo la pagina sul suo telefono, entro 12 ore.` : 'Il collega riceverà la risposta.';
+      document.querySelector('#vFatto .spunta').style.display = approva ? '' : 'none';
+      richiesta = null;
+      mostra('vFatto');
+    } catch (e) {
+      stato('rStato', 'Risposta non inviata: ' + (e instanceof TypeError ? 'rete non raggiungibile' : e.message), 'ko');
+      $('rApprova').disabled = $('rRifiuta').disabled = false;
+    }
+  }
+  $('rApprova').addEventListener('click', () => rispondi(true));
+  $('rRifiuta').addEventListener('click', () => rispondi(false));
 
   /* ── accesso al PC ── */
   function apriAccesso(){ riempi('aAv', 'aNome', 'aDet'); stato('aStato', ''); mostra('vAccesso'); }
@@ -554,7 +717,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
       });
       const f = await firma(Canale.testoFirma(abb.t, profilo.id));
       await Canale.invia(sess, 'tel', {
-        tipo: 'accesso', dispositivo: dispositivo(), pub: f.pub, firma: f.firma,
+        tipo: 'accesso', dispositivo: dispositivo(), pub: f.pub, firma: f.firma, delega: leggiDelega(),
         profilo: { id: profilo.id, nome: profilo.nome, cognome: profilo.cognome, titolo: profilo.titolo }
       });
       stato('aStato', 'In attesa di conferma dal PC…');
@@ -563,15 +726,17 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
     }
   });
 
-  if (!profilo) apriCrea();
+  if (richiesta) apriRichiesta();
+  else if (!profilo) apriCrea();
   else if (abb) apriAccesso();
   else apriChiave();
 
   // un nuovo QR inquadrato con la pagina già aperta cambia solo il
   // frammento: la pagina non si ricarica, quindi si riparte da qui
   window.addEventListener('hashchange', () => {
-    const nuovo = Canale.daFrammento(location.hash);
+    const nuovo = Canale.daFrammento(location.hash), r = richiestaDaFrammento(location.hash);
     history.replaceState(null, '', location.pathname + location.search);
+    if (r) { richiesta = r; apriRichiesta(); return; }
     if (!nuovo) return;
     abb = nuovo;
     $('aConferma').disabled = false;
@@ -580,7 +745,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
   });
 
   /* solo per i test */
-  window.EsgarTelefono = { usaRelay: (u) => Canale.usaRelay(u), firma, codice: () => codice };
+  window.EsgarTelefono = { usaRelay: (u) => Canale.usaRelay(u), firma, codice: () => codice, amministratori: Canale.AMMINISTRATORI, revocati: Canale.REVOCATI };
 })();
 </script>
 </body>

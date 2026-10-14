@@ -1,0 +1,36 @@
+StructuRad × ESGAR — RM Retto · Stadiazione primaria
+Codice caso: RT26-FEU6
+Data esame: 28/09/2026    N. accesso: A192318
+Refertato da: Dr. Viggiano (Pasquale Viggiano)
+Salvato: 13/10/2026 18:03
+────────────────────────────────────────────────
+
+Esame eseguito su apparecchio 1.5T con sequenze TSE e GE, acquisizioni multiplanari anche ad HR, completato con DWI e sequenze dinamiche dopo mdc e.v. paramagnetico (Gadovist).
+
+MORFOLOGIA:
+Lesione semicircolare del retto medio e basso, a livello della parete anteriore, laterale sinistra.
+
+MRF:
+- non coinvolta
+
+cT STAGE:
+cT3c — estensione extramurale 5–15 mm
+
+EMVI:
+grado 3 (EMVI+)
+
+LINFONODI SOSPETTI:
+- non presenti
+- categoria cN: cN+
+
+TUMOR DEPOSIT:
+non presente
+
+METASTASI PELVICHE:
+- non evidenza di linfonodi a distanza sospetti
+- non evidenza di noduli peritoneali
+
+STAGE FINALE:
+Lesione semicircolare del retto medio e basso cT3c, MRF-, N+, M-, TD-, EMVI+.
+
+Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).
