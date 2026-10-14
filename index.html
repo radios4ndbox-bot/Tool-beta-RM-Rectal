@@ -1039,6 +1039,21 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 .fr-errore:empty{display:none;}
 .fr-errore.ok{color:var(--accent);}
 @media (max-width:720px){ .fr-riga, .fr-colonne{grid-template-columns:1fr; gap:6px;} .fr-colonne span:first-child{display:none;} }
+/* Memoria · Dal tuo referto */
+.rf-carica{display:flex; align-items:center; gap:12px; margin:16px 0 8px;}
+.rf-incolla{display:block; width:100%; min-height:220px; resize:vertical; padding:10px 12px; border:1.5px solid var(--border); border-radius:9px; background:var(--bg);
+  font-family:var(--mono); font-size:12.5px; line-height:1.55; color:var(--text); outline:none;}
+.rf-incolla:focus{border-color:var(--accent); background:#fff;}
+.rf-azioni, .rf-testa-azioni{display:flex; align-items:center; gap:10px; margin-top:10px;}
+.rf-frase{padding:10px 2px 12px; border-bottom:1px dashed var(--border);}
+.rf-frase:last-child{border-bottom:none;}
+.rf-orig{font-size:12.5px; line-height:1.5; color:var(--muted); margin-bottom:6px;}
+.rf-voce{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+.rf-voce .sel-wrap, .rf-voce select{flex:1 1 auto; min-width:0; max-width:520px;}
+.rf-frase.fatta{display:flex; flex-direction:column; gap:3px;}
+.rf-ok{font-size:12px; color:var(--accent);}
+.rf-avviso{margin-top:4px; font-size:11.5px; color:#9a5b00;}
+.rf-avviso:empty{display:none;}
 .mg-lato{margin:10px 0 4px; padding:8px 10px;}
 .mg-lato strong{font-size:12px;}
 .mg-nota-lato{margin:2px 8px 4px; font-size:11px;}
@@ -7898,6 +7913,7 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const FR = () => window.EsgarFrasi;
   let passo = null;          // passo aperto { modo, i }, o null per la mappa
+  let inReferto = false;     // la vista «Dal tuo referto»
   let modoMappa = 'primaria';
 
   const ICONE = {
@@ -7968,8 +7984,9 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
           <span class="mp-ico">${svg(ICONE[x.sez] || ICONE.morfologia)}</span><span class="mp-etichetta">${esc(x.titolo.replace(/\s*\(.*\)$/, ''))}</span>${x.n ? `<span class="mp-conta">${x.n}</span>` : ''}</button>`).join('')}</div>
       <div class="mp-piede">
         <div class="mg-azioni">
+          <button type="button" class="btn-primary" data-rf-apri>Dal tuo referto</button>
           <button type="button" class="btn-secondary" data-mg="esporta">Esporta le frasi</button>
-          <label class="btn-secondary mg-file">Importa da file<input type="file" id="mgImporta" accept="application/json,.json" hidden></label>
+          <label class="btn-secondary mg-file">Importa le frasi<input type="file" id="mgImporta" accept="application/json,.json" hidden></label>
           <button type="button" class="btn-ghost" data-mg="azzera">Tutte al testo ufficiale</button>
         </div>
         <div class="mp-dove">${p ? (window.EsgarPersonale.nelFile() ? 'Le tue frasi restano nella tua cartella: le ritrovi su ogni PC.' : 'Le tue frasi restano su questo PC.') : 'Senza accesso: sono le frasi di questo PC.'}</div>
@@ -8071,13 +8088,304 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   function disegna(){
     const p = sessione && sessione.profilo;
     $('mgSub').textContent = p ? `Le frasi di ${Canale.nomeCortese(p)}, voce per voce` : 'Le frasi di questo PC, voce per voce';
-    $('mgOverlay').querySelector('.pg-corpo').classList.toggle('mappa', !passo);
+    $('mgOverlay').querySelector('.pg-corpo').classList.toggle('mappa', !passo && !inReferto);
     const corpo = $('mgCorpo');
-    if (passo) {
+    if (inReferto) {
+      disegnaReferto();
+      corpo.classList.remove('pg-entra'); void corpo.offsetWidth; corpo.classList.add('pg-entra');
+    } else if (passo) {
       disegnaNav(); disegnaPasso();
       corpo.classList.remove('pg-entra'); void corpo.offsetWidth; corpo.classList.add('pg-entra');
     } else { corpo.classList.remove('pg-entra'); disegnaMappa(); }
   }
+  // ── DAL TUO REFERTO ──
+  // Un referto già scritto dal medico (.txt, .docx, o incollato): il tool lo divide in
+  // frasi, riconosce dai titoli o dalle parole chiave la sezione di ognuna e la voce più
+  // vicina, e propone la frase come sua, con i dati del modulo già al posto dei numeri.
+  // Il medico la corregge, la salva sulla voce giusta o la ignora.
+  let analisi = null;          // { modo, testo, frasi: [{ orig, sez, k, testo, stato }], saltate }
+
+  /* il testo di un .docx: word/document.xml dentro lo zip, senza librerie */
+  async function testoDocx(buf){
+    const dv = new DataView(buf), dec = new TextDecoder();
+    let e = buf.byteLength - 22;
+    while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+    if (e < 0) throw new Error('non è un file Word');
+    const n = dv.getUint16(e + 10, true);
+    let p = dv.getUint32(e + 16, true);
+    for (let i = 0; i < n; i++) {
+      if (dv.getUint32(p, true) !== 0x02014b50) break;
+      const metodo = dv.getUint16(p + 10, true), comp = dv.getUint32(p + 20, true);
+      const ln = dv.getUint16(p + 28, true), lx = dv.getUint16(p + 30, true), lc = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+      const nome = dec.decode(new Uint8Array(buf, p + 46, ln));
+      if (nome === 'word/document.xml') {
+        const ini = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true);
+        const dati = new Uint8Array(buf, ini, comp);
+        const xml = metodo === 0 ? dec.decode(dati) : await new Response(new Blob([dati]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+        return xml.replace(/<w:tab\/>/g, '\t').replace(/<w:br[^>]*\/>/g, '\n').replace(/<\/w:p>/g, '\n').replace(/<[^>]+>/g, '')
+          .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+      }
+      p += 46 + ln + lx + lc;
+    }
+    throw new Error('documento Word senza testo');
+  }
+
+  const norm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9+\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const VUOTE = new Set('il lo la i gli le un uno una di a da in con su per tra fra e o ed del dello della dei degli delle al allo alla ai agli alle dal dallo dalla dai dagli dalle nel nello nella nei negli nelle sul sullo sulla sui sugli sulle che si e'.split(' '));
+  const parole = (t) => norm(t).split(' ').filter((p) => p.length > 1 && !VUOTE.has(p) && !/^\d/.test(p)).map((p) => (p.length > 6 ? p.slice(0, 6) : p));
+
+  /* le parole chiave di ogni sezione, con il loro peso */
+  const CHIAVI = {
+    morfologia: [[/composiz|solid|mucinos|polipoid|anular|circonferenz|vegetant|ulcerat|morfolog|semicirconf/, 2]],
+    sede: [[/giunzione ano ?rettale|margine anale|riflessione peritoneale|sigmoid|take ?off|\bsto\b|retto (basso|medio|alto)|terzo (inferiore|medio|superiore)|distanza|\bsede\b/, 2]],
+    dimensioni: [[/lunghezza|cranio.?caudale|dimensioni del tumore|diametro|estensione longitudinale/, 2]],
+    ct: [[/\bc?t ?[1-4] ?[abcd]{0,2}\b(?! ?pesat)/, 3], [/extramural|muscolare propria|sottomucos|peritone|organi pelvici|vescica|prostat|vagin|uter|sacr/, 1.5]],
+    emvi: [[/emvi|vascolare extramurale|invasione vascolare|\bvene?\b|venos/, 3]],
+    sfinteri: [[/sfinter|intersfinter|canale anale|puborettal|elevator|pavimento pelvico|anal ?\+/, 3]],
+    mrf: [[/\bmrf\b|fascia mesorettale|margine circonferenziale|\bcrm\b|fascia/, 3]],
+    linfonodi: [[/linfonod|adenopat|deposit|\bc?n ?[0-2][abc]?\b|\bc?n ?\+|otturator|iliac[oi] intern/, 2]],
+    nonregionali: [[/iliac[oi] estern|iliac[oi] comun|inguinal|\bc?m ?1|\bc?m ?\+|non regional|extraregional/, 4]],
+    conclusione: [[/conclusion|in sintesi|\btnm\b|\bstadio\b|neoplasia del (retto|sigma)|si consiglia|stage/, 3], [/^neoplasia del (retto|sigma)/, 2]],
+    residuo: [[/risposta|\bc?cr\b|near|residu|fibros|regression|\btrg\b|\by?c?t ?[1-4]/, 2.5]],
+    mucinosa: [[/mucin|mucoid|colloid/, 3]],
+    lesione: [[/lesione residua|dimension|giunzione ano ?rettale|distanza/, 1.5]]
+  };
+  function sezioneDi(t, modo){
+    const n = norm(t);
+    let meglio = '', max = 0;
+    [...SEZ_PASSI[modo], 'conclusione'].forEach((s) => {
+      let pt = 0;
+      (CHIAVI[s] || []).forEach(([re, w]) => { if (re.test(n)) pt += w; });
+      if (pt > max) { max = pt; meglio = s; }
+    });
+    return meglio;
+  }
+  /* la voce più vicina a una frase, dentro una sezione */
+  const NEG = /\b(non|no|nessun\w*|assent\w*|liber\w*|indenn\w*|negativ\w*|senza|esent\w*|integr\w*|conservat\w*|risparmiat\w*)\b/;
+  function categoria(n){
+    const m = n.match(/\b(y?c?)t ?([1-4]) ?([abcd]{0,2})\b/);
+    if (!m) return '';
+    const [, , num, sub] = m;
+    if (num === '1' || num === '2') return 'T1-2';
+    if (num === '3') return /[ab]/.test(sub) ? 'T3ab' : /[cd]/.test(sub) ? 'T3cd' : '';
+    return sub.includes('a') ? 'T4a' : sub.includes('b') ? 'T4b' : '';
+  }
+  function voceDi(t, modo, sez){
+    const n = norm(t), ps = new Set(parole(t)), neg = NEG.test(n), cat = categoria(n);
+    let meglio = null, max = -Infinity;
+    VOCI_ELENCO.filter((x) => x[1] === modo && x[2] === sez).forEach(([k, , , , scelta, uff]) => {
+      const pv = parole(uff.replace(/\[[^\]]+\]/g, ' ') + ' ' + scelta);
+      let pt = pv.filter((p) => ps.has(p)).length / Math.sqrt(pv.length || 1);
+      const coda = k.split('.').pop();
+      if (/^(no|na|ycN0|cN0)$/.test(coda)) pt += neg ? 1.5 : -1;
+      if (coda === 'si') pt += neg ? -1.2 : 0.8;
+      if (cat && k.endsWith(cat)) pt += 5;
+      if (/cT|ycT/.test(k) && cat && !k.endsWith(cat)) pt -= 2;
+      if (/\.(cn|ycn)\./.test(k)) {
+        const c = /possibil|dubbi/.test(n) ? 'possibile' : /\bc?n ?0\b|ycn ?0/.test(n) ? 'N0' : /\bc?n ?(\+|[12])/.test(n) ? 'N+' : '';
+        if (c && k.endsWith(c)) pt += 4;
+      }
+      if (k.startsWith('r.risp.')) {
+        const r = /near|quasi complet/.test(n) ? 'near-cCR' : /\bccr\b|complet/.test(n) ? 'cCR' : /maggior/.test(n) ? 'maggiore' : /minor/.test(n) ? 'minore' : '';
+        if (r && k.endsWith('.' + r)) pt += 4;
+      }
+      if (pt > max) { max = pt; meglio = k; }
+    });
+    return meglio;
+  }
+  /* la frase come tua frase della voce: i dati del modulo diventano segnaposto */
+  function preparaFrase(k, t){
+    const buchi = segnaposto(VOCI[k].uff);
+    let s = t.trim();
+    const ha = (b) => buchi.includes(b) && !s.includes(b);
+    if (ha('[categorie]')) s = s.replace(/\b(y?c?T[1-4x][^.]*?|risposta[^.]*?|tumore residuo[^.]*?)(\.|$)/i, '[categorie]$2');
+    if (ha('[ore]')) s = k === 'p.forma.parziale'
+      ? s.replace(/,?\s*(?:da\s+|dalle\s+|tra\s+(?:le\s+)?)?ore\s*\d+\s*(?:-|–|e|a|alle)\s*(?:(?:le|alle)\s+)?(?:ore\s*)?\d+/i, '[ore]')
+      : s.replace(/(ore\s*)(\d+(?:\s*[-–]\s*\d+)?)/i, '$1[ore]');
+    if (ha('[cm]')) s = s.replace(/\d+(?:[.,]\d+)?(\s*cm)/i, '[cm]$1');
+    if (ha('[dettagli]')) s = s.replace(/\s*\((?=[^)]*(?:numero|n\.|mm|lato|dimension))[^)]*\)/i, '[dettagli]');
+    if (ha('[descrizione]')) {
+      // la categoria scritta nel referto (T3b) diventa quella della voce (cT3ab): è un dato, non una parola
+      const cat = k.split('.').pop();
+      const re = /\b(?:y?c)?T[1-4][abcd]{0,2}\b/i;
+      if (/\(\s*(?:y?c)?T[1-4][abcd]{0,2}\s*\)/i.test(s)) s = s.replace(/\s*\(\s*(?:y?c)?T[1-4][abcd]{0,2}\s*\)/i, ', ' + cat + '[descrizione]');
+      else if (re.test(s)) s = s.replace(/(\b(?:y?c)?T[1-4][abcd]{0,2}\b)(\s*\([^)]*\))?/i, cat + '[descrizione]');
+    }
+    return s;
+  }
+  /* «uguale al testo del tool»: le stesse parole della voce, a parte i dati */
+  function uguale(k, t){
+    const base = (FR().frase(k) || VOCI[k].uff).replace(/\[[^\]]+\]/g, ' ');
+    const a = parole(base), b = parole(t);
+    // le parole in più sono una sfumatura del medico, tranne i dati: sigle e numeri (cT3ab, MRF-, cN0)
+    // e le parole dei dati composti (le cause, i dettagli, le stazioni…)
+    const composti = segnaposto(VOCI[k].uff).filter((x) => !/^\[(cm|ore|categorie)\]$/.test(x)).length;
+    const extra = b.filter((p) => !a.includes(p) && !/[0-9+\-]/.test(p));
+    return a.length > 0 && a.every((p) => b.includes(p)) && extra.length <= 4 * composti;
+  }
+  /* il referto, frase per frase */
+  function analizza(testo, modo){
+    let righe = String(testo).replace(/\r\n?/g, '\n').split('\n');
+    const taglio = righe.findIndex((r) => /^[─━—_=-]{8,}\s*$/.test(r.trim()));
+    if (taglio >= 0 && taglio < 12) righe = righe.slice(taglio + 1);            // l'intestazione del file d'archivio
+    const frasi = []; let sez = '', saltate = 0;
+    righe.forEach((r) => {
+      const t = r.trim();
+      if (!t || /^referto redatto secondo|^stato locale del tumore$|^(codice caso|data esame|refertato da|salvato|n\. accesso):/i.test(t)) return;
+      // un titolo di sezione: decide la sezione delle righe che seguono
+      if (t.length < 80 && /:\s*$/.test(t)) { sez = sezioneDi(t, modo) || ''; return; }
+      // un titolo tutto maiuscolo («RM DEL RETTO»): se dice una sezione la apre, altrimenti si salta
+      if (t.length < 80 && /[A-Z]/.test(t) && t === t.toUpperCase() && !/[a-z]/.test(t)) { const s = sezioneDi(t, modo); if (s) sez = s; return; }
+      const pezzi = /^[-•*]\s/.test(t) ? [t] : t.split(/(?<=[.;])\s+(?=[A-ZÀ-Ü])/);
+      const riga = [];
+      pezzi.forEach((f) => {
+        const frase = f.trim(); if (parole(frase).length < 2) return;
+        // «Conclusione: …», «MRF: …»: un titolo di sezione in testa alla frase decide la sezione
+        const testa = frase.match(/^([^:]{3,60}):\s+\S/);
+        const sTesta = testa && titoloDi(testa[1], modo);
+        const s = sTesta || sezioneDi(frase, modo) || sez;
+        const corpoFrase = sTesta ? frase.replace(/^[^:]{3,60}:\s+/, '') : frase;     // il titolo nel referto c'è già
+        const k = s ? voceDi(corpoFrase, modo, s) || '' : '';
+        // due frasi della stessa riga sulla stessa voce restano una frase sola
+        const prima = riga[riga.length - 1];
+        if (prima && k && prima.k === k) { prima.orig += ' ' + frase; prima.corpo += ' ' + corpoFrase; return; }
+        riga.push({ orig: frase, corpo: corpoFrase, sez: s || '', k });
+      });
+      riga.forEach((x) => {
+        if (x.k && uguale(x.k, x.corpo)) { saltate++; return; }
+        frasi.push({ orig: x.orig, sez: x.sez, k: x.k, testo: x.k ? preparaFrase(x.k, x.corpo) : x.corpo, stato: '' });
+      });
+    });
+    return { modo, testo, frasi, saltate };
+  }
+  /* un titolo di sezione: quelli del modulo e del referto, o le parole che si usano per la conclusione */
+  function titoloDi(t, modo){
+    const n = norm(t);
+    if (/^(conclusion[ei]|in sintesi|sintesi|stage finale|impressione( diagnostica)?)$/.test(n)) return 'conclusione';
+    const p = passi(modo).find((x) => norm(x.titolo) === n);
+    if (p) return p.sez;
+    const h = (modo === 'ristad' ? SECTION_HEADERS_RISTAD : SECTION_HEADERS_PRIMARIA).find((d) => norm(d[1].replace(/:$/, '')) === n);
+    if (h) return h[0];
+    return /^(mrf|emvi|ycmrf|ycemvi|sede|morfologia|dimensioni|linfonodi|sfinteri)$/.test(n) ? sezioneDi(t, modo) : '';
+  }
+  const modoDi = (t) => (/ristadiazion|neoadiuvant|dopo terapia|\bccr\b|\byc?t ?[1-4]|tumore residuo|risposta clinica/i.test(t) ? 'ristad' : 'primaria');
+
+  function opzioniVoce(modo, k){
+    return '<option value="">— nessuna voce —</option>' + passi(modo).map((p) => `<optgroup label="${esc(p.titolo)}">${p.voci.map((v) => `<option value="${esc(v.k)}"${v.k === k ? ' selected' : ''}>${esc(v.gruppo === v.scelta ? v.scelta : v.gruppo + ': ' + v.scelta)}</option>`).join('')}</optgroup>`).join('');
+  }
+  function cartaFrase(f, i){
+    const v = f.k ? VOCI[f.k] : null;
+    if (f.stato === 'salvata') return `<div class="rf-frase fatta" data-rf="${i}"><span class="rf-ok">✓ Salvata come tua frase: <b>${esc(v ? v.gruppo + ' · ' + v.scelta : '')}</b></span><span class="rf-orig">${esc(f.testo)}</span></div>`;
+    const err = v ? FR().controlla(f.k, f.testo) : '';
+    return `<div class="rf-frase" data-rf="${i}">
+      <div class="rf-orig"><span class="fr-ante-lab">Nel tuo referto</span>${esc(f.orig)}</div>
+      <label class="rf-voce"><span class="fr-ante-lab">Voce</span><select data-rf-voce="${i}">${opzioniVoce(analisi.modo, f.k)}</select></label>
+      ${v ? `<textarea class="fr-testo rf-testo" rows="1" data-rf-testo="${i}">${esc(f.testo)}</textarea>
+      <div class="fr-sotto">
+        <span class="fr-dati">${segnaposto(v.uff).map((b) => `<button type="button" class="fr-dato" data-rf-dato="${i}" data-dato="${esc(b)}">${esc(b)}</button>`).join('')}</span>
+        <span class="fr-azioni"><button type="button" class="btn-primary" data-rf-salva="${i}"${err ? ' disabled' : ''}>Salva come tua frase</button><button type="button" class="btn-ghost" data-rf-via="${i}">Ignora</button></span>
+      </div>
+      <div class="fr-ante"><span class="fr-ante-lab">Nel referto</span><span class="fr-ante-testo">${anteprima(f.k, f.testo)}</span></div>
+      ${FR().frase(f.k) ? `<div class="fr-uff"><span class="fr-ante-lab">Ora hai</span>${esc(FR().frase(f.k))}</div>` : `<div class="fr-uff"><span class="fr-ante-lab">Ufficiale ESGAR</span>${esc(v.uff)}</div>`}
+      <div class="fr-errore" role="alert">${esc(err)}</div>
+      <div class="rf-avviso">${esc(avvisoNumeri(f.k, f.testo))}</div>`
+      : `<div class="fr-sotto"><span class="mg-nota">Scegli la voce del modulo a cui corrisponde, o ignorala.</span><span class="fr-azioni"><button type="button" class="btn-ghost" data-rf-via="${i}">Ignora</button></span></div>`}
+    </div>`;
+  }
+  function disegnaReferto(){
+    const corpo = $('mgCorpo');
+    $('mgNav').innerHTML = `<button type="button" class="pg-tab mp-indietro" data-mappa>${svg('<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>')}<span class="pg-tab-nome">Mappa</span></button>
+      <div class="mg-gruppo">Dal tuo referto</div>`
+      + (analisi ? passi(analisi.modo).concat([{ sez: '', titolo: 'Non riconosciute' }]).map((p) => {
+        const n = analisi.frasi.filter((f) => f.sez === p.sez && f.stato !== 'ignorata').length;
+        return n ? `<button type="button" class="pg-tab" data-rf-vai="${esc(p.sez || 'altro')}"><span class="pg-tab-nome">${esc(p.titolo)}</span><span class="pg-conta">${n}</span></button>` : '';
+      }).join('') : '');
+    if (!analisi) {
+      corpo.innerHTML = `<div class="pg-sez-testa"><h3>Dal tuo referto</h3>
+          <p>Carica un referto che hai già scritto, oppure incollalo qui sotto. Il tool riconosce le sezioni e ti propone le tue frasi, voce per voce: le correggi e le salvi come tue.</p></div>
+        <div class="rf-carica">
+          <label class="btn-secondary mg-file">Scegli un file (.txt, .docx)<input type="file" id="mgReferto" accept=".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden></label>
+          <span class="mg-nota">oppure</span>
+        </div>
+        <textarea id="rfIncolla" class="rf-incolla" placeholder="Incolla qui il testo di un tuo referto"></textarea>
+        <div class="rf-azioni"><button type="button" class="btn-primary" data-rf-analizza>Riconosci le frasi</button><span class="pp-stato" id="rfStato"></span></div>`;
+      return;
+    }
+    const vive = analisi.frasi.map((f, i) => [f, i]).filter(([f]) => f.stato !== 'ignorata');
+    const gruppi = passi(analisi.modo).concat([{ sez: '', titolo: 'Non riconosciute' }])
+      .map((p) => ({ p, el: vive.filter(([f]) => f.sez === p.sez) })).filter((g) => g.el.length);
+    corpo.innerHTML = `<div class="pg-sez-testa"><h3>Dal tuo referto · ${analisi.modo === 'ristad' ? 'ristadiazione' : 'stadiazione primaria'}</h3>
+        <p>${vive.length} ${vive.length === 1 ? 'frase da guardare' : 'frasi da guardare'}${analisi.saltate ? `, ${analisi.saltate} già uguali al testo del tool (saltate)` : ''}. Per ognuna: la voce proposta, e sotto la frase pronta come tua, con i dati del modulo fra parentesi quadre.</p>
+        <div class="rf-testa-azioni"><button type="button" class="btn-ghost" data-rf-modo="${analisi.modo === 'ristad' ? 'primaria' : 'ristad'}">Leggilo come ${analisi.modo === 'ristad' ? 'stadiazione primaria' : 'ristadiazione'}</button><button type="button" class="btn-ghost" data-rf-nuovo>Un altro referto</button></div></div>`
+      + (gruppi.length ? gruppi.map((g) => `<div class="fr-gruppo" id="rf-${esc(g.p.sez || 'altro')}">${esc(g.p.titolo)}</div>${g.el.map(([f, i]) => cartaFrase(f, i)).join('')}`).join('')
+        : '<div class="mg-nota">Nessuna frase da proporre: il referto usa già il testo del tool.</div>');
+    corpo.querySelectorAll('.rf-testo').forEach(alza);
+    corpo.querySelectorAll('select[data-rf-voce]').forEach((s) => window.EsgarUI && EsgarUI.avvolgiSelect(s));
+  }
+  function rifaiCarta(i){
+    const vecchia = $('mgCorpo').querySelector(`[data-rf="${i}"]`); if (!vecchia) return;
+    const tmp = document.createElement('div'); tmp.innerHTML = cartaFrase(analisi.frasi[i], i);
+    const nuova = tmp.firstElementChild; vecchia.replaceWith(nuova);
+    const t = nuova.querySelector('.rf-testo'); if (t) alza(t);
+    const s = nuova.querySelector('select[data-rf-voce]'); if (s && window.EsgarUI) EsgarUI.avvolgiSelect(s);
+  }
+  /* un numero del caso rimasto nella frase resterebbe uguale in ogni referto */
+  function numeriFissi(k, t){
+    // i numeri liberi, non quelli dentro le sigle (cT3ab, cN0) né le soglie del testo ufficiale (≤1 mm)
+    const num = /(?<![A-Za-z0-9])\d+(?:[.,]\d+)?(?:\s*(?:mm|cm))?(?![A-Za-z])/g;
+    const uff = (VOCI[k].uff.match(num) || []).map((n) => n.replace(/\s*(mm|cm)$/, ''));
+    return (t.replace(/\[[^\]]+\]/g, ' ').match(num) || []).filter((n) => !uff.includes(n.replace(/\s*(mm|cm)$/, '')));
+  }
+  const avvisoNumeri = (k, t) => { const n = numeriFissi(k, t); return n.length ? `Attenzione: ${n.join(', ')} resterebbe uguale in ogni referto. Toglilo o usa un dato fra parentesi quadre.` : ''; };
+  function seguiCarta(i){
+    const c = $('mgCorpo').querySelector(`[data-rf="${i}"]`), f = analisi.frasi[i];
+    if (!c || !f.k) return;
+    const e = FR().controlla(f.k, f.testo);
+    c.querySelector('.fr-errore').textContent = e;
+    c.querySelector('.rf-avviso').textContent = avvisoNumeri(f.k, f.testo);
+    c.querySelector('[data-rf-salva]').disabled = !!e;
+    c.querySelector('.fr-ante-testo').innerHTML = anteprima(f.k, f.testo);
+    alza(c.querySelector('.rf-testo'));
+  }
+  async function leggiFile(file){
+    if (/\.docx$/i.test(file.name)) return testoDocx(await file.arrayBuffer());
+    if (/\.json$/i.test(file.name)) throw new Error('questo è un file di frasi: usa «Importa le frasi» sulla mappa');
+    return file.text();
+  }
+  /* i comandi della vista «Dal tuo referto»; dice se il clic era suo */
+  function clicReferto(ev){
+    const q = (s) => ev.target.closest(s);
+    let b;
+    if (q('[data-rf-apri]')) { passo = null; inReferto = true; disegna(); return true; }
+    if (q('[data-rf-analizza]')) { avviaAnalisi($('rfIncolla').value); return true; }
+    if ((b = q('[data-rf-modo]'))) { analisi = analizza(analisi.testo, b.dataset.rfModo); disegna(); return true; }
+    if (q('[data-rf-nuovo]')) { analisi = null; disegna(); return true; }
+    if ((b = q('[data-rf-vai]'))) { const g = $('rf-' + b.dataset.rfVai); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); return true; }
+    if ((b = q('[data-rf-dato]'))) {
+      const i = +b.dataset.rfDato, t = $('mgCorpo').querySelector(`[data-rf-testo="${i}"]`), d = b.dataset.dato;
+      const a = t.selectionStart ?? t.value.length, z = t.selectionEnd ?? a;
+      t.value = t.value.slice(0, a) + d + t.value.slice(z); t.focus(); t.setSelectionRange(a + d.length, a + d.length);
+      analisi.frasi[i].testo = t.value; seguiCarta(i); return true;
+    }
+    if ((b = q('[data-rf-salva]'))) {
+      const i = +b.dataset.rfSalva, f = analisi.frasi[i], e = FR().imposta(f.k, f.testo);
+      if (e) { const c = $('mgCorpo').querySelector(`[data-rf="${i}"] .fr-errore`); if (c) c.textContent = e; }
+      else { f.stato = 'salvata'; rifaiCarta(i); }
+      return true;
+    }
+    if ((b = q('[data-rf-via]'))) {
+      const i = +b.dataset.rfVia; analisi.frasi[i].stato = 'ignorata';
+      const c = $('mgCorpo').querySelector(`[data-rf="${i}"]`); if (c) c.remove();
+      return true;
+    }
+    return false;
+  }
+  function avviaAnalisi(testo){
+    if (!String(testo || '').trim()) { const s = $('rfStato'); if (s) { s.className = 'pp-stato ko'; s.textContent = 'Il referto è vuoto.'; } return; }
+    analisi = analizza(testo, modoDi(testo));
+    disegna();
+  }
+
   /* righe cambiate e non salvate: chiedere prima di lasciarle */
   async function lasciare(){
     if (!$('mgCorpo').querySelector('.fr-riga.cambiata')) return true;
@@ -8107,6 +8415,7 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     modoMappa = typeof mode !== 'undefined' && mode === 'ristad' ? 'ristad' : 'primaria';
     const p = sez ? passi(modoMappa).find((x) => x.sez === sez) : null;
     passo = p ? { modo: p.modo, i: p.i } : null;
+    inReferto = false;
     $('mgOverlay').classList.add('open');
     $('railMemoria').setAttribute('aria-expanded', 'true');
     disegna();
@@ -8122,7 +8431,8 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
   $('mgOverlay').addEventListener('mousedown', (ev) => { if (ev.target === $('mgOverlay')) chiudi(); });
   $('mgOverlay').addEventListener('click', async (ev) => {
     if (ev.target.closest('[data-mg-chiudi]')) { chiudi(); return; }
-    if (ev.target.closest('[data-mappa]')) { if (await lasciare()) passaggio(() => { passo = null; disegna(); }); return; }
+    if (ev.target.closest('[data-mappa]')) { if (await lasciare()) passaggio(() => { passo = null; inReferto = false; disegna(); }); return; }
+    if (clicReferto(ev)) return;
     const nodo = ev.target.closest('[data-passo]');
     if (nodo) { if (!(await lasciare())) return; const [m, i] = nodo.dataset.passo.split(':'); apriPasso(m, +i, nodo.classList.contains('mp-nodo') ? nodo : null); return; }
     const md = ev.target.closest('[data-mp-modo]');
@@ -8153,15 +8463,32 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
       FR().azzera(); disegna(); stato('Tutte le voci hanno il testo ufficiale ESGAR.', 'ok');
     }
   });
-  $('mgOverlay').addEventListener('input', (ev) => { const r = ev.target.closest('.fr-riga'); if (r && ev.target.classList.contains('fr-testo')) seguiRiga(r); });
+  $('mgOverlay').addEventListener('input', (ev) => {
+    const r = ev.target.closest('.fr-riga'); if (r && ev.target.classList.contains('fr-testo')) seguiRiga(r);
+    const i = ev.target.dataset && ev.target.dataset.rfTesto;
+    if (i !== undefined && analisi) { analisi.frasi[+i].testo = ev.target.value; seguiCarta(+i); }
+  });
   // Invio salva la frase (Maiusc+Invio va a capo), Esc la riporta com'era
   $('mgOverlay').addEventListener('keydown', (ev) => {
     const t = ev.target; if (!t.classList || !t.classList.contains('fr-testo')) return;
     const r = t.closest('.fr-riga');
+    if (!r) return;                                   // una carta «Dal tuo referto»: Invio va a capo
     if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); if (r.classList.contains('cambiata')) salvaRiga(r); }
     if (ev.key === 'Escape' && r.classList.contains('cambiata')) { ev.preventDefault(); ev.stopPropagation(); rifaiRiga(r.dataset.voce); }
   });
   $('mgOverlay').addEventListener('change', async (ev) => {
+    const sv = ev.target.dataset && ev.target.dataset.rfVoce;
+    if (sv !== undefined && analisi) {          // la voce scelta a mano: la frase si riprepara per quella voce
+      const f = analisi.frasi[+sv], k = ev.target.value;
+      f.k = k; f.testo = k ? preparaFrase(k, f.orig) : f.orig;
+      if (k && VOCI[k].sez !== f.sez) { f.sez = VOCI[k].sez; disegna(); } else rifaiCarta(+sv);
+      return;
+    }
+    if (ev.target.id === 'mgReferto' && ev.target.files[0]) {
+      try { avviaAnalisi(await leggiFile(ev.target.files[0])); }
+      catch (e) { const s = $('rfStato'); if (s) { s.className = 'pp-stato ko'; s.textContent = 'Non riesco a leggerlo: ' + e.message + '.'; } }
+      return;
+    }
     if (ev.target.id !== 'mgImporta' || !ev.target.files[0]) return;
     const n = FR().importa(await ev.target.files[0].text());
     disegna();
@@ -8172,7 +8499,7 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     ev.stopPropagation(); chiudi();
   });
   // le frasi cambiate altrove (un altro PC, l'accesso di un altro medico): la pagina si rifà
-  document.addEventListener('esgar:frasi', () => { if ($('mgOverlay').classList.contains('open') && !$('mgCorpo').querySelector('.fr-riga.cambiata')) disegna(); });
+  document.addEventListener('esgar:frasi', () => { if ($('mgOverlay').classList.contains('open') && !inReferto && !$('mgCorpo').querySelector('.fr-riga.cambiata')) disegna(); });
   // al passaggio su un passo la sua sinapsi si accende
   $('mgOverlay').addEventListener('pointerover', (ev) => {
     const n = ev.target.closest('.mp-nodo'), s = $('mpSinapsi');

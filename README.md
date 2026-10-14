@@ -45,6 +45,7 @@ riscritta proprio la riga che il form cambia, vince il form (il dato nuovo);
 | `test/indietro.test.js` | «Indietro» sopra il referto: testo e form tornano insieme |
 | `test/interfaccia.test.js` | menu a tendina, calendario e campi che imparano |
 | `test/memoria.test.js` | Memoria: le frasi del medico, voce per voce |
+| `test/dal-referto.test.js` | Memoria: le frasi riconosciute da un referto già scritto (.txt, .docx) |
 
 ## Accesso con il telefono
 
@@ -201,8 +202,22 @@ passo:
 - accanto resta il testo ufficiale ESGAR; **Ufficiale** riporta la voce a quel
   testo.
 
-Sulla mappa ogni passo conta le tue frasi. **Esporta / Importa** portano le
-frasi in un file JSON e su un altro PC; **Tutte al testo ufficiale** le toglie.
+**Dal tuo referto** (sulla mappa) parte da un referto già scritto dal medico:
+un file `.txt` o Word `.docx`, oppure il testo incollato. Il tool lo divide in
+frasi; la sezione la decidono i titoli, se ci sono, altrimenti le parole chiave
+(fascia mesorettale, EMVI, sfinteri, linfonodi, iliaci esterni, cT3…); dentro la
+sezione sceglie la voce più vicina (anche dalla negazione: «non», «libera»,
+«indenne» → No). Riconosce da solo stadiazione o ristadiazione, e lo si può
+cambiare. Per ogni frase propone la voce, che si può cambiare, e la frase già
+pronta come tua: misure e ore diventano `[cm]` e `[ore]`, la categoria scritta
+(«T3b») diventa quella della voce, le categorie della conclusione `[categorie]`.
+Un numero del caso rimasto nella frase è segnalato, perché resterebbe uguale in
+ogni referto. Le frasi già uguali al testo del tool si saltano. «Salva come tua
+frase» o «Ignora», frase per frase.
+
+Sulla mappa ogni passo conta le tue frasi. **Esporta / Importa le frasi**
+portano le frasi in un file JSON e su un altro PC; **Tutte al testo ufficiale**
+le toglie.
 Le frasi sono del medico che ha fatto l'accesso (`frasi-esgar.json` nella sua
 cartella, e sul PC); senza accesso sono quelle del PC. Nessun dato del paziente.
 
@@ -285,6 +300,7 @@ node test/interfaccia.test.js
 node test/indietro.test.js
 node test/descrizioni.test.js
 node test/memoria.test.js
+node test/dal-referto.test.js
 ```
 
 Il test avvia un relay finto in locale, fa l'accesso da un telefono simulato,
