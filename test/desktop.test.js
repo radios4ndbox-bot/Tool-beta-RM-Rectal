@@ -143,10 +143,10 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   const testo = fs.readFileSync(path.join(COMUNE, stad), 'utf8');
   check(testo.includes('Codice caso: ' + codice) && testo.includes('N. accesso: A 123/456') && /\r\n/.test(testo) && testo.includes('Dr.ssa Bianchi'), 'il file ha intestazione, codice del caso e ritorni a capo di Windows');
   const idx = () => fs.readFileSync(path.join(COMUNE, 'Bianchi Giulia', 'indice-referti.csv'));
-  check(idx().subarray(0, 3).equals(Buffer.from([0xEF, 0xBB, 0xBF])) && idx().toString('utf8').split('\r\n')[0].endsWith('Data esame;Ora salvataggio;Tipo;Codice caso;N. accesso;Risposta;T;N;MRF;EMVI;Refertato da;File'),
+  check(idx().subarray(0, 3).equals(Buffer.from([0xEF, 0xBB, 0xBF])) && idx().toString('utf8').split('\r\n')[0].endsWith('Data esame;Ora salvataggio;Tipo;Codice caso;Paziente;N. accesso;Risposta;T;N;MRF;EMVI;Refertato da;File'),
     'l\'indice CSV comincia con il BOM e le colonne: si apre in Excel');
   await salva();
-  check(/_2\.txt/.test(await stato()) && albero().filter((x) => x.startsWith(dirCaso)).length === 2, 'stesso minuto: nessuna sovrascrittura');
+  check(/_2\.txt/.test(await stato()) && albero().filter((x) => x.startsWith(dirCaso) && x.endsWith('.txt')).length === 2, 'stesso minuto: nessuna sovrascrittura');
   check(idx().toString('utf8').trim().split('\r\n').length === 3, 'l\'indice ha una riga per salvataggio');
 
   // ── ristadiazione nello stesso caso, con «Ricerca precedente» ──
@@ -250,6 +250,16 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
     && /^﻿Data esame;/.test(fs.readFileSync(idxNeri, 'utf8')) && fs.readFileSync(idxNeri, 'utf8').includes('B777'),
     'indice di prima rinominato in indice-referti-precedente.csv, quello nuovo riparte');
 
+  // ── l'indice della versione prima del nome del paziente: si aggiorna sul posto ──
+  const vecchieColonne = 'Data esame;Ora salvataggio;Tipo;Codice caso;N. accesso;Risposta;T;N;MRF;EMVI;Refertato da;File';
+  fs.writeFileSync(idxNeri, '\ufeff' + vecchieColonne + '\r\n01/02/2026;10:00;Stadiazione;RT26-AAAA;A1;;cT2;cN0;MRF-;EMVI-;"Dr. Neri; Marco";x.txt\r\n', 'utf8');
+  await pc.fill('#arcPaziente', 'Gialli Luca'); await pc.fill('#arcAccesso', 'B778'); await salva();
+  const righeN = fs.readFileSync(idxNeri, 'utf8').replace(/^\ufeff/, '').trim().split('\r\n');
+  check(righeN[0] === vecchieColonne.replace('Codice caso;', 'Codice caso;Paziente;') && righeN[1].startsWith('01/02/2026;10:00;Stadiazione;RT26-AAAA;;A1;')
+    && righeN[1].endsWith(';"Dr. Neri; Marco";x.txt') && righeN[2].split(';')[4] === 'Gialli Luca',
+    'indice senza «Paziente»: la colonna si aggiunge sul posto, le righe di prima restano, con la cella vuota');
+  await pc.fill('#arcPaziente', '');
+
   // ── l'indice non si può sostituire (su Windows: aperto in Excel, o di sola lettura) ──
   if (process.platform === 'win32') {
     fs.chmodSync(idxNeri, 0o444);
@@ -261,7 +271,7 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   }
 
   // ── «Mostra archivio»: i referti del medico, riletti dalla sua cartella ──
-  await pc.click('input[name=p_ct][value=cT2]'); await pc.fill('#arcAccesso', 'D111'); await salva();     // un referto con uno stadio diverso dagli altri
+  await pc.click('input[name=p_ct][value=cT2]'); await pc.fill('#arcPaziente', 'Verdi Ànna'); await pc.fill('#arcAccesso', 'D111'); await salva();     // un referto con uno stadio diverso dagli altri
   const miei = albero().filter((x) => /^Neri Marco\/\d{4}\/.*\.txt$/.test(x));
   await pc.click('#profiloBtn'); await pc.click('#ppArchivio'); await pc.waitForTimeout(700);
   check(await pc.isVisible('#arOverlay.open') && miei.length > 2 && await pc.locator('#arCasi .ar-ref').count() === miei.length
@@ -277,6 +287,9 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   await pc.click('#arCasi .ar-ref'); await pc.waitForTimeout(400);
   check(/Codice caso: RT\d{2}-/.test(await pc.textContent('#arTesto')) && /N\. accesso: B777/.test(await pc.textContent('#arTesto')) && /Neri Marco[\\/]\d{4}[\\/]/.test(await pc.textContent('#arVista .ar-vista-testa')),
     'cliccando un referto lo si rilegge dal disco, con il suo percorso');
+  await pc.fill('#arCerca', 'verdi anna');
+  check(await pc.locator('#arCasi .ar-ref').count() === 1 && await pc.textContent('#arCasi .ar-paz') === 'Verdi Ànna' && /_D111_/.test(await pc.getAttribute('#arCasi .ar-ref', 'data-ar-ref')),
+    'la ricerca trova il caso dal nome del paziente, anche senza accenti');
   await pc.fill('#arCerca', 'zzz');
   check(/Nessun referto/.test(await pc.textContent('#arCasi')), 'una ricerca senza esito lo dice');
   // il filtro per stage finale: più variabili, i valori sono quelli che nell'archivio ci sono
@@ -295,14 +308,14 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   check(!(await pc.isVisible('#arOverlay.open')), 'Esc chiude l\'archivio');
 
   // ── disco di rete scollegato: messaggio chiaro, nessun file perso ──
-  const prima = albero().length;
+  const prima = albero().filter((x) => x.endsWith('.txt')).length;
   fs.renameSync(COMUNE, COMUNE + ' (scollegata)');
   await pc.fill('#arcAccesso', 'C555');
   await salva();
   check(/Salvataggio non riuscito: Cartella comune non raggiungibile/.test(await stato()) && !/remote method/.test(await stato()), 'cartella scollegata: «' + (await stato()).slice(0, 70) + '…»');
   fs.renameSync(COMUNE + ' (scollegata)', COMUNE);
   await salva();
-  check(/Salvato/.test(await stato()) && albero().length === prima + 1, 'ricollegato il disco, il salvataggio riprende');
+  check(/Salvato/.test(await stato()) && albero().filter((x) => x.endsWith('.txt')).length === prima + 1, 'ricollegato il disco, il salvataggio riprende');
 
   // ── un programma più vecchio, con il ponte incompleto: il tool fa come nel browser ──
   const vecchio = await (await contesto(['stato', 'scegli', 'scrivi', 'leggi', 'elenca', 'esiste'])).newPage();

@@ -89,17 +89,25 @@ accanto all'altra in ordine di data:
 ├── Bianchi Giulia/
 │   ├── indice-referti.csv
 │   └── 2026/
-│       └── 2026-03-10_RT26-7K4M/
+│       └── 2026-03-10_RT26-7K4M_Rossi Mario/
+│           ├── caso.json
 │           ├── 2026-03-10_1412_Stadiazione_A123456_cT3c_cN+_MRF-_EMVI+.txt
 │           └── 2026-06-20_0930_Ristadiazione_A178902_near-cCR_MRF-.txt
 └── Neri Marco/
     └── …
 ```
 
+- **Paziente** (facoltativo, «Cognome Nome»), accanto al numero d'accesso:
+  entra nell'intestazione del file, nella colonna «Paziente» dell'indice, nel
+  nome della cartella del caso (quando il caso si apre) e in `caso.json`, che
+  tiene il nome aggiornato se lo si aggiunge o corregge dopo. Non entra nel
+  testo del referto, né nel nome del file, né nella memoria del tool.
 - **Ricerca precedente** (in ristadiazione) scorre tutta la cartella comune, le
-  cartelle di tutti i medici, e trova il caso dal codice o dal numero d'accesso
-  della stadiazione, con anteprima del referto. «Associa» collega la
-  ristadiazione al caso e compila la data della RM basale di confronto.
+  cartelle di tutti i medici, e trova il caso dal nome del paziente, dal codice
+  o dal numero d'accesso della stadiazione, con anteprima del referto.
+  «Associa» collega la ristadiazione al caso e compila la data della RM basale
+  di confronto e il nome del paziente. Anche «Mostra archivio» cerca per nome;
+  maiuscole e accenti non contano.
 - La ristadiazione si salva nella cartella del caso, anche se la stadiazione
   l'ha fatta un altro medico; chi la salva la ritrova nel proprio indice, con il
   percorso dalla cartella comune.
@@ -111,12 +119,14 @@ accanto all'altra in ordine di data:
 - Nel nome del file ci sono data d'esame, ora di salvataggio, tipo, numero
   d'accesso e sintesi della stadiazione: cT, cN, MRF ed EMVI per la primaria;
   risposta, ycT, ycN, MRF ed EMVI per la ristadiazione. Ogni file ha in testa
-  tipo di esame, codice del caso, data, numero d'accesso, chi l'ha refertato e
+  tipo di esame, codice del caso, paziente, data, numero d'accesso, chi l'ha refertato e
   quando è stato salvato. Un salvataggio nello stesso minuto non sovrascrive:
   aggiunge `_2`, `_3`…
 - `indice-referti.csv` elenca i referti salvati dal medico, con codice del caso
   e percorso; si apre in Excel (separatore `;`). Un indice con le colonne di una
-  versione precedente viene conservato come `indice-referti-precedente.csv`.
+  versione precedente viene conservato come `indice-referti-precedente.csv`;
+  quello della versione appena prima, senza «Paziente», si aggiorna sul posto
+  con la colonna vuota nelle righe già scritte.
 
 Chrome può chiedere di nuovo il permesso di scrivere nella cartella comune: lo
 chiede da solo al primo salvataggio, o lo si concede con «Riattiva». Scegliendo

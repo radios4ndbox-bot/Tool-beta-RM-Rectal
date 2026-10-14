@@ -597,6 +597,7 @@ nav.intro-in-corso .nav-right,
   background:var(--accent-bg); border:1px solid var(--accent-line);
 }
 .archivio-row .f{display:flex; flex-direction:column; gap:4px; flex:1 1 120px; min-width:0;}
+.archivio-row .f-paz{flex:2 1 180px;}
 .archivio-row .f span{font-size:10.5px; font-weight:500; text-transform:uppercase; letter-spacing:.07em; color:var(--accent);}
 .archivio-row input{width:100%; background:#fff;}
 .archivio-row .btn-primary{flex:0 0 auto;}
@@ -623,6 +624,8 @@ nav.intro-in-corso .nav-right,
 .cerca-lista{overflow-y:auto; padding:2px 12px 12px; display:flex; flex-direction:column; gap:8px;}
 .cerca-caso{border:1px solid var(--border); border-radius:10px; padding:9px 10px; background:var(--surface2);}
 .cerca-riga{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.caso-paz, .cerca-paz, .ar-paz{font-weight:600; color:var(--text); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.caso-paz{font-size:12.5px;}
 .cerca-data{font-family:var(--mono); font-size:11.5px; color:var(--text);}
 .cerca-med{font-size:11.5px; color:var(--muted);}
 .cerca-caso ul{margin:6px 0 0; padding:0 0 0 16px; font-size:11.5px; color:var(--muted); line-height:1.5;}
@@ -1967,6 +1970,7 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
         <button class="btn-ghost" id="btnGenerate" title="Rigenera tutto il referto dal form: sovrascrive le modifiche manuali"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>Rigenera tutto</button>
       </div>
       <div class="archivio-row">
+        <label class="f f-paz"><span>Paziente</span><input type="text" id="arcPaziente" placeholder="Cognome Nome" autocomplete="off" spellcheck="false" maxlength="60"></label>
         <label class="f"><span>N. accesso</span><input type="text" id="arcAccesso" placeholder="es. A123456" autocomplete="off" spellcheck="false"></label>
         <label class="f"><span>Data esame</span><input type="text" id="arcData" data-date></label>
         <button type="button" class="btn-primary" id="btnSalva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/><path d="M12 10v6"/><path d="m9 13 3 3 3-3"/></svg>Salva nell'archivio</button>
@@ -3044,7 +3048,7 @@ liveUpdate();
     <div class="ar-corpo">
       <div class="ar-lista">
         <div class="ar-cerca">
-          <input type="text" id="arCerca" placeholder="Cerca: codice caso, N. accesso, data" autocomplete="off" spellcheck="false">
+          <input type="text" id="arCerca" placeholder="Cerca: paziente, codice caso, N. accesso, data" autocomplete="off" spellcheck="false">
           <button type="button" class="ar-filtri-btn" id="arFiltriBtn" aria-expanded="false" aria-controls="arFiltri" title="Filtra per stage finale">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8.5V19l-4 1.5v-7L3 5Z"/></svg>
             <span>Stage</span><b id="arFiltriN" hidden></b>
@@ -6258,7 +6262,7 @@ var qrcode = function() {
 // e dimentica subito l'abbinamento: dopo l'accesso non resta nessun
 // canale aperto, e aprire il tool non contatta la rete.
 // ============================================================
-const VERSIONE = '2026-10-07 · cartella';
+const VERSIONE = '2026-10-14 · paziente';
 const SESSIONE_KEY = 'structurad.esgar.sessione';
 const SESSIONE_ORE = 12;
 const QR_MINUTI = 5;
@@ -6875,12 +6879,24 @@ function nomeFile(data, adesso, accessoN, s){
 }
 
 /* ── CSV dell'indice: separatore ; come lo vuole Excel in italiano ── */
-const COLONNE = ['Data esame', 'Ora salvataggio', 'Tipo', 'Codice caso', 'N. accesso', 'Risposta', 'T', 'N', 'MRF', 'EMVI', 'Refertato da', 'File'];
+const COLONNE = ['Data esame', 'Ora salvataggio', 'Tipo', 'Codice caso', 'Paziente', 'N. accesso', 'Risposta', 'T', 'N', 'MRF', 'EMVI', 'Refertato da', 'File'];
+// l'indice di prima, senza «Paziente»: si aggiorna sul posto con la colonna vuota
+const COLONNE_SENZA_PAZIENTE = COLONNE.filter((c) => c !== 'Paziente');
+function conPaziente(testo){
+  return testo.replace(/^\ufeff/, '').split(/\r?\n/).map((r, i) => {
+    if (!r) return r;
+    if (i === 0) return COLONNE.join(';');
+    // le prime quattro colonne (data, ora, tipo, codice) non hanno mai ; né virgolette
+    let k = -1; for (let j = 0; j < 4 && k < r.length; j++) k = r.indexOf(';', k + 1);
+    return k < 0 ? r : r.slice(0, k) + ';' + r.slice(k);
+  }).join('\r\n').replace(/^/, '\ufeff');
+}
 const csvCampo = (v) => /[;"\n\r]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
 async function aggiungiIndice(dirOp, riga){
   let testo = '';
   try { testo = await (await (await dirOp.getFileHandle(INDICE)).getFile()).text(); } catch (_) {}
-  // un indice con le colonne di prima resta accanto, con un altro nome
+  if (testo.trim() && testo.replace(/^\ufeff/, '').split(/\r?\n/)[0] === COLONNE_SENZA_PAZIENTE.join(';')) testo = conPaziente(testo);
+  // un indice con colonne diverse resta accanto, con un altro nome
   if (testo.trim() && testo.replace(/^\ufeff/, '').split(/\r?\n/)[0] !== COLONNE.join(';')) {
     const vecchio = Desktop && await dirOp.getFileHandle(INDICE);
     if (vecchio && vecchio.move) await vecchio.move('indice-referti-precedente.csv');   // nel programma: si rinomina
@@ -6927,8 +6943,20 @@ function disegnaArchivioRow(){
 // percorso dalla cartella comune.
 // ============================================================
 const ALFABETO_CASO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-const RE_DIR_CASO = /^(\d{4}-\d{2}-\d{2})_(RT\d{2}-[A-Z2-9]{4})$/;
-let caso = null;   // { codice, dir, percorso, data, medico, associato, accesso }
+const RE_DIR_CASO = /^(\d{4}-\d{2}-\d{2})_(RT\d{2}-[A-Z2-9]{4})(?:_(.+))?$/;
+const FILE_CASO = 'caso.json';   // codice e nome del paziente, nella cartella del caso
+let caso = null;   // { codice, dir, percorso, data, medico, associato, accesso, paziente }
+
+/* il nome del paziente com'è scritto, e la forma per cercarlo */
+const nomePaziente = () => $id('arcPaziente').value.trim().replace(/\s+/g, ' ').slice(0, 60);
+const perCercare = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]/g, '');
+async function leggiCaso(dir){
+  try { return JSON.parse(await (await (await dir.getFileHandle(FILE_CASO)).getFile()).text()); } catch (_) { return null; }
+}
+async function scriviCaso(dir, dati){
+  const w = await (await dir.getFileHandle(FILE_CASO, { create: true })).createWritable();
+  await w.write(JSON.stringify(dati, null, 2)); await w.close();
+}
 
 function nuovoCodice(){
   const yy = String(new Date().getFullYear()).slice(2);
@@ -6952,9 +6980,13 @@ async function casiIn(nMed, hMed, out){
       const m = hCaso.kind === 'directory' && nCaso.match(RE_DIR_CASO);
       if (!m) continue;
       const referti = [];
-      for await (const [nf, hf] of hCaso.entries()) if (hf.kind === 'file' && /\.txt$/.test(nf)) referti.push(nf);
+      let paziente = m[3] || '';
+      for await (const [nf, hf] of hCaso.entries()) {
+        if (hf.kind === 'file' && /\.txt$/.test(nf)) referti.push(nf);
+        else if (nf === FILE_CASO) { const d = await leggiCaso(hCaso); if (d && d.paziente) paziente = d.paziente; }
+      }
       referti.sort();
-      out.push({ codice: m[2], data: m[1], medico: nMed, anno: nAnno, nome: nCaso, dir: hCaso, referti });
+      out.push({ codice: m[2], data: m[1], medico: nMed, anno: nAnno, nome: nCaso, dir: hCaso, referti, paziente });
     }
   }
   return out;
@@ -6981,6 +7013,7 @@ function disegnaCaso(){
   if (caso) {
     chip.className = 'caso-chip attivo';
     chip.innerHTML = `<span class="caso-cod">${escH(caso.codice)}</span>`
+      + (caso.paziente ? `<b class="caso-paz">${escH(caso.paziente)}</b>` : '')
       + (caso.associato ? `<span>stadiazione del ${escH(dataIt(caso.data))} · ${escH(caso.medico)}</span>` : `<span>caso aperto il ${escH(dataIt(caso.data))}</span>`);
   } else {
     chip.className = 'caso-chip';
@@ -6995,7 +7028,7 @@ function nuovoPaziente(){
   caso = null;
   disegnaCaso();
 }
-$id('btnNuovoCaso').addEventListener('click', () => { nuovoPaziente(); statoArchivio('Il prossimo salvataggio apre un caso nuovo.', 'ok'); });
+$id('btnNuovoCaso').addEventListener('click', () => { nuovoPaziente(); $id('arcPaziente').value = ''; statoArchivio('Il prossimo salvataggio apre un caso nuovo.', 'ok'); });
 // un altro numero d'accesso dopo un salvataggio è un altro paziente
 $id('arcAccesso').addEventListener('input', () => {
   if (caso && !caso.associato && caso.accesso !== undefined && $id('arcAccesso').value.trim() !== caso.accesso) nuovoPaziente();
@@ -7010,7 +7043,7 @@ function pannelloCerca(){
   p = document.createElement('div');
   p.id = 'cercaPannello'; p.className = 'cerca-pannello'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', 'Ricerca precedente');
   p.innerHTML = '<div class="cerca-testa"><span>Ricerca precedente</span><button type="button" class="cerca-x" aria-label="Chiudi">×</button></div>'
-    + '<input type="text" id="cercaQ" placeholder="Codice caso (RT26-…) o N. accesso" autocomplete="off" spellcheck="false">'
+    + '<input type="text" id="cercaQ" placeholder="Paziente, codice caso (RT26-…) o N. accesso" autocomplete="off" spellcheck="false">'
     + '<div class="cerca-lista" id="cercaLista"></div>';
   p.addEventListener('click', async (ev) => {
     if (ev.target.closest('.cerca-x')) { chiudiCerca(); return; }
@@ -7026,14 +7059,15 @@ function pannelloCerca(){
 function chiudiCerca(){ const p = $id('cercaPannello'); if (p) p.classList.remove('aperto'); }
 function elencaCasi(q){
   const lista = $id('cercaLista');
-  const t = String(q || '').trim().toUpperCase().replace(/\s+/g, '');
-  casiTrovati = (t ? casiTutti.filter((c) => c.codice.includes(t) || c.referti.some((r) => leggiNomeReferto(r).accesso.toUpperCase().includes(t)))
+  const t = String(q || '').trim().toUpperCase().replace(/\s+/g, ''), tp = perCercare(q);
+  casiTrovati = (t ? casiTutti.filter((c) => c.codice.includes(t) || (tp && perCercare(c.paziente).includes(tp))
+      || c.referti.some((r) => leggiNomeReferto(r).accesso.toUpperCase().includes(t)))
     : casiTutti).slice(0, t ? 30 : 10);
   if (!casiTutti.length) { lista.innerHTML = '<div class="cerca-vuota">Nella cartella comune non ci sono ancora casi.</div>'; return; }
-  if (!casiTrovati.length) { lista.innerHTML = '<div class="cerca-vuota">Nessun caso con questo codice o numero d\'accesso.</div>'; return; }
+  if (!casiTrovati.length) { lista.innerHTML = '<div class="cerca-vuota">Nessun caso trovato.</div>'; return; }
   lista.innerHTML = ''
     + casiTrovati.map((c, i) => `<div class="cerca-caso">
-        <div class="cerca-riga"><span class="caso-cod">${escH(c.codice)}</span><span class="cerca-data">${escH(dataIt(c.data))}</span><span class="cerca-med">${escH(c.medico)}</span></div>
+        <div class="cerca-riga"><span class="caso-cod">${escH(c.codice)}</span>${c.paziente ? `<b class="cerca-paz">${escH(c.paziente)}</b>` : ''}<span class="cerca-data">${escH(dataIt(c.data))}</span><span class="cerca-med">${escH(c.medico)}</span></div>
         <ul>${c.referti.map((r) => { const x = leggiNomeReferto(r); return `<li><b>${escH(x.tipo)}</b> ${escH(dataIt(x.data))} · ${escH(x.accesso)}${x.sintesi ? ' · ' + escH(x.sintesi) : ''}</li>`; }).join('') || '<li>nessun referto</li>'}</ul>
         <div class="cerca-azioni"><button type="button" class="btn-primary" data-associa="${i}">Associa</button>${c.referti.length ? `<button type="button" class="btn-ghost" data-vedi="${i}">Anteprima</button>` : ''}</div>
         <pre class="cerca-anteprima" hidden></pre>
@@ -7050,7 +7084,8 @@ async function anteprima(i, btn){
 }
 function associa(c){
   if (!c) return;
-  caso = { codice: c.codice, dir: c.dir, percorso: [c.medico, c.anno, c.nome], data: c.data, medico: c.medico, associato: true };
+  caso = { codice: c.codice, dir: c.dir, percorso: [c.medico, c.anno, c.nome], data: c.data, medico: c.medico, associato: true, paziente: c.paziente || '' };
+  if (c.paziente && !nomePaziente()) $id('arcPaziente').value = c.paziente;
   // la RM basale di confronto è la stadiazione del caso
   const rc = $id('r_confronto');
   if (rc && !rc.getAttribute('data-iso')) {
@@ -7101,6 +7136,7 @@ $id('btnSalva').addEventListener('click', async () => {
   }
   // il numero d'accesso resta com'è scritto nel referto e nell'indice; nel nome del file solo caratteri ammessi
   const accessoTesto = $id('arcAccesso').value.trim().slice(0, 40);
+  const paziente = nomePaziente() || (caso && caso.paziente) || '';
   const accessoN = pulisci(accessoTesto).replace(/ /g, '');
   const dataVal = $id('arcData').getAttribute('data-iso');
   const data = dataVal ? new Date(dataVal + 'T12:00:00') : new Date();
@@ -7122,6 +7158,7 @@ $id('btnSalva').addEventListener('click', async () => {
   const intest = [
     `StructuRad × ESGAR — RM Retto · ${s.tipo}`,
     `Codice caso: ${codice}`,
+    ...(paziente ? [`Paziente: ${paziente}`] : []),
     `Data esame: ${data.toLocaleDateString('it-IT')}` + (accessoTesto ? `    N. accesso: ${accessoTesto}` : ''),
     `Refertato da: ${Canale.nomeCortese(p)} (${p.nome} ${p.cognome})`,
     `Salvato: ${adesso.toLocaleDateString('it-IT')} ${ora(adesso)}`,
@@ -7141,6 +7178,7 @@ $id('btnSalva').addEventListener('click', async () => {
     a.href = URL.createObjectURL(new Blob([contenuto], { type: 'text/plain;charset=utf-8' }));
     a.download = nomeDl; a.click();
     if (!caso) caso = { codice, data: dataIso(data), medico: cartellaMedico(p), accesso: accessoTesto };
+    caso.paziente = paziente;
     disegnaCaso();
     statoArchivio(`Scaricato <code>${escH(nomeDl)}</code>.`, 'ok');
     document.dispatchEvent(new CustomEvent('esgar:referto-salvato'));
@@ -7150,10 +7188,16 @@ $id('btnSalva').addEventListener('click', async () => {
     const dirMed = await dirMedico(true);
     if (!caso || !caso.dir) {
       const anno = String(data.getFullYear());
-      const nomeCaso = `${dataIso(data)}_${codice}`;
+      // il nome del paziente anche nella cartella del caso, per ritrovarla a colpo d'occhio
+      const nomeCaso = `${dataIso(data)}_${codice}` + (paziente ? '_' + pulisci(paziente) : '');
       const dirCaso = await (await dirMed.getDirectoryHandle(anno, { create: true })).getDirectoryHandle(nomeCaso, { create: true });
       caso = { codice, dir: dirCaso, percorso: [cartellaMedico(p), anno, nomeCaso], data: dataIso(data), medico: cartellaMedico(p), associato: false, accesso: accessoTesto };
     }
+    // caso.json tiene il nome aggiornato, anche se si aggiunge o si corregge dopo
+    if (paziente && paziente !== caso.paziente || !(await esiste(caso.dir, FILE_CASO))) {
+      try { await scriviCaso(caso.dir, { codice, paziente, aggiornato: adesso.toISOString() }); } catch (_) {}
+    }
+    caso.paziente = paziente;
     let nome = base + '.txt', k = 2;
     while (await esiste(caso.dir, nome)) nome = `${base}_${k++}.txt`;
     const w = await (await caso.dir.getFileHandle(nome, { create: true })).createWritable();
@@ -7162,7 +7206,7 @@ $id('btnSalva').addEventListener('click', async () => {
     // il referto è già al sicuro: se l'indice non si può scrivere (per esempio è aperto in Excel) lo si dice a parte
     let senzaIndice = '';
     try {
-      await aggiungiIndice(dirMed, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, codice, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
+      await aggiungiIndice(dirMed, [data.toLocaleDateString('it-IT'), ora(adesso), s.tipo, codice, paziente, accessoTesto, s.risposta, s.t, s.n, s.mrf, s.emvi,
         Canale.nomeCortese(p), percorso]);
     } catch (e) { senzaIndice = String(e && e.message || e); }
     disegnaCaso();
@@ -7238,7 +7282,8 @@ $id('btnSalva').addEventListener('click', async () => {
     const q = $id('arCerca').value.trim().toLowerCase().replace(/\s+/g, ' ');
     const dentro = (t) => String(t).toLowerCase().includes(q);
     return casi.map((c) => {
-      const delCaso = !q || dentro(c.codice) || dentro(dataIt(c.data));
+      const qp = perCercare(q);
+      const delCaso = !q || dentro(c.codice) || dentro(dataIt(c.data)) || (qp && perCercare(c.paziente).includes(qp));
       const referti = c.referti.filter((r) => {
         if (!passaStage(r)) return false;
         if (delCaso) return true;
@@ -7253,7 +7298,7 @@ $id('btnSalva').addEventListener('click', async () => {
     $id('arConta').textContent = casi.length && (attivi() || $id('arCerca').value.trim()) ? `${n} ${n === 1 ? 'referto' : 'referti'} su ${tutti}` : '';
     $id('arCasi').innerHTML = !casi.length ? '' : !l.length ? '<div class="ar-vuoto">Nessun referto con questi criteri.</div>'
       : l.map((c, i) => `<div class="ar-caso" style="--i:${Math.min(i, 12)}">
-          <div class="ar-caso-testa"><span class="caso-cod">${escH(c.codice)}</span><span>caso del ${escH(dataIt(c.data))}</span></div>
+          <div class="ar-caso-testa"><span class="caso-cod">${escH(c.codice)}</span>${c.paziente ? `<b class="ar-paz">${escH(c.paziente)}</b>` : ''}<span>caso del ${escH(dataIt(c.data))}</span></div>
           ${c.referti.map((r) => { const x = leggiNomeReferto(r), ris = /^Ristad/i.test(x.tipo);
             return `<button type="button" class="ar-ref" data-ar-ref="${escH(chiaveRef(c, r))}" aria-selected="${scelto === chiaveRef(c, r)}">
               <span class="ar-tipo${ris ? ' ris' : ''}" title="${ris ? 'Ristadiazione' : 'Stadiazione'}">${ris ? 'R' : 'S'}</span>
@@ -7272,7 +7317,7 @@ $id('btnSalva').addEventListener('click', async () => {
     catch (e) { messaggio('Il referto non si è potuto leggere: ' + escH(e && e.message || e)); return; }
     if (scelto !== k) return;
     $id('arVista').innerHTML = `<div class="ar-vista-testa">
-        <div><h3>${/^Ristad/i.test(x.tipo) ? 'Ristadiazione' : 'Stadiazione'} del ${escH(dataIt(x.data))} · caso ${escH(c.codice)}</h3>
+        <div><h3>${c.paziente ? escH(c.paziente) + ' · ' : ''}${/^Ristad/i.test(x.tipo) ? 'Ristadiazione' : 'Stadiazione'} del ${escH(dataIt(x.data))} · caso ${escH(c.codice)}</h3>
           <p>${escH([radice.name, c.medico, c.anno, c.nome, nome].join(/\\/.test(radice.name) ? '\\' : '/'))}</p></div>
         <button type="button" class="btn-secondary" data-ar="copia">Copia</button></div>
       <pre class="ar-testo" id="arTesto"></pre>`;
