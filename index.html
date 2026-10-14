@@ -1075,7 +1075,10 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 .pg-conta{align-self:center; padding:1px 8px; border-radius:999px; font-family:var(--mono); font-size:10.5px; font-weight:600; color:var(--accent); background:var(--accent-bg);}
 .pg-tab.vuoto .pg-conta{color:var(--faint); background:transparent;}
 .pg-sezione{min-height:0; overflow-y:auto; padding:18px 22px 22px; display:flex; flex-direction:column; gap:14px;}
-.pg-entra{animation:panVoce .4s cubic-bezier(.22,1,.36,1) both;}
+.pg-entra{animation:pgEntra .34s cubic-bezier(.22,1,.36,1) both;}
+@keyframes pgEntra{from{opacity:0; transform:translateY(8px);}}
+/* fra un passo e l'altro: la pagina esce sfumando, la nuova entra salendo appena */
+.mg-esce{opacity:0; transform:translateY(-4px); transition:opacity .15s ease, transform .15s ease;}
 .pg-sez-testa h3{margin:0 0 3px; font-size:15px; font-weight:600;}
 .pg-sez-testa p{margin:0; max-width:680px; font-size:12px; line-height:1.55; color:var(--muted);}
 .pg-prova{display:flex; flex-direction:column; gap:8px; padding:12px 14px; border-radius:14px; border:1px dashed var(--border2); background:var(--surface2);}
@@ -1151,14 +1154,16 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 /* dal cerchio al passo: la pagina si apre a partire dal cerchio cliccato */
 .mg-vt{view-transition-name:mg-corpo;}
 html.vt-passo{view-transition-name:none;}
-html.vt-passo::view-transition-group(mg-corpo){animation-duration:.55s;}
+/* il riquadro non si stira: niente morphing di dimensioni, le due istantanee restano com'erano */
+html.vt-passo::view-transition-group(mg-corpo){animation:none;}
+html.vt-passo::view-transition-old(mg-corpo), html.vt-passo::view-transition-new(mg-corpo){height:100%; width:100%; object-fit:none; object-position:top left;}
 html.vt-passo::view-transition-old(mg-corpo){animation:mpVia .3s ease both;}
 html.vt-passo::view-transition-new(mg-corpo){animation:mpApri .55s cubic-bezier(.22,1,.36,1) both;}
-html.vt-passo.indietro::view-transition-old(mg-corpo){animation:mpVia .22s ease both;}
-html.vt-passo.indietro::view-transition-new(mg-corpo){animation:mpTorna .34s ease both;}
+html.vt-passo.indietro::view-transition-old(mg-corpo){animation:mpVia .2s ease both;}
+html.vt-passo.indietro::view-transition-new(mg-corpo){animation:mpTorna .32s ease .06s both;}
 @keyframes mpApri{from{clip-path:circle(26px at var(--ox, 50%) var(--oy, 50%)); opacity:.4;} to{clip-path:circle(150% at var(--ox, 50%) var(--oy, 50%)); opacity:1;}}
 @keyframes mpVia{to{opacity:0;}}
-@keyframes mpTorna{from{opacity:0; transform:scale(1.02);}}
+@keyframes mpTorna{from{opacity:0;}}
 .mp-nodi{position:relative; z-index:1; display:flex; flex-wrap:wrap; justify-content:center; gap:26px 6px; margin-top:150px; max-width:100%;}
 .mp-nodo{position:relative; width:84px; display:flex; flex-direction:column; align-items:center; gap:7px; padding:0; border:none; background:transparent; font-family:var(--sans); color:var(--text); cursor:pointer;
   animation:popSection .45s var(--molla) calc(180ms + var(--i, 0) * 45ms) both;}
@@ -8392,7 +8397,16 @@ window.EsgarSezione = (h) => String(h || '').replace(/:$/, '').split(' ').map((w
     return chiedi({ titolo: 'Lasciare le frasi non salvate?', testo: 'Le modifiche a queste frasi andranno perse.', si: 'Lascia', no: 'Continua a scrivere' });
   }
   function apriPasso(modo, i, nodo){
-    passaggio(() => { passo = { modo, i }; disegna(); }, nodo && nodo.querySelector('.mp-ico'));
+    const cambia = () => { passo = { modo, i }; disegna(); };
+    // dalla mappa il passo si apre dal cerchio; fra un passo e l'altro, una dissolvenza
+    if (nodo) passaggio(cambia, nodo.querySelector('.mp-ico')); else sfuma(cambia);
+  }
+  function sfuma(cambia){
+    const corpo = $('mgCorpo');
+    const fermo = document.body.classList.contains('reduce-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (fermo) { cambia(); return; }
+    corpo.classList.remove('pg-entra'); corpo.classList.add('mg-esce');
+    setTimeout(() => { cambia(); corpo.scrollTop = 0; corpo.classList.remove('mg-esce'); }, 150);
   }
   /* fra mappa e passo la pagina non salta: dal cerchio cliccato il passo si apre allargandosi */
   function passaggio(cambia, origine){
