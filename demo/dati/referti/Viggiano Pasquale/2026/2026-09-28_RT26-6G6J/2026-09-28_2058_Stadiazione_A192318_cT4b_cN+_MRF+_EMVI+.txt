@@ -1,0 +1,48 @@
+StructuRad × ESGAR — RM Retto · Stadiazione primaria
+Codice caso: RT26-6G6J
+Data esame: 28/09/2026    N. accesso: A192318
+Refertato da: Dr. Viggiano (Pasquale Viggiano)
+Salvato: 14/10/2026 20:58
+────────────────────────────────────────────────
+
+STATO LOCALE DEL TUMORE
+
+MORFOLOGIA:
+- tumore a composizione solida
+- forma: completamente anulare
+
+SEDE:
+- margine inferiore a 2 cm dalla giunzione anorettale
+- interamente al di sotto della riflessione peritoneale anteriore
+- rapporto del margine inferiore del tumore con il sigmoid take-off (STO): a livello o al di sotto (retto)
+
+DIMENSIONI:
+- estensione cranio-caudale del tumore: 6,3 cm
+
+CATEGORIA cT:
+cT4b, per invasione di: organi pelvici (versante posteriore della prostata, a sinistra)
+
+INVASIONE VASCOLARE EXTRAMURALE (EMVI):
+Sì
+
+INVASIONE SFINTERICA:
+Sì: sfintere interno, spazio intersfinterico
+- dettagli: quadrante anteriore, per 20 mm
+
+COINVOLGIMENTO DELLA FASCIA MESORETTALE (MRF):
+- coinvolgimento della MRF (margine ≤1 mm): sì, da parte di: tumore primitivo
+- sede del coinvolgimento della MRF: ore 11-1
+
+LINFONODI E DEPOSITI TUMORALI:
+- linfonodi mesorettali sospetti: sì (numero: 3, dimensioni: 7-10 mm)
+- linfonodi regionali laterali sospetti: no (otturatori e iliaci interni nei limiti)
+- depositi tumorali: no
+- categoria cN stimata: cN+
+
+LINFONODI NON REGIONALI SOSPETTI (cM+):
+- iliaci esterni (numero: 1, dimensioni: 11 mm, lato: sinistro)
+
+CONCLUSIONE:
+Neoplasia del retto: cT4b, MRF+, EMVI+, cN+, cM+ (linfonodi non regionali sospetti), anal+. Si consiglia discussione multidisciplinare.
+
+Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).

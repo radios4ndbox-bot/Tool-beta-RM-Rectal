@@ -1,15 +1,15 @@
 ﻿Data esame;Ora salvataggio;Tipo;Codice caso;Paziente;N. accesso;Risposta;T;N;MRF;EMVI;Refertato da;File
-12/01/2026;19:40;Stadiazione primaria;RT26-7AV8;;A118204;;cT3ab;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-01-12_RT26-7AV8/2026-01-12_1940_Stadiazione_A118204_cT3ab_cN0_MRF-_EMVI-.txt
-20/04/2026;19:40;Ristadiazione;RT26-7AV8;;A151377;near-cCR;;ycN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-01-12_RT26-7AV8/2026-04-20_1940_Ristadiazione_A151377_near-cCR_ycN0_MRF-_EMVI-.txt
-03/02/2026;19:40;Stadiazione primaria;RT26-DEUY;;A123456;;cT3cd;cN+;MRF-;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-02-03_RT26-DEUY/2026-02-03_1940_Stadiazione_A123456_cT3cd_cN+_MRF-_EMVI+.txt
-18/05/2026;19:40;Ristadiazione;RT26-DEUY;;A160021;tumore residuo minore;ycT3ab;ycN dubbio;MRF-;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-02-03_RT26-DEUY/2026-05-18_1940_Ristadiazione_A160021_tumore-residuo-minore_ycT3ab_ycN-dubbio_MRF-_EMVI+.txt
-27/02/2026;19:40;Stadiazione primaria;RT26-UH6W;;A130915;;cT1-2;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-02-27_RT26-UH6W/2026-02-27_1940_Stadiazione_A130915_cT1-2_cN0_MRF-_EMVI-.txt
-16/03/2026;19:40;Stadiazione primaria;RT26-NZK8;;A139002;;cT4a;cN+;MRF-;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-03-16_RT26-NZK8/2026-03-16_1940_Stadiazione_A139002_cT4a_cN+_MRF-_EMVI+.txt
-30/06/2026;19:40;Ristadiazione;RT26-NZK8;;A168450;tumore residuo maggiore;ycT4a;ycN+;MRF-;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-03-16_RT26-NZK8/2026-06-30_1940_Ristadiazione_A168450_tumore-residuo-maggiore_ycT4a_ycN+_MRF-_EMVI+.txt
-09/04/2026;19:40;Stadiazione primaria;RT26-SFUF;;A147730;;cT1-2;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-04-09_RT26-SFUF/2026-04-09_1940_Stadiazione_A147730_cT1-2_cN0_MRF-_EMVI-.txt
-21/05/2026;19:40;Stadiazione primaria;RT26-UZNC;;A158112;;cT3ab;cN dubbio;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-05-21_RT26-UZNC/2026-05-21_1940_Stadiazione_A158112_cT3ab_cN-dubbio_MRF-_EMVI-.txt
-14/07/2026;19:40;Stadiazione primaria;RT26-85TB;;A171045;;cT3cd;cN+;MRF+;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-07-14_RT26-85TB/2026-07-14_1940_Stadiazione_A171045_cT3cd_cN+_MRF+_EMVI+.txt
-05/10/2026;19:40;Ristadiazione;RT26-85TB;;A195120;cCR;;ycN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-07-14_RT26-85TB/2026-10-05_1940_Ristadiazione_A195120_cCR_ycN0_MRF-_EMVI-.txt
-02/09/2026;19:40;Stadiazione primaria;RT26-WXHS;;A186620;;cT1-2;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-09-02_RT26-WXHS/2026-09-02_1940_Stadiazione_A186620_cT1-2_cN0_MRF-_EMVI-.txt
-28/09/2026;19:40;Stadiazione primaria;RT26-Y4QP;;A192318;;cT4b;cN+;MRF+;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-09-28_RT26-Y4QP/2026-09-28_1940_Stadiazione_A192318_cT4b_cN+_MRF+_EMVI+.txt
-06/10/2026;19:40;Stadiazione primaria;RT26-CGMD;;A195544;;cT3ab;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-10-06_RT26-CGMD/2026-10-06_1940_Stadiazione_A195544_cT3ab_cN0_MRF-_EMVI-.txt
+12/01/2026;20:58;Stadiazione primaria;RT26-A4P9;;A118204;;cT3ab;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-01-12_RT26-A4P9/2026-01-12_2058_Stadiazione_A118204_cT3ab_cN0_MRF-_EMVI-.txt
+20/04/2026;20:58;Ristadiazione;RT26-A4P9;;A151377;near-cCR;;ycN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-01-12_RT26-A4P9/2026-04-20_2058_Ristadiazione_A151377_near-cCR_ycN0_MRF-_EMVI-.txt
+03/02/2026;20:58;Stadiazione primaria;RT26-2KEQ;;A123456;;cT3cd;cN+;MRF-;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-02-03_RT26-2KEQ/2026-02-03_2058_Stadiazione_A123456_cT3cd_cN+_MRF-_EMVI+.txt
+18/05/2026;20:58;Ristadiazione;RT26-2KEQ;;A160021;tumore residuo minore;ycT3ab;ycN dubbio;MRF-;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-02-03_RT26-2KEQ/2026-05-18_2058_Ristadiazione_A160021_tumore-residuo-minore_ycT3ab_ycN-dubbio_MRF-_EMVI+.txt
+27/02/2026;20:58;Stadiazione primaria;RT26-D76J;;A130915;;cT1-2;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-02-27_RT26-D76J/2026-02-27_2058_Stadiazione_A130915_cT1-2_cN0_MRF-_EMVI-.txt
+16/03/2026;20:58;Stadiazione primaria;RT26-65V7;;A139002;;cT4a;cN+;MRF-;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-03-16_RT26-65V7/2026-03-16_2058_Stadiazione_A139002_cT4a_cN+_MRF-_EMVI+.txt
+30/06/2026;20:58;Ristadiazione;RT26-65V7;;A168450;tumore residuo maggiore;ycT4a;ycN+;MRF-;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-03-16_RT26-65V7/2026-06-30_2058_Ristadiazione_A168450_tumore-residuo-maggiore_ycT4a_ycN+_MRF-_EMVI+.txt
+09/04/2026;20:58;Stadiazione primaria;RT26-XNJB;;A147730;;cT1-2;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-04-09_RT26-XNJB/2026-04-09_2058_Stadiazione_A147730_cT1-2_cN0_MRF-_EMVI-.txt
+21/05/2026;20:58;Stadiazione primaria;RT26-A4FA;;A158112;;cT3ab;cN dubbio;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-05-21_RT26-A4FA/2026-05-21_2058_Stadiazione_A158112_cT3ab_cN-dubbio_MRF-_EMVI-.txt
+14/07/2026;20:58;Stadiazione primaria;RT26-KAZ9;;A171045;;cT3cd;cN+;MRF+;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-07-14_RT26-KAZ9/2026-07-14_2058_Stadiazione_A171045_cT3cd_cN+_MRF+_EMVI+.txt
+05/10/2026;20:58;Ristadiazione;RT26-KAZ9;;A195120;cCR;;ycN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-07-14_RT26-KAZ9/2026-10-05_2058_Ristadiazione_A195120_cCR_ycN0_MRF-_EMVI-.txt
+02/09/2026;20:58;Stadiazione primaria;RT26-8N6T;;A186620;;cT1-2;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-09-02_RT26-8N6T/2026-09-02_2058_Stadiazione_A186620_cT1-2_cN0_MRF-_EMVI-.txt
+28/09/2026;20:58;Stadiazione primaria;RT26-6G6J;;A192318;;cT4b;cN+;MRF+;EMVI+;Dr. Viggiano;Viggiano Pasquale/2026/2026-09-28_RT26-6G6J/2026-09-28_2058_Stadiazione_A192318_cT4b_cN+_MRF+_EMVI+.txt
+06/10/2026;20:58;Stadiazione primaria;RT26-DYX8;;A195544;;cT3ab;cN0;MRF-;EMVI-;Dr. Viggiano;Viggiano Pasquale/2026/2026-10-06_RT26-DYX8/2026-10-06_2058_Stadiazione_A195544_cT3ab_cN0_MRF-_EMVI-.txt
