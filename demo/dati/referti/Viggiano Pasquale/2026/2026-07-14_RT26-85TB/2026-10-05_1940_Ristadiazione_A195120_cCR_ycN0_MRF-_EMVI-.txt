@@ -1,0 +1,41 @@
+StructuRad × ESGAR — RM Retto · Ristadiazione
+Codice caso: RT26-85TB
+Data esame: 05/10/2026    N. accesso: A195120
+Refertato da: Dr. Viggiano (Pasquale Viggiano)
+Salvato: 14/10/2026 19:40
+────────────────────────────────────────────────
+
+STATO LOCALE DEL TUMORE
+
+PROBABILITÀ DI TUMORE RESIDUO:
+Risposta clinica completa (cCR) (fibrosi omogenea, assenza di restrizione focale della diffusione); fibrosi a basso segnale in T2 nella sede della pregressa lesione
+
+COMPONENTE MUCINOSA:
+No: non aree di segnale mucinoso
+
+LESIONE RESIDUA:
+- distanza dalla giunzione anorettale al margine inferiore della lesione residua (fibrosi inclusa): 5 cm
+- dimensioni della lesione residua (fibrosi inclusa): 1,8 cm
+
+ycEMVI:
+No (EMVI assente al basale o scomparsa dell'EMVI): vene mesorettali di calibro ridotto
+
+INVASIONE SFINTERICA:
+No
+
+COINVOLGIMENTO DELLA FASCIA MESORETTALE (ycMRF):
+- fascia mesorettale libera: ricomparsa del piano adiposo fra fibrosi e fascia
+
+LINFONODI E DEPOSITI TUMORALI:
+- linfonodi mesorettali: ycN0 (nessun linfonodo residuo o solo linfonodi <5 mm)
+- linfonodi laterali: linfonodi otturatori e/o iliaci interni precedentemente aumentati, dimensioni attuali 0,4 cm → erano 0,8 cm al basale
+- depositi tumorali persistenti: no
+- categoria ycN stimata: ycN0
+
+LINFONODI NON REGIONALI (CATEGORIA cM):
+N/A (nessun linfonodo non regionale sospetto al basale)
+
+CONCLUSIONE:
+Risposta clinica completa (cCR), ycMRF-, ycEMVI-, ycN0. Si consiglia rivalutazione endoscopica.
+
+Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026, doi:10.1007/s00330-025-12275-9).

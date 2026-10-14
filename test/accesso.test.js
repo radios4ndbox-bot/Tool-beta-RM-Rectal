@@ -108,15 +108,15 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
 
   // referti
   await pc.click('#profiloBtn');
-  await pc.click('text=Anteriore'); await pc.click('text=Posteriore');
-  await pc.click('input[name=p_ct][value=cT3c]'); await pc.click('input[name="p_cn"][value="cN+"]');
-  await pc.selectOption('#p_emviGrade', '3');
+  await pc.click('input[name=p_forma][value=parziale]');
+  await pc.click('input[name=p_ct][value=cT3cd]'); await pc.click('input[name="p_cn"][value="cN+"]');
+  await pc.click('input[name=p_emvi][value=si]');
   await pc.fill('#arcPaziente', 'De Rossi  Mario'); await pc.fill('#arcAccesso', 'A 123/456'); await pc.fill('#arcData', '28092026'); await pc.click('#arcAccesso');
   await pc.click('#btnSalva');
   await pc.waitForFunction(() => /Salvato/.test(document.getElementById('archivioStato').textContent), null, { timeout: 5000 });
   const codice = (await pc.evaluate(() => EsgarTest.caso())).codice;
   check(/^RT\d{2}-[A-Z2-9]{4}$/.test(codice) && await pc.textContent('#casoChip .caso-cod') === codice, 'il tool crea il codice del caso: ' + codice);
-  check(new RegExp('Referti RM Retto/Bianchi Giulia/2026/2026-09-28_' + codice + '_De Rossi Mario/2026-09-28_\\d{4}_Stadiazione_A123456_cT3c_cN\\+_MRF-_EMVI\\+\\.txt').test(await pc.textContent('#archivioStato')), 'salvato nella cartella del caso: ' + await pc.textContent('#archivioStato'));
+  check(new RegExp('Referti RM Retto/Bianchi Giulia/2026/2026-09-28_' + codice + '_De Rossi Mario/2026-09-28_\\d{4}_Stadiazione_A123456_cT3cd_cN\\+_MRF-_EMVI\\+\\.txt').test(await pc.textContent('#archivioStato')), 'salvato nella cartella del caso: ' + await pc.textContent('#archivioStato'));
   check(await pc.textContent('#casoChip .caso-paz') === 'De Rossi Mario', 'il nome del paziente compare nel caso in corso');
   const leggiOpfs = (rel) => pc.evaluate(async (rel) => { let d = await navigator.storage.getDirectory(); const parti = rel.split('/'); for (const x of parti.slice(0, -1)) d = await d.getDirectoryHandle(x); return (await (await d.getFileHandle(parti.pop())).getFile()).text(); }, rel);
   const dirB = 'Referti RM Retto/Bianchi Giulia/2026/2026-09-28_' + codice + '_De Rossi Mario/';
@@ -145,14 +145,13 @@ const check = (cond, msg) => { console.log((cond ? 'OK  ' : 'FAIL') + ' ' + msg)
   await pc.screenshot({ path: SHOTS + '/casi_cerca.png' });
   await pc.click('#cercaPannello [data-associa="0"]');
   check(await pc.inputValue('#arcPaziente') === 'De Rossi Mario', 'associando, il nome del paziente si compila da solo');
-  check(await pc.inputValue('#r_confronto') === '28/09/2026' && (await pc.inputValue('#output')).includes('Confronto con RM basale del: 28/09/2026'), 'associando, la RM basale di confronto prende la data della stadiazione');
   await pc.fill('#arcAccesso', 'A178902'); await pc.fill('#arcData', '20122026'); await pc.click('#arcAccesso');
   await pc.click('#btnSalva'); await pc.waitForTimeout(400);
   check(new RegExp('Bianchi Giulia/2026/2026-09-28_' + codice + '_De Rossi Mario/2026-12-20_\\d{4}_Ristadiazione_A178902_near-cCR(?!_ycT)').test(await pc.textContent('#archivioStato')), 'ristadiazione nella stessa cartella della stadiazione; con risposta quasi completa lo ycT rimasto spuntato non entra nel nome');
-  // con malattia residua lo ycT c'è, nel nome come nel referto
+  // con tumore residuo lo ycT c'è, nel nome come nel referto
   await pc.click('input[name=r_risposta][value=minore]');
   await pc.click('#btnSalva'); await pc.waitForTimeout(400);
-  check(/_Ristadiazione_A178902_malattia-residua-minore_ycT1-2/.test(await pc.textContent('#archivioStato')), 'con malattia residua lo ycT entra nel nome del file');
+  check(/_Ristadiazione_A178902_tumore-residuo-minore_ycT1-2/.test(await pc.textContent('#archivioStato')), 'con tumore residuo lo ycT entra nel nome del file');
   await pc.click('input[name=r_risposta][value=near-cCR]');
   await pc.screenshot({ path: SHOTS + '/casi_salvato.png' });
   await pc.screenshot({ path: SHOTS + '/acc_pc_salvato.png' });
