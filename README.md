@@ -4,16 +4,47 @@ Referto strutturato della RM del retto secondo i criteri ESGAR, per la
 stadiazione primaria e la ristadiazione. Il referto si aggiorna a ogni
 modifica del form e conserva le correzioni manuali.
 
+## Il modello ESGAR 2026
+
+Form e referto seguono, voce per voce, i modelli di referto strutturato ESGAR
+2026, tradotti in italiano con la massima fedeltà: stadiazione primaria (Eur
+Radiol 2026;36:4592–4607, Fig. 2) e ristadiazione dopo terapia neoadiuvante
+(Eur Radiol 2026;36:4608–4621, Fig. 1). Non ci sono voci che il modello non
+prevede.
+
+- **Stadiazione primaria**: morfologia (composizione; forma polipoide,
+  completamente o parzialmente anulare, con le ore), sede (distanza dalla
+  giunzione anorettale e, facoltativa, dal margine anale; riflessione
+  peritoneale anteriore; sigmoid take-off), dimensioni, categoria cT (cT1-2,
+  cT3ab, cT3cd, cT4a, cT4b con le strutture invase), EMVI (no/sì), invasione
+  sfinterica, MRF (con la causa e le ore), linfonodi e depositi tumorali
+  (mesorettali, laterali, depositi, cN stimata), linfonodi non regionali (cM+).
+- **Ristadiazione**: probabilità di tumore residuo (cCR, near-cCR, residuo
+  minore o maggiore, con l'ycT stimato se c'è residuo), componente mucinosa,
+  lesione residua, ycEMVI, invasione sfinterica, ycMRF, linfonodi e depositi,
+  linfonodi non regionali.
+- In fondo una **Conclusione** che riassume le categorie del modello, con
+  «anal+» se c'è invasione sfinterica.
+- Gli automatismi del modello: sfintere esterno e strutture cT4b danno cT4b;
+  scrivere un dettaglio (numero, dimensioni, lato, ore) segna da solo «Sì».
+
+Le **correzioni a mano** restano anche quando si cambia un'altra voce della
+stessa sezione: il referto si fonde riga per riga, le righe che il form cambia
+si aggiornano e le frasi aggiunte o riscritte sulle altre restano. Se si è
+riscritta proprio la riga che il form cambia, vince il form (il dato nuovo);
+«Indietro» riporta la versione di prima.
+
 | file | |
 |---|---|
 | `index.html` | il tool, in un file unico: si apre in Chrome o Edge |
 | `telefono.html` | la pagina del telefono, che fa da chiave per l'accesso |
 | `test/accesso.test.js` | accesso e archivio, da capo a fondo |
+| `test/descrizioni.test.js` | descrizioni delle categorie, ufficiali o del medico |
 | `test/amministratore.test.js` | richiesta dal telefono, approvazione e delega di amministratore |
 | `test/desktop.test.js` | archivio nel programma per Windows, attraverso il ponte |
 | `test/indietro.test.js` | «Indietro» sopra il referto: testo e form tornano insieme |
 | `test/interfaccia.test.js` | menu a tendina, calendario e campi che imparano |
-| `test/struttura.test.js` | apprendimento dalla struttura del referto finito |
+| `test/memoria.test.js` | Memoria: le frasi del medico, voce per voce |
 
 ## Accesso con il telefono
 
@@ -91,8 +122,8 @@ accanto all'altra in ordine di data:
 │   └── 2026/
 │       └── 2026-03-10_RT26-7K4M_Rossi Mario/
 │           ├── caso.json
-│           ├── 2026-03-10_1412_Stadiazione_A123456_cT3c_cN+_MRF-_EMVI+.txt
-│           └── 2026-06-20_0930_Ristadiazione_A178902_near-cCR_MRF-.txt
+│           ├── 2026-03-10_1412_Stadiazione_A123456_cT3cd_cN+_MRF-_EMVI+.txt
+│           └── 2026-06-20_0930_Ristadiazione_A178902_near-cCR_ycN0_MRF-_EMVI-.txt
 └── Neri Marco/
     └── …
 ```
@@ -105,8 +136,7 @@ accanto all'altra in ordine di data:
 - **Ricerca precedente** (in ristadiazione) scorre tutta la cartella comune, le
   cartelle di tutti i medici, e trova il caso dal nome del paziente, dal codice
   o dal numero d'accesso della stadiazione, con anteprima del referto.
-  «Associa» collega la ristadiazione al caso e compila la data della RM basale
-  di confronto e il nome del paziente. Anche «Mostra archivio» cerca per nome;
+  «Associa» collega la ristadiazione al caso e ne compila il nome del paziente. Anche «Mostra archivio» cerca per nome;
   maiuscole e accenti non contano.
 - La ristadiazione si salva nella cartella del caso, anche se la stadiazione
   l'ha fatta un altro medico; chi la salva la ritrova nel proprio indice, con il
@@ -146,80 +176,42 @@ file, con lo stesso nome; lo stesso vale nei browser senza File System Access
 Per salvare serve l'accesso: senza, «Salva nell'archivio» apre il pannello del
 profilo. Copia, «Scarica .txt» e Stampa funzionano anche senza accesso.
 
-## Campi che imparano
+## Memoria: le tue frasi
 
-Come il quesito PS di ER Oncology Archivist, tutti i campi di testo libero
-(sequenze, premedicazione, dettagli di MRF, cT4b, EMVI, linfonodi, depositi,
-noduli…) propongono le frasi già scritte nei referti precedenti. Il pannello si
-apre sul campo: frecce e Invio per scegliere, × per non proporre più una frase.
+Ogni riga che il tool scrive nel referto è una **voce**: il testo ufficiale del
+modello ESGAR, tradotto, con i **segnaposto** fra parentesi quadre per i dati
+del modulo (`[cm]`, `[ore]`, `[dettagli]`, `[categorie]`…). Le voci sono
+nell'elenco `VOCI_ELENCO` di `index.html`.
 
-Il tool impara quando un referto si **copia, scarica, stampa o salva
-nell'archivio**; lo stesso referto conta una volta sola. Per ogni frase ricorda
-quante volte è stata usata e quando, le varianti con cui è stata scritta e in
-quale **contesto**, cioè le scelte del form in quel momento (cT, organi
-infiltrati, EMVI, campo magnetico…). Il punteggio somma:
+La pagina **Memoria** (icona nella colonna delle impostazioni) si apre su una
+mappa con un passo per ogni scheda del modulo, più la conclusione. Aperto un
+passo:
 
-- **somiglianza** con quanto si sta scrivendo, con più peso alle parole rare;
-- **frequenza** d'uso;
-- **contesto**: le scelte presenti ora nel form che compaiono più spesso con
-  quella frase. Con la prostata spuntata sale la nota sulla prostata, con
-  l'elevatore quella sull'elevatore;
-- **recenza**, per sei mesi;
-- **gradimento**: le frasi scelte salgono, quelle proposte in alto e scavalcate
-  scendono. Il tool corregge da solo l'ordine con l'uso.
+- **a sinistra** la sezione, voce per voce come nel modulo (No, Sì, cT3ab,
+  Iliaci esterni…);
+- **a destra**, per ogni voce, la riga che scrive nel referto. La si riscrive
+  con le proprie sfumature e la si salva (Invio o «Salva»); sotto si vede
+  **come verrà nel referto**, con dati d'esempio;
+- da allora, scegliendo quella voce nel modulo, nel referto compare la tua
+  frase, in questo referto e in tutti i successivi. Le correzioni scritte a
+  mano nel referto restano;
+- i segnaposto restano tutti: il dato lo scrive sempre il modulo. Una frase
+  senza un segnaposto della voce, o con uno inventato, non si salva. I
+  segnaposto si inseriscono anche con un clic;
+- accanto resta il testo ufficiale ESGAR; **Ufficiale** riporta la voce a quel
+  testo.
 
-La memoria resta nel browser di questo PC (localStorage): solo le frasi dei
-campi liberi e le scelte del form, nessun dato del paziente.
-
-### Struttura del referto
-
-Il tool impara anche dal **referto finito**. A ogni «Scarica .txt» e a ogni
-salvataggio riuscito con «Salva nell'archivio» confronta,
-sezione per sezione, il referto scaricato con quello che il form genera da solo,
-riga per riga come un diff. Le differenze sono il lavoro del medico:
-
-- **aggiunte**: frasi scritte di suo in una sezione, per esempio una nota fissa
-  in MRF;
-- **riformulazioni**: una frase generata riscritta a modo suo, per esempio
-  «- non coinvolta» → «- fascia mesorettale indenne».
-
-Le impara con le scelte del form, come i campi liberi. Sopra il referto il
-riquadro **«Dai tuoi referti»** propone le aggiunte tipiche per le scelte attuali
-e le riformulazioni delle frasi presenti, con un clic su «Aggiungi» o
-«Sostituisci»; la × nasconde una proposta per quel referto. Si propone solo ciò
-che è stato scritto almeno due volte, o che è preferito. Lo stesso referto
-scaricato più volte conta una volta sola. Nella pagina Memoria le sezioni
-compaiono sotto «Struttura del referto», con aggiunte e riformulazioni da
-provare, correggere o dimenticare.
-
-### Memoria del tool
-
-Come la «Personalizzazione del reparto» di ER Oncology Archivist, la pagina
-**Memoria** (icona nella colonna delle impostazioni, o «Gestisci la memoria» nel
-pannello Archivio) mostra cosa ha imparato il tool e permette di gestirlo.
-
-- **Panoramica**: quante frasi, campi, referti letti e preferite; come il tool
-  ordina le proposte; i campi con più frasi.
-- **Campo per campo**, divisi fra stadiazione primaria e ristadiazione:
-  - **Prova**: si scrive come nel campo e si vede cosa proporrebbe il tool, con
-    o senza le scelte del form attuale, con il punteggio;
-  - **Insegna**: si aggiunge a mano una frase, che entra già come preferita;
-  - per ogni frase: usi, ultima data, quante volte è stata scelta o scavalcata,
-    varianti e scelte del form con cui è tipica; ★ la fissa in cima alle proposte
-    e la protegge dallo sfoltimento; la matita la corregge (se diventa uguale a
-    un'altra frase, le due si uniscono sommando gli usi); il cestino la dimentica;
-  - ordinamento per punteggio, uso, recenza o alfabetico.
-- **Esporta / Importa**: la memoria va in un file JSON e si importa su un altro
-  PC; le frasi uguali si uniscono. **Azzera tutto** la cancella.
+Sulla mappa ogni passo conta le tue frasi. **Esporta / Importa** portano le
+frasi in un file JSON e su un altro PC; **Tutte al testo ufficiale** le toglie.
+Le frasi sono del medico che ha fatto l'accesso (`frasi-esgar.json` nella sua
+cartella, e sul PC); senza accesso sono quelle del PC. Nessun dato del paziente.
 
 ## Menu e date
 
 I menu a tendina hanno lo stile del tool, come in Archivist; il menu nativo
 resta nascosto e continua a dare il valore al referto. Le date si scrivono e si
-mostrano in **gg/mm/aaaa**, con il calendario: «Confronto con imaging
-precedente» (esame + data, per esempio «TC del 05/03/2026»), «RM basale di
-confronto» e «Data esame». Digitando bastano le cifre: le barre le mette il
-campo. Nei nomi di file e cartelle dell'archivio la data resta anno-mese-giorno,
+mostrano in **gg/mm/aaaa**, con il calendario («Data esame»). Digitando bastano
+le cifre: le barre le mette il campo. Nei nomi di file e cartelle dell'archivio la data resta anno-mese-giorno,
 così l'ordine alfabetico è anche quello cronologico.
 
 ## Impostazioni
@@ -229,8 +221,8 @@ pannello della voce scelta; la pagina rientra, così il pannello non copre il
 form né il referto.
 
 - **Archivio**: la cartella comune del PC e quella del medico entrato, il
-  collegamento al pannello del profilo, quante frasi ricordano i campi che
-  imparano e «Azzera la memoria».
+  collegamento al pannello del profilo, quante voci hanno una tua frase, «Apri
+  la Memoria» e «Tutte al testo ufficiale».
 - **Aspetto**: form compatto, riduci le animazioni, salta l'intro all'avvio.
   Sono scelte della postazione (localStorage), non dati clinici.
 - **Info**: i criteri ESGAR come li applica il tool. Ci sono la tabella cT, cosa
@@ -239,8 +231,24 @@ form né il referto.
   le voci della ristadiazione, come lavora il tool e la versione. Per i casi
   dubbi fa fede la pubblicazione ESGAR.
 
-Nella scheda **cT stage** ogni stadio ha a sinistra un pulsante «i»: apre una
-piccola finestra che spiega a cosa corrisponde lo stadio secondo le
+## Stile personale
+
+Ogni medico regola la **forma** del suo referto; le voci e i criteri ESGAR
+restano tutti, nessuna sezione si può omettere.
+
+- titoli delle sezioni in MAIUSCOLO o con la sola iniziale, e un titolo suo
+  sezione per sezione;
+- frase fissa di apertura, di chiusura e in fondo a ogni sezione;
+- **descrizioni delle categorie**: il testo fra parentesi accanto a cT3ab,
+  cT3cd, cT4a, alle classi di risposta e agli ycT. Di base è quello ufficiale
+  ESGAR; il medico lo riscrive o lo lascia vuoto, e «Ufficiale» lo riporta. Nella
+  Memoria le voci delle categorie usano la descrizione in vigore (`[descrizione]`).
+
+Lo stile è del medico che ha fatto l'accesso (`stile-esgar.json` nella sua
+cartella); senza accesso il referto è quello del tool.
+
+Nella scheda **Categoria cT** ogni voce ha a sinistra un pulsante «i»: apre una
+piccola finestra che spiega a cosa corrisponde la voce secondo le
 raccomandazioni ESGAR 2026 per la stadiazione primaria (Eur Radiol
 2026;36:4592–4607), con le percentuali di consenso del panel. Le soglie dei
 singoli sottostadi sono quelle del TNM; il modello di referto ESGAR le raggruppa
@@ -274,7 +282,9 @@ L'icona è il simbolo StructuRad (SD) in bianco metallico su fondo rosso-nero, i
 npm i playwright
 node test/accesso.test.js
 node test/interfaccia.test.js
-node test/struttura.test.js
+node test/indietro.test.js
+node test/descrizioni.test.js
+node test/memoria.test.js
 ```
 
 Il test avvia un relay finto in locale, fa l'accesso da un telefono simulato,

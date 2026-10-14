@@ -129,16 +129,16 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
 
   // ── stadiazione ──
   await pc.click('#profiloBtn');
-  await pc.click('text=Anteriore'); await pc.click('text=Posteriore');
-  await pc.click('input[name=p_ct][value=cT3c]'); await pc.click('input[name="p_cn"][value="cN+"]');
-  await pc.selectOption('#p_emviGrade', '3');
+  await pc.click('input[name=p_forma][value=parziale]');
+  await pc.click('input[name=p_ct][value=cT3cd]'); await pc.click('input[name="p_cn"][value="cN+"]');
+  await pc.click('input[name=p_emvi][value=si]');
   await pc.fill('#arcAccesso', 'A 123/456'); await pc.fill('#arcData', '28092026'); await pc.click('#arcAccesso');
   await pc.click('#btnSalva');
   await pc.waitForFunction(() => /Salvato/.test(document.getElementById('archivioStato').textContent), null, { timeout: 5000 });
   const codice = (await pc.evaluate(() => EsgarTest.caso())).codice;
   const dirCaso = `Bianchi Giulia/2026/2026-09-28_${codice}/`;
   let f = albero();
-  const stad = f.find((x) => x.startsWith(dirCaso) && /^2026-09-28_\d{4}_Stadiazione_A123456_cT3c_cN\+_MRF-_EMVI\+\.txt$/.test(x.slice(dirCaso.length)));
+  const stad = f.find((x) => x.startsWith(dirCaso) && /^2026-09-28_\d{4}_Stadiazione_A123456_cT3cd_cN\+_MRF-_EMVI\+\.txt$/.test(x.slice(dirCaso.length)));
   check(!!stad, 'la stadiazione è sul disco, nella cartella del caso: ' + stad);
   const testo = fs.readFileSync(path.join(COMUNE, stad), 'utf8');
   check(testo.includes('Codice caso: ' + codice) && testo.includes('N. accesso: A 123/456') && /\r\n/.test(testo) && testo.includes('Dr.ssa Bianchi'), 'il file ha intestazione, codice del caso e ritorni a capo di Windows');
@@ -185,58 +185,56 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
 
   // ── memoria e stile sono del medico, e stanno nella sua cartella ──
   const leggiJson = (f) => { try { return JSON.parse(fs.readFileSync(path.join(COMUNE, f), 'utf8')); } catch (_) { return null; } };
-  const haFrase = () => pc.evaluate(() => EsgarMemoria.gestione.voci('p_ctNote').some((v) => v.testo === 'frase di Neri'));
-  await pc.evaluate(() => EsgarMemoria.gestione.aggiungi('p_ctNote', 'frase di Neri'));
+  const haFrase = () => pc.evaluate(() => EsgarFrasi.frase('p.emvi.no') === 'Non segni di invasione vascolare extramurale');
+  await pc.evaluate(() => EsgarFrasi.imposta('p.emvi.no', 'Non segni di invasione vascolare extramurale'));
   // la finestra dello stile: il referto del tool, con le parti da cliccare
   await pc.click('#railStile'); await pc.waitForTimeout(500);
-  check(/Neri/.test(await pc.textContent('#stSub')) && await pc.locator('#stFoglio [data-parte]').count() === 22 && await pc.locator('#stFoglio [data-parte^="frase:"]').count() === 10 && /Clicca una parte/.test(await pc.textContent('#stIspettore')),
-    'Stile personale di Dr. Neri: apertura, dieci sezioni ognuna con il posto per una frase fissa, chiusura');
+  check(/Neri/.test(await pc.textContent('#stSub')) && await pc.locator('#stFoglio [data-parte]').count() === 23 && await pc.locator('#stFoglio [data-parte^="frase:"]').count() === 10 && await pc.locator('#stFoglio [data-parte=descr]').count() === 1 && /Clicca una parte/.test(await pc.textContent('#stIspettore')),
+    'Stile personale di Dr. Neri: apertura, dieci sezioni ognuna con il posto per una frase fissa, le descrizioni delle categorie, chiusura');
   await pc.click('[data-parte="frase:linfonodi"]'); await pc.fill('#stTesto', 'Non adenopatie iliache esterne.');
   await pc.click('[data-st-titoli=iniziale]');
   await pc.click('[data-parte=chiusura]'); await pc.fill('#stTesto', 'Si resta a disposizione.');
-  await pc.click('[data-parte=td]'); await pc.click('[data-st=ometti]');
   await pc.click('[data-parte=mrf]'); await pc.fill('#stNome', 'Fascia mesorettale');
   const foglio = await pc.textContent('#stFoglio');
-  check(/Fascia mesorettale:/.test(foglio) && /Stage finale:/.test(foglio) && /Si resta a disposizione\./.test(foglio) && await pc.locator('[data-parte=td].omessa').count() === 1,
-    'la bozza si vede subito nel foglio: titolo scritto a mano, grafia dei titoli, chiusura, sezione barrata');
+  check(/Fascia mesorettale:/.test(foglio) && /Conclusione:/.test(foglio) && /Si resta a disposizione\./.test(foglio) && await pc.locator('[data-st=ometti], .st-parte.omessa').count() === 0,
+    'la bozza si vede subito nel foglio: titolo scritto a mano, grafia dei titoli, chiusura; nessuna sezione si può omettere');
   let ref = await pc.inputValue('#output');
-  check(/^STAGE FINALE/m.test(ref) && !/Si resta a disposizione/.test(ref), 'finché non si salva il referto vero non cambia');
-  await pc.click('[data-parte=emvi]'); await pc.fill('#stNome', 'Fascia mesorettale'); await pc.click('[data-st=salva]'); await pc.waitForTimeout(200);
+  check(/^CONCLUSIONE/m.test(ref) && !/Si resta a disposizione/.test(ref), 'finché non si salva il referto vero non cambia');
+  await pc.click('[data-parte=linfonodi]'); await pc.fill('#stNome', 'Fascia mesorettale'); await pc.click('[data-st=salva]');   // dopo la MRF: è lei a dover tornare indietro await pc.waitForTimeout(200);
   check(await pc.isVisible('#stOverlay.open') && /stesso titolo/.test(await pc.textContent('#stStato')), 'due sezioni con lo stesso titolo non si salvano');
   await pc.click('[data-st=ripristina]');
   await pc.click('[data-st=salva]'); await pc.waitForTimeout(400);
   ref = await pc.inputValue('#output');
-  check(!(await pc.isVisible('#stOverlay.open')) && /^Stage finale:/m.test(ref) && !/STAGE FINALE/.test(ref) && /^Fascia mesorettale:/m.test(ref) && /Si resta a disposizione\.\n\nReferto redatto/.test(ref) && !/Tumor deposit:/i.test(ref)
-    && /^Linfonodi sospetti:\n- non presenti\nNon adenopatie iliache esterne\.$/m.test(ref),
-    '«Salva»: il referto prende lo stile (titoli, titolo tuo, frase fissa in fondo alla sezione, chiusura, sezione omessa)');
+  check(!(await pc.isVisible('#stOverlay.open')) && /^Conclusione:/m.test(ref) && !/CONCLUSIONE/.test(ref) && /^Fascia mesorettale:/m.test(ref) && /Si resta a disposizione\.\n\nReferto redatto/.test(ref)
+    && /^Linfonodi e depositi tumorali:\n(- .*\n)+Non adenopatie iliache esterne\.$/m.test(ref) && /^Linfonodi non regionali sospetti \(cM\+\):/m.test(ref),
+    '«Salva»: il referto prende lo stile (titoli, titolo tuo, frase fissa in fondo alla sezione, chiusura); tutte le voci ESGAR restano');
   await pc.waitForTimeout(1700);
   const stileFile = leggiJson('Neri Marco/stile-esgar.json') || {};
-  check((leggiJson('Neri Marco/memoria-esgar.json') || { campi: {} }).campi.p_ctNote && stileFile.titoli === 'iniziale' && stileFile.nomi.primaria.mrf === 'Fascia mesorettale:',
-    'memoria e stile sono nella cartella del medico: memoria-esgar.json, stile-esgar.json');
+  check(((leggiJson('Neri Marco/frasi-esgar.json') || { frasi: {} }).frasi['p.emvi.no'] || '').startsWith('Non segni') && stileFile.titoli === 'iniziale' && stileFile.nomi.primaria.mrf === 'Fascia mesorettale:',
+    'frasi e stile sono nella cartella del medico: frasi-esgar.json, stile-esgar.json');
   // un altro medico ha i suoi
   await pc.click('#profiloBtn'); await pc.click('#ppEsci'); await accedi(tel);
   ref = await pc.inputValue('#output');
-  check(!(await haFrase()) && /^STAGE FINALE/m.test(ref) && !/Si resta a disposizione/.test(ref), 'entra Bianchi: la memoria e lo stile di Neri non sono i suoi');
+  check(!(await haFrase()) && /^CONCLUSIONE/m.test(ref) && !/Si resta a disposizione/.test(ref), 'entra Bianchi: la memoria e lo stile di Neri non sono i suoi');
   // su un altro PC il browser non sa niente: memoria e stile tornano dalla cartella
   await pc.click('#ppEsci');
   await pc.evaluate(() => Object.keys(localStorage).filter((k) => /esgar\.(memoria|stile)/.test(k)).forEach((k) => localStorage.removeItem(k)));
   await accedi(tel2); await pc.waitForTimeout(500);
   ref = await pc.inputValue('#output');
-  check(await haFrase() && /^Stage finale:/m.test(ref) && /^Fascia mesorettale:/m.test(ref) && /Si resta a disposizione/.test(ref), 'Neri su un PC nuovo: memoria e stile tornano dalla sua cartella');
+  check(await haFrase() && /^Conclusione:/m.test(ref) && /^Fascia mesorettale:/m.test(ref) && /Si resta a disposizione/.test(ref), 'Neri su un PC nuovo: memoria e stile tornano dalla sua cartella');
   // si torna allo stile del tool; chiudendo senza salvare non cambia niente
   if (await pc.isVisible('#pannelloProfilo')) await pc.click('#profiloBtn');
   await pc.click('#railStile'); await pc.waitForTimeout(400);
   await pc.click('[data-st-titoli=maiuscolo]');
   await pc.click('#stOverlay .st-piede [data-st=annulla]'); await pc.click('#dialogo.open [data-dialogo=si]'); await pc.waitForTimeout(300);
-  check(!(await pc.isVisible('#stOverlay.open')) && /^Stage finale:/m.test(await pc.inputValue('#output')), '«Annulla» chiede conferma e lascia lo stile com\'era');
+  check(!(await pc.isVisible('#stOverlay.open')) && /^Conclusione:/m.test(await pc.inputValue('#output')), '«Annulla» chiede conferma e lascia lo stile com\'era');
   await pc.click('#railStile'); await pc.waitForTimeout(400);
   await pc.click('[data-st-titoli=maiuscolo]');
-  await pc.click('[data-parte=td]'); await pc.click('[data-st=ometti]');
   await pc.click('[data-parte=chiusura]'); await pc.click('[data-st=togli]');
   await pc.click('[data-parte=mrf]'); await pc.click('[data-st=ripristina]');
   await pc.click('[data-parte="frase:linfonodi"]'); await pc.click('[data-st=togli]');
   await pc.click('[data-st=salva]'); await pc.waitForTimeout(1900);
-  check(/^MRF:/m.test(await pc.inputValue('#output')) && /^STAGE FINALE/m.test(await pc.inputValue('#output')) && !/iliache esterne/.test(await pc.inputValue('#output')), 'tolte le regolazioni, il referto torna quello del tool');
+  check(/^COINVOLGIMENTO DELLA FASCIA MESORETTALE \(MRF\):/m.test(await pc.inputValue('#output')) && /^CONCLUSIONE/m.test(await pc.inputValue('#output')) && !/iliache esterne/.test(await pc.inputValue('#output')), 'tolte le regolazioni, il referto torna quello del tool');
   if (await pc.isVisible('#pannelloProfilo')) await pc.click('#profiloBtn');
 
   await salva(); await pc.waitForTimeout(1700);          // il referto appena salvato entra nella memoria, e la memoria nel file
@@ -271,7 +269,7 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   }
 
   // ── «Mostra archivio»: i referti del medico, riletti dalla sua cartella ──
-  await pc.click('input[name=p_ct][value=cT2]'); await pc.fill('#arcPaziente', 'Verdi Ànna'); await pc.fill('#arcAccesso', 'D111'); await salva();     // un referto con uno stadio diverso dagli altri
+  await pc.click('input[name=p_ct][value="cT1-2"]'); await pc.fill('#arcPaziente', 'Verdi Ànna'); await pc.fill('#arcAccesso', 'D111'); await salva();     // un referto con uno stadio diverso dagli altri
   const miei = albero().filter((x) => /^Neri Marco\/\d{4}\/.*\.txt$/.test(x));
   await pc.click('#profiloBtn'); await pc.click('#ppArchivio'); await pc.waitForTimeout(700);
   check(await pc.isVisible('#arOverlay.open') && miei.length > 2 && await pc.locator('#arCasi .ar-ref').count() === miei.length
@@ -295,11 +293,11 @@ const albero = (d = COMUNE, p = '') => fs.readdirSync(d, { withFileTypes: true }
   // il filtro per stage finale: più variabili, i valori sono quelli che nell'archivio ci sono
   await pc.fill('#arCerca', '');
   await pc.click('#arFiltriBtn'); await pc.waitForTimeout(450);
-  check(await pc.isVisible('[data-ar-f="t:cT2"]') && await pc.isVisible('[data-ar-f="mrf:MRF-"]') && await pc.locator('[data-ar-f^="tipo:"]').count() === 1,
+  check(await pc.isVisible('[data-ar-f="t:cT1-2"]') && await pc.isVisible('[data-ar-f="mrf:MRF-"]') && await pc.locator('[data-ar-f^="tipo:"]').count() === 1,
     'il filtro propone le variabili dello stage con i valori presenti (qui solo stadiazioni)');
-  await pc.click('[data-ar-f="t:cT2"]');
+  await pc.click('[data-ar-f="t:cT1-2"]');
   check(await pc.locator('#arCasi .ar-ref').count() === 1 && /_D111_/.test(await pc.getAttribute('#arCasi .ar-ref', 'data-ar-ref')) && await pc.textContent('#arConta') === `1 referto su ${miei.length}` && await pc.textContent('#arFiltriN') === '1',
-    'T = cT2 lascia il solo referto con quello stadio, e dice quanti su quanti');
+    'T = cT1-2 lascia il solo referto con quello stadio, e dice quanti su quanti');
   await pc.click('[data-ar-f="mrf:MRF-"]');
   check(await pc.locator('#arCasi .ar-ref').count() === 1 && await pc.textContent('#arFiltriN') === '2', 'una seconda variabile restringe ancora');
   await pc.click('[data-ar="azzera-filtri"]');

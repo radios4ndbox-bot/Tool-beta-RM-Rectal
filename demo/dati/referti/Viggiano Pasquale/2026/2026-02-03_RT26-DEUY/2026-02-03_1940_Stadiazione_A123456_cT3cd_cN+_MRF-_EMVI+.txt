@@ -1,0 +1,46 @@
+StructuRad × ESGAR — RM Retto · Stadiazione primaria
+Codice caso: RT26-DEUY
+Data esame: 03/02/2026    N. accesso: A123456
+Refertato da: Dr. Viggiano (Pasquale Viggiano)
+Salvato: 14/10/2026 19:40
+────────────────────────────────────────────────
+
+STATO LOCALE DEL TUMORE
+
+MORFOLOGIA:
+- tumore a composizione solida
+- forma: completamente anulare
+
+SEDE:
+- margine inferiore a 7 cm dalla giunzione anorettale
+- rapporto del tumore con la riflessione peritoneale anteriore: a cavallo
+- rapporto del margine inferiore del tumore con il sigmoid take-off (STO): a livello o al di sotto (retto)
+
+DIMENSIONI:
+- estensione cranio-caudale del tumore: 5,2 cm
+
+CATEGORIA cT:
+cT3cd (crescita extramurale >5 mm), con estensione extramurale misurata sul piano assiale obliquo
+
+INVASIONE VASCOLARE EXTRAMURALE (EMVI):
+Sì
+
+INVASIONE SFINTERICA:
+No: complesso sfinterico indenne
+
+COINVOLGIMENTO DELLA FASCIA MESORETTALE (MRF):
+- fascia mesorettale libera (margine >1 mm)
+
+LINFONODI E DEPOSITI TUMORALI:
+- linfonodi mesorettali sospetti: sì (numero: 3, dimensioni: 6-9 mm)
+- linfonodi regionali laterali sospetti: no (otturatori e iliaci interni nei limiti)
+- depositi tumorali: sì (numero: 1, dimensioni: 7 mm)
+- categoria cN stimata: cN+
+
+LINFONODI NON REGIONALI SOSPETTI (cM+):
+No: non linfonodi iliaci esterni, iliaci comuni o inguinali sospetti
+
+CONCLUSIONE:
+Neoplasia del retto: cT3cd, MRF-, EMVI+, cN+. Si consiglia discussione multidisciplinare.
+
+Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).
