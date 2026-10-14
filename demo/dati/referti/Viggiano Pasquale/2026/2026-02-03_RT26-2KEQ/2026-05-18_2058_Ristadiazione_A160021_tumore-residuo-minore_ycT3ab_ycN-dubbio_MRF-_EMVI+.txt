@@ -1,0 +1,42 @@
+StructuRad × ESGAR — RM Retto · Ristadiazione
+Codice caso: RT26-2KEQ
+Data esame: 18/05/2026    N. accesso: A160021
+Refertato da: Dr. Viggiano (Pasquale Viggiano)
+Salvato: 14/10/2026 20:58
+────────────────────────────────────────────────
+
+STATO LOCALE DEL TUMORE
+
+PROBABILITÀ DI TUMORE RESIDUO:
+Tumore residuo minore (fibrosi eterogenea con segnale tumorale intermedio ± restrizione focale della diffusione)
+- categoria ycT stimata (massima): ycT3ab (crescita extramurale ≤5 mm)
+
+COMPONENTE MUCINOSA:
+No: non aree di segnale mucinoso
+
+LESIONE RESIDUA:
+- distanza dalla giunzione anorettale al margine inferiore della lesione residua (fibrosi inclusa): 7 cm
+- dimensioni della lesione residua (fibrosi inclusa): 3,4 cm → dimensioni stimate del tumore residuo nella fibrosi: 1,2 cm
+
+ycEMVI:
+Sì (persistenza di sospetto segnale tumorale nella sede dell'EMVI al basale)
+
+INVASIONE SFINTERICA:
+No
+
+COINVOLGIMENTO DELLA FASCIA MESORETTALE (ycMRF):
+- fascia mesorettale libera: ricomparsa del piano adiposo fra fibrosi e fascia
+
+LINFONODI E DEPOSITI TUMORALI:
+- linfonodi mesorettali: possibile ycN+ (qualsiasi linfonodo residuo con asse corto ≥5 mm o segnale mucinoso)
+- linfonodi laterali: N/A (nessun linfonodo laterale sospetto al basale)
+- depositi tumorali persistenti: no
+- categoria ycN stimata: possibile ycN+
+
+LINFONODI NON REGIONALI (CATEGORIA cM):
+N/A (nessun linfonodo non regionale sospetto al basale)
+
+CONCLUSIONE:
+Tumore residuo minore, ycT3ab, ycMRF-, ycEMVI+, possibile ycN+. Si consiglia rivalutazione endoscopica.
+
+Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026, doi:10.1007/s00330-025-12275-9).

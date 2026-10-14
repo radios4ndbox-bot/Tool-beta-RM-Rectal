@@ -1,0 +1,42 @@
+StructuRad × ESGAR — RM Retto · Ristadiazione
+Codice caso: RT26-65V7
+Data esame: 30/06/2026    N. accesso: A168450
+Refertato da: Dr. Viggiano (Pasquale Viggiano)
+Salvato: 14/10/2026 20:58
+────────────────────────────────────────────────
+
+STATO LOCALE DEL TUMORE
+
+PROBABILITÀ DI TUMORE RESIDUO:
+Tumore residuo maggiore (massa solida persistente con restrizione della diffusione)
+- categoria ycT stimata (massima): ycT4a (invasione del peritoneo o della riflessione peritoneale)
+
+COMPONENTE MUCINOSA:
+Sì, trasformazione mucinosa di tumore primitivamente solido
+
+LESIONE RESIDUA:
+- distanza dalla giunzione anorettale al margine inferiore della lesione residua (fibrosi inclusa): 11 cm
+- dimensioni della lesione residua (fibrosi inclusa): 4,8 cm → dimensioni stimate del tumore residuo nella fibrosi: 3,9 cm
+
+ycEMVI:
+Sì (persistenza di sospetto segnale tumorale nella sede dell'EMVI al basale)
+
+INVASIONE SFINTERICA:
+No
+
+COINVOLGIMENTO DELLA FASCIA MESORETTALE (ycMRF):
+- fascia mesorettale libera: ricomparsa del piano adiposo fra fibrosi e fascia
+
+LINFONODI E DEPOSITI TUMORALI:
+- linfonodi mesorettali: possibile ycN+ (qualsiasi linfonodo residuo con asse corto ≥5 mm o segnale mucinoso)
+- linfonodi laterali: N/A (nessun linfonodo laterale sospetto al basale)
+- depositi tumorali persistenti: no
+- categoria ycN stimata: ycN+
+
+LINFONODI NON REGIONALI (CATEGORIA cM):
+N/A (nessun linfonodo non regionale sospetto al basale)
+
+CONCLUSIONE:
+Tumore residuo maggiore, ycT4a, ycMRF-, ycEMVI+, ycN+. Si consiglia rivalutazione endoscopica.
+
+Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026, doi:10.1007/s00330-025-12275-9).

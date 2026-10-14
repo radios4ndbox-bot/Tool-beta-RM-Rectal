@@ -1006,6 +1006,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after{
 .pg-nav{display:flex; flex-direction:column; gap:4px; padding:14px 12px; border-right:1px solid var(--border); background:var(--surface2); overflow-y:auto;}
 .mg-gruppo{margin:10px 6px 2px; font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--accent);}
 /* Memoria: le tue frasi, voce per voce — a sinistra la voce del modulo, a destra la riga del referto */
+.sub .sub-nota{text-transform:none; letter-spacing:0; font-weight:400; color:var(--muted);}
 .fr-colonne{display:grid; grid-template-columns:minmax(150px, 30%) 1fr; gap:16px; margin:14px 0 2px; padding:0 2px;
   font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);}
 .fr-gruppo{margin:18px 0 6px; padding-bottom:5px; border-bottom:1px solid var(--border); font-size:12px; font-weight:600; color:var(--accent);}
@@ -1557,11 +1558,10 @@ c35 -20 149 -81 253 -138 l189 -102 101 53 c56 29 165 88 244 131 78 43 147
       <section class="card pop-section">
         <div class="card-head"><span class="card-num">01</span><h2 class="card-title">Morfologia</h2></div>
         <div class="card-body">
-        <div class="sub">Composizione</div>
+        <div class="sub">Composizione <span class="sub-nota">· entrambe = mista (solida con componente mucinosa)</span></div>
         <div class="opts">
-          <label class="opt"><input type="radio" name="p_comp" value="solida"> Solida</label>
-          <label class="opt"><input type="radio" name="p_comp" value="mucinosa"> Mucinosa</label>
-          <label class="opt"><input type="radio" name="p_comp" value="mista"> Mista</label>
+          <label class="opt"><input type="checkbox" class="p-comp" id="p_compSolida" value="solida"> Solida</label>
+          <label class="opt"><input type="checkbox" class="p-comp" id="p_compMucinosa" value="mucinosa"> Mucinosa</label>
         </div>
         <div class="sub">Forma</div>
         <div class="opts">
@@ -2063,7 +2063,11 @@ DESCR_UFFICIALI.forEach((d) => { if (!d.nome) d.nome = d.k; });
 const descrUfficiale = (k) => (DESCR_UFFICIALI.find((d) => d.k === k) || { testo: '' }).testo;
 function descr(k){ return window.EsgarStile && window.EsgarStile.descr ? window.EsgarStile.descr(k) : descrUfficiale(k); }
 const conDescr = (cat, k) => { const d = descr(k).trim(); return d ? `${cat} (${d})` : cat; };
-const COMP = { solida: 'solida', mucinosa: 'mucinosa', mista: 'mista' };
+/* la composizione: solida, mucinosa, o entrambe spuntate = mista */
+function compScelta(){
+  const s = checked('p_compSolida'), m = checked('p_compMucinosa');
+  return s && m ? 'mista' : s ? 'solida' : m ? 'mucinosa' : '';
+}
 const RIFL = { sotto: 'al di sotto', cavallo: 'a cavallo', sopra: 'al di sopra' };
 const STO = { retto: 'a livello o al di sotto (retto)', sigma: 'al di sopra (sigma)' };
 const CN = { 'cN0': 'cN0', 'possibile': 'possibile cN+', 'cN+': 'cN+' };
@@ -2081,7 +2085,7 @@ const VOCI_ELENCO = [
   // ── stadiazione primaria ──
   ['p.comp.solida', 'primaria', 'morfologia', 'Composizione', 'Solida', '- composizione: solida'],
   ['p.comp.mucinosa', 'primaria', 'morfologia', 'Composizione', 'Mucinosa', '- composizione: mucinosa'],
-  ['p.comp.mista', 'primaria', 'morfologia', 'Composizione', 'Mista', '- composizione: mista'],
+  ['p.comp.mista', 'primaria', 'morfologia', 'Composizione', 'Solida + mucinosa (mista)', '- composizione: mista (solida con componente mucinosa)'],
   ['p.forma.polipoide', 'primaria', 'morfologia', 'Forma', 'Polipoide', '- forma: polipoide'],
   ['p.forma.anulare', 'primaria', 'morfologia', 'Forma', 'Completamente anulare', '- forma: completamente anulare'],
   ['p.forma.parziale', 'primaria', 'morfologia', 'Forma', 'Parzialmente anulare', '- forma: parzialmente anulare[ore]', { ore: ', da ore 3 a ore 7' }],
@@ -2171,7 +2175,7 @@ const tra = (pre, x) => (x ? pre + x : '');
 const descrDi = (k) => { const d = descr(k).trim(); return d ? ` (${d})` : ''; };
 
 function buildMorfologia(){
-  const comp = radioVal('p_comp'), f = radioVal('p_forma');
+  const comp = compScelta(), f = radioVal('p_forma');
   const da = v('p_oreDa'), a = v('p_oreA');
   const r = separa([
     comp && F('p.comp.' + comp),

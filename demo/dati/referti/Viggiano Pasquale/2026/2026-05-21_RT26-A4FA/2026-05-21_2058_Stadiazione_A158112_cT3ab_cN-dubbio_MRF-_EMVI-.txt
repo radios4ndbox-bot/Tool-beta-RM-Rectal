@@ -1,0 +1,47 @@
+StructuRad × ESGAR — RM Retto · Stadiazione primaria
+Codice caso: RT26-A4FA
+Data esame: 21/05/2026    N. accesso: A158112
+Refertato da: Dr. Viggiano (Pasquale Viggiano)
+Salvato: 14/10/2026 20:58
+────────────────────────────────────────────────
+
+STATO LOCALE DEL TUMORE
+
+MORFOLOGIA:
+- composizione: mucinosa
+- crescita parzialmente anulare, da ore 5 a ore 9
+
+SEDE:
+- margine inferiore a 1,5 cm dalla giunzione anorettale
+- interamente al di sotto della riflessione peritoneale anteriore
+- rapporto del margine inferiore del tumore con il sigmoid take-off (STO): a livello o al di sotto (retto)
+
+DIMENSIONI:
+- estensione cranio-caudale del tumore: 4,1 cm
+
+CATEGORIA cT:
+cT3ab (crescita extramurale ≤5 mm)
+
+INVASIONE VASCOLARE EXTRAMURALE (EMVI):
+No: vene mesorettali di calibro e segnale regolari
+
+INVASIONE SFINTERICA:
+Sì: sfintere interno
+- dettagli: quadrante posteriore, per 15 mm
+
+COINVOLGIMENTO DELLA FASCIA MESORETTALE (MRF):
+- fascia mesorettale libera (margine >1 mm)
+
+LINFONODI E DEPOSITI TUMORALI:
+- linfonodi mesorettali sospetti: sì (numero: 1, dimensioni: 6 mm)
+- linfonodi regionali laterali sospetti: no (otturatori e iliaci interni nei limiti)
+- depositi tumorali: no
+- categoria cN stimata: possibile cN+
+
+LINFONODI NON REGIONALI SOSPETTI (cM+):
+No: non linfonodi iliaci esterni, iliaci comuni o inguinali sospetti
+
+CONCLUSIONE:
+Neoplasia del retto: cT3ab, MRF-, EMVI-, possibile cN+, anal+. Si consiglia discussione multidisciplinare.
+
+Referto redatto secondo i criteri ESGAR 2026 (Eur Radiol 2026;36:4592–4607).
