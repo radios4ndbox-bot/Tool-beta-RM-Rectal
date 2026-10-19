@@ -1,12 +1,13 @@
 # Compila il programma per Windows (installazione per utente e versione
-# portatile) su una macchina Windows di GitHub. I file .exe si scaricano
+# portatile) e il programma dimostrativo (portatile, con il tool e i dati
+# di esempio dentro) su una macchina Windows di GitHub. I file .exe si scaricano
 # dagli «Artifacts» dell'esecuzione; con un tag desktop-v* finiscono
 # anche in una Release.
 name: Programma Windows
 
 on:
   push:
-    paths: ['desktop/**', '.github/workflows/desktop.yml']
+    paths: ['desktop/**', 'demo/**', 'index.html', '.github/workflows/desktop.yml']
     tags: ['desktop-v*']
   workflow_dispatch:
 
@@ -41,3 +42,23 @@ jobs:
             desktop/dist/*.exe
             desktop/dist/*.blockmap
             desktop/dist/latest.yml
+
+  demo:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      # la demo usa Electron ed electron-builder del programma del reparto
+      - run: npm ci
+        working-directory: desktop
+      - run: ..\desktop\node_modules\.bin\electron-builder --win portable --publish never
+        working-directory: demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StructuRad-ESGAR-Demo
+          path: demo/dist/*.exe
+          if-no-files-found: error
