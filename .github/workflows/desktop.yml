@@ -1,5 +1,5 @@
-# Compila il programma per Windows (installazione per utente e versione
-# portatile) e il programma dimostrativo (portatile, con il tool e i dati
+# Compila il programma per Windows (installazione per utente, pacchetto
+# MSI per macchina da distribuire con SCCM/Intune/GPO, versione portatile) e il programma dimostrativo (portatile, con il tool e i dati
 # di esempio dentro) su una macchina Windows di GitHub. I file .exe si scaricano
 # dagli «Artifacts» dell'esecuzione; con un tag desktop-v*, o avviando il
 # workflow a mano con «rilascia», finiscono anche in una Release
@@ -39,7 +39,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: StructuRad-ESGAR-Windows
-          path: desktop/dist/*.exe
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.msi
           if-no-files-found: error
       - id: versione
         shell: bash
@@ -54,6 +56,7 @@ jobs:
           # latest.yml e .blockmap servono al programma installato per aggiornarsi
           files: |
             desktop/dist/*.exe
+            desktop/dist/*.msi
             desktop/dist/*.blockmap
             desktop/dist/latest.yml
 

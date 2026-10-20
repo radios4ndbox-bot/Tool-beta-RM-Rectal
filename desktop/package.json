@@ -1,7 +1,7 @@
 {
   "name": "structurad-esgar-retto",
   "productName": "StructuRad ESGAR",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "StructuRad × ESGAR — RM Retto, programma per Windows",
   "author": "StructuRad",
   "license": "UNLICENSED",
@@ -43,6 +43,7 @@
     "win": {
       "target": [
         "nsis",
+        "msi",
         "portable"
       ],
       "icon": "build/icon.png"
@@ -54,6 +55,15 @@
       "createStartMenuShortcut": true,
       "shortcutName": "StructuRad ESGAR",
       "artifactName": "StructuRad-ESGAR-Setup-${version}.${ext}"
+    },
+    "msi": {
+      "oneClick": true,
+      "perMachine": true,
+      "upgradeCode": "0DF89CBF-D6E9-4C9F-89BE-BDC75801C6E9",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "StructuRad ESGAR",
+      "artifactName": "StructuRad-ESGAR-${version}.${ext}"
     },
     "portable": {
       "artifactName": "StructuRad-ESGAR-portatile-${version}.${ext}"
