@@ -307,10 +307,12 @@ Il test avvia un relay finto in locale, fa l'accesso da un telefono simulato,
 salva referti di stadiazione primaria e ristadiazione e controlla cartelle,
 nomi dei file, indice, durata della sessione e uscita.
 
-## Programma per Windows (prova)
+## Programma per Windows
 
-In `desktop/` c'è un programma Electron per Windows. Per ora è una **versione di prova**: verifica che il programma si avvii sul PC dell'ospedale e salvi nella cartella scelta, con le sottocartelle.
+In `desktop/` c'è il programma Electron per Windows: il tool in una finestra, con il salvataggio nella cartella comune attraverso un ponte.
 
 - La cartella comune è scritta in `C:\Users\Public\StructuRad ESGAR\config.json`, comune a tutti gli utenti Windows del PC: nessuna pulizia del browser la cancella.
 - La pagina non ha accesso a Node: dal ponte (`window.EsgarDesktop`) legge e scrive solo dentro la cartella comune.
-- GitHub compila i file `.exe` su una macchina Windows (workflow «Programma Windows»): `StructuRad-ESGAR-Setup-x.y.z.exe`, che si installa per l'utente senza credenziali di amministratore, e `StructuRad-ESGAR-portatile-x.y.z.exe`, che parte senza installazione.
+- GitHub compila i file `.exe` su una macchina Windows (workflow «Programma Windows»): `StructuRad-ESGAR-Setup-x.y.z.exe`, che si installa per l'utente senza credenziali di amministratore, `StructuRad-ESGAR-x.y.z.msi`, per macchina, che l'IT distribuisce su tutti i PC (`msiexec /i StructuRad-ESGAR-x.y.z.msi /qn`, in Program Files per tutti gli utenti), e `StructuRad-ESGAR-portatile-x.y.z.exe`, che parte senza installazione.
+- Aggiornamenti: il tool si aggiorna sempre dal web. Il programma installato per utente si aggiorna da solo dalle Release; quello installato dall'MSI no (in Program Files serve l'amministratore): le versioni nuove le distribuisce l'IT con il nuovo MSI, che sostituisce il precedente (stesso `upgradeCode`).
+- Release: Actions → «Programma Windows» → «Run workflow» con **rilascia**: pubblica `desktop-v<versione>` con installer, MSI, versione portatile e `latest.yml`.

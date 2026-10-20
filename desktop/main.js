@@ -133,9 +133,17 @@ function avvisa(a){
    Solo nel programma installato: la nuova versione si scarica dalle Release
    di GitHub e si installa alla chiusura, mai mentre si lavora. Se qualcosa
    non va (rete, criteri del PC, Release mancante) non succede nulla e il
-   programma resta quello che è. La versione portatile non si aggiorna. */
+   programma resta quello che è. La versione portatile non si aggiorna, e
+   nemmeno quella installata per tutti gli utenti dal pacchetto MSI (in
+   Program Files): lì scrivere richiede l'amministratore, e le versioni
+   nuove le distribuisce l'IT con lo stesso pacchetto. */
+function perMacchina(){
+  const exe = path.resolve(process.execPath).toLowerCase();
+  return [process.env.ProgramFiles, process.env.ProgramW6432, process.env['ProgramFiles(x86)']]
+    .filter(Boolean).some((d) => exe.startsWith(path.resolve(d).toLowerCase() + path.sep));
+}
 function aggiornaProgramma(){
-  if (!app.isPackaged || process.env.PORTABLE_EXECUTABLE_DIR) return;
+  if (!app.isPackaged || process.env.PORTABLE_EXECUTABLE_DIR || perMacchina()) return;
   try {
     const { autoUpdater } = require('electron-updater');
     autoUpdater.autoDownload = true;
